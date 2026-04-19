@@ -130,7 +130,7 @@ export default function DashboardPage() {
 
         {/* Tabla */}
         {(tab !== 'drafts' || drafts.length > 0) && (
-          <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
+          <div className="panel" style={{ padding: 0, overflowX: 'auto' }}>
             {isLoading ? (
               <div style={{ padding: 40, textAlign: 'center', fontFamily: 'var(--font-mono)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
                 ▒ cargando...
@@ -141,9 +141,9 @@ export default function DashboardPage() {
                   <tr>
                     <th>Título</th>
                     <th>Estado</th>
-                    <th>Categoría</th>
-                    <th>Likes</th>
-                    <th>Comentarios</th>
+                    <th className="col-cat">Categoría</th>
+                    <th className="col-likes">Likes</th>
+                    <th className="col-comments">Comentarios</th>
                     <th>Fecha</th>
                     <th></th>
                   </tr>
@@ -164,11 +164,11 @@ export default function DashboardPage() {
                           {p.status === 'published' ? 'Publicado' : p.status === 'draft' ? 'Borrador' : 'Archivado'}
                         </span>
                       </td>
-                      <td>
+                      <td className="col-cat">
                         {p.categories[0] && <Chip color="pink">{p.categories[0].name}</Chip>}
                       </td>
-                      <td className="text-mute" style={{ fontSize: 13 }}>{p.likes_count ?? 0}</td>
-                      <td className="text-mute" style={{ fontSize: 13 }}>{p.comments_count ?? 0}</td>
+                      <td className="col-likes text-mute" style={{ fontSize: 13 }}>{p.likes_count ?? 0}</td>
+                      <td className="col-comments text-mute" style={{ fontSize: 13 }}>{p.comments_count ?? 0}</td>
                       <td className="text-mute text-xs" style={{ fontFamily: 'var(--font-mono)' }}>
                         {formatDate(p.published_at ?? p.created_at)}
                       </td>

@@ -998,6 +998,11 @@ a.btn, a.btn:hover { color: var(--ink); text-decoration: none; }
 /* Mobile — layout general */
 @media (max-width: 600px) {
   .page { padding: 20px 16px 60px; max-width: 100%; overflow-x: hidden; }
+  /* Editor mobile */
+  .rich-editor .ProseMirror { min-height: 240px; padding: 12px; font-size: 14px; }
+  .editor-toolbar-row { gap: 2px; padding: 4px 6px; }
+  .editor-toolbar-row > button, .tb-dropdown { padding: 4px 7px; font-size: 12px; }
+  .tb-sep { margin: 0 1px; }
   .hero { padding: 36px 0 32px; }
   .hero-inner { padding: 0 16px; }
   .two-col { gap: 20px; }
@@ -1061,9 +1066,9 @@ a.btn, a.btn:hover { color: var(--ink); text-decoration: none; }
 .prose ul { padding-left: 20px; }
 .prose li { margin-bottom: 8px; }
 .prose a {
-  color: var(--ink);
-  background: var(--accent-2);
-  padding: 1px 4px;
+  color: inherit;
+  background: none;
+  padding: 0;
   border-bottom: 2px solid var(--ink);
   text-decoration: none;
 }
@@ -1097,6 +1102,15 @@ a.btn, a.btn:hover { color: var(--ink); text-decoration: none; }
 .cat-tile .cat-desc { font-size: 14px; color: var(--ink); margin-top: 12px; line-height: 1.5; }
 
 /* ---------- DASHBOARD TABLE ---------- */
+@media (max-width: 600px) {
+  .profile-cover { height: 120px; }
+  .stat { min-width: 80px; padding: 10px 14px; }
+  .stat-value { font-size: 22px; }
+  /* Ocultar columnas menos críticas en mobile */
+  .dash-table .col-cat,
+  .dash-table .col-likes,
+  .dash-table .col-comments { display: none; }
+}
 .dash-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .dash-table th, .dash-table td { text-align: left; padding: 14px 16px; border-bottom: 2px solid var(--ink); }
 .dash-table th {
