@@ -150,7 +150,12 @@ export function useUpdatePost() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ id, form }: { id: string; form: PostFormData }) => updatePost(id, form),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['posts'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['posts'] })
+      qc.invalidateQueries({ queryKey: ['posts-feed'] })
+      qc.invalidateQueries({ queryKey: ['post'] })
+      qc.invalidateQueries({ queryKey: ['my-posts'] })
+    },
   })
 }
 

@@ -7,7 +7,7 @@ export interface Comment {
   author_id: string
   content: string
   created_at: string
-  author: { display_name: string; username: string; avatar_url: string | null }
+  author: { display_name: string; username: string; avatar_url: string | null; role: string }
 }
 
 interface CommentJoinRow {
@@ -15,7 +15,7 @@ interface CommentJoinRow {
   author_id: string
   content: string
   created_at: string
-  profiles: { display_name: string; username: string; avatar_url: string | null } | null
+  profiles: { display_name: string; username: string; avatar_url: string | null; role: string } | null
 }
 
 export function useComments(postId: string, authorFilter?: string) {
@@ -24,8 +24,8 @@ export function useComments(postId: string, authorFilter?: string) {
     queryKey: ['comments', postId, trimmed],
     queryFn: async (): Promise<Comment[]> => {
       const select = trimmed
-        ? 'id, author_id, content, created_at, profiles!author_id!inner (display_name, username, avatar_url)'
-        : 'id, author_id, content, created_at, profiles!author_id (display_name, username, avatar_url)'
+        ? 'id, author_id, content, created_at, profiles!author_id!inner (display_name, username, avatar_url, role)'
+        : 'id, author_id, content, created_at, profiles!author_id (display_name, username, avatar_url, role)'
 
       let query = supabase
         .from('comments')

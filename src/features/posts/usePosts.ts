@@ -19,6 +19,7 @@ export interface PostWithMeta {
     display_name: string
     username: string
     avatar_url: string | null
+    role?: string
   }
   categories: { id: string; name: string; slug: string }[]
   tags: { id: string; name: string; slug: string }[]
@@ -39,7 +40,7 @@ export interface PostJoinRow {
   status: string
   published_at: string | null
   created_at: string
-  profiles: { id: string; display_name: string; username: string; avatar_url: string | null } | null
+  profiles: { id: string; display_name: string; username: string; avatar_url: string | null; role?: string } | null
   post_categories: Array<{ categories: { id: string; name: string; slug: string } | null }>
   post_tags: Array<{ tags: { id: string; name: string; slug: string } | null }>
   post_likes?: Array<{ count: number }>

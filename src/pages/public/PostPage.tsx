@@ -15,6 +15,7 @@ import LikeButton from '../../components/posts/LikeButton'
 import BookmarkButton from '../../components/posts/BookmarkButton'
 import CommentSection from '../../components/posts/CommentSection'
 import AdminOnly from '../../components/auth/AdminOnly'
+import AdminBadge from '../../components/ui/AdminBadge'
 import Icon from '../../components/ui/Icon'
 import { useToast } from '../../components/ui/Toast'
 
@@ -102,12 +103,32 @@ export default function PostPage() {
             <div className="row gap-3 mb-5" style={{ paddingBottom: 20, borderBottom: '1px solid var(--line)' }}>
               <Avatar name={post.author.display_name} size="md" src={post.author.avatar_url} />
               <div>
-                <div style={{ fontSize: 14 }}>{post.author.display_name}</div>
+                <div style={{ fontSize: 14 }}>
+                  {post.author.display_name}
+                  {post.author.role === 'admin' && <AdminBadge />}
+                </div>
                 <div style={{ fontSize: 11, color: 'var(--ink-mute)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
                   @{post.author.username}
                 </div>
               </div>
             </div>
+
+            {post.excerpt && (
+              <div style={{
+                background: 'var(--bg-panel)',
+                border: '2px solid var(--ink)',
+                boxShadow: '4px 4px 0 var(--ink)',
+                padding: '18px 24px',
+                margin: '0 0 20px',
+              }}>
+                <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--ink-mute)', marginBottom: 8 }}>
+                  Resumen
+                </div>
+                <p style={{ margin: 0, fontSize: 16, lineHeight: 1.65, fontStyle: 'italic', color: 'var(--ink)' }}>
+                  {post.excerpt}
+                </p>
+              </div>
+            )}
 
             <div style={{
               background: 'var(--bg-panel)',

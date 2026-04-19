@@ -5,6 +5,7 @@ import { useIsAdmin } from '../../features/auth/useIsAdmin'
 import { useComments, useCreateComment, useDeleteComment } from '../../features/interactions/useComments'
 import { formatDate } from '../../lib/utils'
 import Avatar from '../ui/Avatar'
+import AdminBadge from '../ui/AdminBadge'
 import Icon from '../ui/Icon'
 import { useToast } from '../ui/Toast'
 
@@ -136,6 +137,7 @@ export default function CommentSection({ postId, postAuthorId }: CommentSectionP
             <div className="comment-body">
               <div className="comment-meta">
                 <span style={{ fontWeight: 700 }}>{c.author.display_name}</span>
+                {c.author.role === 'admin' && <AdminBadge />}
                 {postAuthorId && c.author_id === postAuthorId && (
                   <span style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', background: 'var(--accent-2)', border: '1.5px solid var(--ink)', padding: '1px 6px', marginLeft: 6 }}>
                     autor

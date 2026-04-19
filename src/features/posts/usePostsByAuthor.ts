@@ -8,13 +8,14 @@ type AuthorMeta = {
   username: string
   bio: string | null
   avatar_url: string | null
+  role: string
   is_banned: boolean
 }
 
 async function fetchPostsByAuthor(username: string): Promise<{ posts: PostWithMeta[]; author: AuthorMeta | null }> {
   const { data: profile } = await supabase
     .from('profiles')
-    .select('id, display_name, username, bio, avatar_url, is_banned')
+    .select('id, display_name, username, bio, avatar_url, role, is_banned')
     .eq('username', username)
     .maybeSingle()
 

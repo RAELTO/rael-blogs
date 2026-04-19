@@ -7,6 +7,7 @@ import AppLayout from '../../components/layout/AppLayout'
 import Avatar from '../../components/ui/Avatar'
 import AdminOnly from '../../components/auth/AdminOnly'
 import PostCard from '../../components/posts/PostCard'
+import AdminBadge from '../../components/ui/AdminBadge'
 
 export default function AuthorPage() {
   const { username = '' } = useParams()
@@ -59,6 +60,7 @@ export default function AuthorPage() {
               <div className="hero-eyebrow" style={{ marginBottom: 10 }}>▓ autor</div>
               <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 36, margin: '0 0 6px', letterSpacing: '-0.02em', lineHeight: 1 }}>
                 {author.display_name}
+                {author.role === 'admin' && <AdminBadge />}
               </h1>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink-mute)', letterSpacing: '0.2em', marginBottom: 14 }}>
                 @{author.username}

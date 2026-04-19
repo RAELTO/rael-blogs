@@ -997,10 +997,15 @@ a.btn, a.btn:hover { color: var(--ink); text-decoration: none; }
 }
 /* Mobile — layout general */
 @media (max-width: 600px) {
-  .page { padding: 20px 16px 60px; }
+  .page { padding: 20px 16px 60px; max-width: 100%; overflow-x: hidden; }
   .hero { padding: 36px 0 32px; }
   .hero-inner { padding: 0 16px; }
   .two-col { gap: 20px; }
+  .prose { overflow-x: hidden; word-break: break-word; }
+  .prose pre { overflow-x: auto; max-width: 100%; }
+  .prose table { overflow-x: auto; display: block; max-width: 100%; }
+  .prose img { max-width: 100%; }
+  .prose p, .prose h2, .prose h3 { overflow-wrap: break-word; }
 }
 .two-col {
   display: grid;

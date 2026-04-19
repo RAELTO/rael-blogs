@@ -5,6 +5,7 @@ import Avatar from '../ui/Avatar'
 import Chip from '../ui/Chip'
 import LikeButton from './LikeButton'
 import MediaPlaceholder from './MediaPlaceholder'
+import AdminBadge from '../ui/AdminBadge'
 import Icon from '../ui/Icon'
 
 interface PostCardProps {
@@ -60,7 +61,10 @@ export default function PostCard({ post, featured }: PostCardProps) {
         <div className="row gap-3 mt-4" style={{ marginBottom: 14, marginTop: 'auto' }}>
           <Avatar name={post.author.display_name} size="sm" src={post.author.avatar_url} />
           <div>
-            <div style={{ fontSize: 12, color: 'var(--ink)', fontWeight: 600 }}>{post.author.display_name}</div>
+            <div style={{ fontSize: 12, color: 'var(--ink)', fontWeight: 600 }}>
+              {post.author.display_name}
+              {post.author.role === 'admin' && <AdminBadge />}
+            </div>
             <div style={{ fontSize: 10, color: 'var(--ink-mute)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
               @{post.author.username}
             </div>

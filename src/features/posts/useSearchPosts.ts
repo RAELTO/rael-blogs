@@ -5,7 +5,7 @@ import { mapPostRow, type PostWithMeta, type PostJoinRow } from './usePosts'
 const POST_SELECT = `
   id, title, slug, excerpt, content, cover_image_url, cover_type,
   status, published_at, created_at,
-  profiles!author_id (id, display_name, username, avatar_url),
+  profiles!author_id (id, display_name, username, avatar_url, role),
   post_categories (categories (id, name, slug)),
   post_tags (tags (id, name, slug)),
   post_likes(count),
