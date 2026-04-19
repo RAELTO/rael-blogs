@@ -14,6 +14,9 @@ import TableRow from '@tiptap/extension-table-row'
 import TableHeader from '@tiptap/extension-table-header'
 import TableCell from '@tiptap/extension-table-cell'
 import CharacterCount from '@tiptap/extension-character-count'
+import Image from '@tiptap/extension-image'
+import { useAuth } from '../../features/auth/AuthContext'
+import { uploadCoverImage } from '../../lib/storage'
 
 // Custom FontSize via TextStyle global attribute
 const FontSize = Extension.create({
@@ -50,13 +53,17 @@ interface RichEditorProps {
   placeholder?: string
 }
 
-type Panel = 'color' | 'highlight' | 'font-family' | 'font-size' | 'link' | null
+type Panel = 'color' | 'highlight' | 'font-family' | 'font-size' | 'link' | 'image' | null
 
 export default function RichEditor({ value, onChange, placeholder }: RichEditorProps) {
   const [, forceUpdate] = useReducer(x => x + 1, 0)
   const [panel, setPanel] = useState<Panel>(null)
   const [linkInput, setLinkInput] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
+  const [imageUploading, setImageUploading] = useState(false)
+  const imageFileRef = useRef<HTMLInputElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
+  const { user } = useAuth()
 
   const editor = useEditor({
     extensions: [
@@ -78,6 +85,7 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
       TableHeader,
       TableCell,
       CharacterCount,
+      Image.configure({ inline: false, allowBase64: false }),
     ],
     content: value,
     onUpdate({ editor }) { onChange(editor.getHTML()); forceUpdate() },
@@ -103,6 +111,27 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
     editor.getText().trim().split(/\s+/).filter(Boolean).length
 
   const togglePanel = (p: Panel) => setPanel(prev => prev === p ? null : p)
+
+  const insertImageByUrl = (url: string) => {
+    if (!url.trim()) return
+    editor?.chain().focus().setImage({ src: url.trim() }).run()
+    setImageUrl('')
+    setPanel(null)
+  }
+
+  const handleImageFile = async (file: File) => {
+    if (!user) return
+    setImageUploading(true)
+    try {
+      const url = await uploadCoverImage(file, user.id)
+      editor?.chain().focus().setImage({ src: url }).run()
+      setPanel(null)
+    } catch {
+      // silently ignore upload errors — user can retry
+    } finally {
+      setImageUploading(false)
+    }
+  }
 
   const applyLink = () => {
     if (!linkInput.trim()) editor.chain().focus().unsetLink().run()
@@ -253,6 +282,17 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
           ⊞
         </button>
 
+        {/* Image */}
+        <button
+          type="button"
+          title="Insertar imagen"
+          onMouseDown={e => { e.preventDefault(); togglePanel('image') }}
+          className="tb-dropdown"
+          style={{ background: panel === 'image' ? 'var(--ink)' : 'transparent', color: panel === 'image' ? 'var(--bg)' : 'var(--ink)' }}
+        >
+          IMG
+        </button>
+
         <div className="tb-sep" />
         <Btn label="↩" action={() => editor.chain().focus().undo().run()} title="Deshacer (Ctrl+Z)" />
         <Btn label="↪" action={() => editor.chain().focus().redo().run()} title="Rehacer (Ctrl+Y)" />
@@ -342,6 +382,44 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
               style={{ padding: '4px 8px', border: '2px solid var(--ink)', background: 'var(--bg-panel)', cursor: 'pointer', fontSize: 11 }}>
               ✕ Reset
             </button>
+          </div>
+        </div>
+      )}
+
+      {panel === 'image' && (
+        <div className="tb-panel">
+          <div className="tb-panel-label">INSERTAR IMAGEN</div>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 8 }}>
+            <input
+              value={imageUrl}
+              onChange={e => setImageUrl(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && insertImageByUrl(imageUrl)}
+              placeholder="https://..."
+              autoFocus
+              style={{ flex: 1, fontSize: 13, padding: '5px 8px', fontFamily: 'var(--font-mono)' }}
+            />
+            <button type="button" onMouseDown={e => { e.preventDefault(); insertImageByUrl(imageUrl) }}
+              style={{ padding: '5px 12px', border: '2px solid var(--ink)', background: 'var(--accent-2)', cursor: 'pointer', fontWeight: 700 }}>
+              OK
+            </button>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 11, color: 'var(--ink-mute)', fontFamily: 'var(--font-mono)' }}>o sube un archivo:</span>
+            <button
+              type="button"
+              disabled={imageUploading}
+              onMouseDown={e => { e.preventDefault(); imageFileRef.current?.click() }}
+              style={{ padding: '4px 10px', border: '2px solid var(--ink)', background: 'var(--bg-panel)', cursor: 'pointer', fontSize: 11, fontWeight: 700 }}
+            >
+              {imageUploading ? '▒ subiendo…' : '⬆ Archivo'}
+            </button>
+            <input
+              ref={imageFileRef}
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={e => { const f = e.target.files?.[0]; if (f) void handleImageFile(f); e.target.value = '' }}
+            />
           </div>
         </div>
       )}

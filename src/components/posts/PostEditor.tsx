@@ -14,6 +14,7 @@ import { supabase } from '../../lib/supabase'
 import { useToast } from '../ui/Toast'
 import ImageUpload from '../ui/ImageUpload'
 import RichEditor from '../ui/RichEditor'
+import ConfirmDialog from '../ui/ConfirmDialog'
 
 const COVER_TYPES: { value: CoverType; label: string; desc: string }[] = [
   { value: 'gif',         label: '⬡ Animación',    desc: 'Rectángulo flotante animado' },
@@ -74,6 +75,9 @@ export default function PostEditor({ post }: PostEditorProps) {
   const [coverFile, setCoverFile] = useState<File | null>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [coverType, setCoverType] = useState<CoverType>((post as PostWithMeta & { cover_type?: CoverType })?.cover_type ?? 'gif')
+  const [clearImage, setClearImage] = useState(false)
+  const [userPickedType, setUserPickedType] = useState(false)
+  const [pendingSubmit, setPendingSubmit] = useState<{ values: FormValues; status?: 'draft' | 'published' | 'archived' } | null>(null)
   const [slugState, setSlugState] = useState<'idle' | 'checking' | 'available' | 'adjusted'>('idle')
   const [slugNote, setSlugNote] = useState<string | null>(null)
   const autoCorrectingRef = useRef(false)
@@ -145,19 +149,34 @@ export default function PostEditor({ post }: PostEditorProps) {
     return () => clearTimeout(timer)
   }, [slug, post?.id, setValue])
 
-  const onSubmit = async (values: FormValues, status?: 'draft' | 'published' | 'archived') => {
+  const hasCoverImage = !!coverFile || (!!post?.cover_image_url && !clearImage)
+  const coverConflict = hasCoverImage && userPickedType
+
+  const onSubmit = (values: FormValues, status?: 'draft' | 'published' | 'archived') => {
+    if (coverConflict) {
+      setPendingSubmit({ values, status })
+      return
+    }
+    void doSubmit(values, status, false)
+  }
+
+  const doSubmit = async (values: FormValues, status?: 'draft' | 'published' | 'archived', forceGeneratedType = false) => {
     if (!user) return
     setUploadingImage(true)
 
-    let coverUrl = values.cover_image_url ?? ''
-    try {
-      if (coverFile) {
-        coverUrl = await uploadCoverImage(coverFile, user.id)
+    let coverUrl = ''
+    if (!forceGeneratedType && !clearImage) {
+      try {
+        if (coverFile) {
+          coverUrl = await uploadCoverImage(coverFile, user.id)
+        } else {
+          coverUrl = values.cover_image_url ?? ''
+        }
+      } catch {
+        toast('⚠ Error al subir la imagen. Intenta de nuevo.')
+        setUploadingImage(false)
+        return
       }
-    } catch {
-      toast('⚠ Error al subir la imagen. Intenta de nuevo.')
-      setUploadingImage(false)
-      return
     }
     setUploadingImage(false)
 
@@ -297,11 +316,21 @@ export default function PostEditor({ post }: PostEditorProps) {
               <h4>Portada</h4>
               <ImageUpload
                 kind="cover"
-                currentUrl={post?.cover_image_url}
-                onFile={setCoverFile}
+                currentUrl={clearImage ? undefined : post?.cover_image_url}
+                onFile={file => { setCoverFile(file); if (file) setClearImage(false) }}
                 uploading={uploadingImage}
               />
-              {!coverFile && !post?.cover_image_url && (
+              {post?.cover_image_url && !coverFile && !clearImage && (
+                <button
+                  type="button"
+                  className="btn btn-small"
+                  style={{ width: '100%', marginTop: 8, color: 'var(--accent-1)', justifyContent: 'center' }}
+                  onClick={() => { setClearImage(true); setUserPickedType(false) }}
+                >
+                  ✕ Eliminar portada
+                </button>
+              )}
+              {!coverFile && (!post?.cover_image_url || clearImage) && (
                 <div style={{ marginTop: 16 }}>
                   <div className="field-label" style={{ marginBottom: 8 }}>Tipo de portada generada</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -311,7 +340,7 @@ export default function PostEditor({ post }: PostEditorProps) {
                         <button
                           key={ct.value}
                           type="button"
-                          onClick={() => setCoverType(ct.value)}
+                          onClick={() => { setCoverType(ct.value); setUserPickedType(true) }}
                           style={{
                             display: 'flex', alignItems: 'center', gap: 12,
                             padding: '10px 12px',
@@ -381,6 +410,25 @@ export default function PostEditor({ post }: PostEditorProps) {
           </aside>
         </div>
       </form>
+
+      <ConfirmDialog
+        open={!!pendingSubmit}
+        title="Conflicto de portada"
+        message={
+          post?.cover_image_url && !clearImage
+            ? `Seleccionaste el tipo "${COVER_TYPES.find(ct => ct.value === coverType)?.label ?? coverType}". Si continúas, la imagen actual se eliminará.`
+            : `Seleccionaste el tipo "${COVER_TYPES.find(ct => ct.value === coverType)?.label ?? coverType}". Si continúas, la imagen subida no se guardará.`
+        }
+        confirmLabel="Sí, usar tipo generado"
+        cancelLabel="Mantener imagen"
+        onConfirm={() => {
+          if (pendingSubmit) {
+            void doSubmit(pendingSubmit.values, pendingSubmit.status, true)
+            setPendingSubmit(null)
+          }
+        }}
+        onCancel={() => setPendingSubmit(null)}
+      />
     </div>
   )
 }

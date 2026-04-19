@@ -65,6 +65,8 @@ export function mapPostRow(p: PostJoinRow): PostWithMeta {
     tags: p.post_tags
       .map(pt => pt.tags)
       .filter((t): t is { id: string; name: string; slug: string } => t !== null),
+    likes_count: p.post_likes?.[0]?.count ?? 0,
+    comments_count: p.comments?.[0]?.count ?? 0,
   }
 }
 

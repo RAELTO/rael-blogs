@@ -18,15 +18,26 @@ interface CommentJoinRow {
   profiles: { display_name: string; username: string; avatar_url: string | null } | null
 }
 
-export function useComments(postId: string) {
+export function useComments(postId: string, authorFilter?: string) {
+  const trimmed = authorFilter?.trim() ?? ''
   return useQuery({
-    queryKey: ['comments', postId],
+    queryKey: ['comments', postId, trimmed],
     queryFn: async (): Promise<Comment[]> => {
-      const { data, error } = await supabase
+      const select = trimmed
+        ? 'id, author_id, content, created_at, profiles!author_id!inner (display_name, username, avatar_url)'
+        : 'id, author_id, content, created_at, profiles!author_id (display_name, username, avatar_url)'
+
+      let query = supabase
         .from('comments')
-        .select('id, author_id, content, created_at, profiles!author_id (display_name, username, avatar_url)')
+        .select(select)
         .eq('post_id', postId)
         .order('created_at', { ascending: true })
+
+      if (trimmed) {
+        query = query.filter('profiles.display_name', 'ilike', `%${trimmed}%`)
+      }
+
+      const { data, error } = await query
       if (error) throw error
       return (data as unknown as CommentJoinRow[]).map(c => ({
         id: c.id,

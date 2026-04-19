@@ -321,7 +321,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      search_posts: {
+        Args: { lim?: number; q: string }
+        Returns: {
+          content: string
+          cover_image_url: string
+          cover_type: string
+          created_at: string
+          excerpt: string
+          id: string
+          published_at: string
+          slug: string
+          status: string
+          title: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

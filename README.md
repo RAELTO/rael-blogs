@@ -8,36 +8,43 @@ CMS de blogs estilo neobrutalism construido con React + TypeScript + Supabase. P
 
 | Capa | Tecnología |
 |------|-----------|
-| Frontend | React 19, TypeScript, Vite |
-| Estilos | CSS custom (neobrutalism), Tailwind CSS v4 |
-| Routing | React Router v7 |
+| Frontend | React 18, TypeScript, Vite |
+| Estilos | CSS custom properties — sistema neobrutalist propio |
+| Routing | React Router v6 |
 | Estado servidor | TanStack Query v5 |
-| Formularios | React Hook Form + Zod |
 | Backend / Auth | Supabase (Postgres + Auth + Storage + RLS) |
 | Markdown | react-markdown + remark-gfm |
+| Deploy | Vercel |
 
 ---
 
 ## Funcionalidades
 
 **Público (sin cuenta)**
-- Feed de posts publicados con búsqueda y filtro por categoría
+- Feed paginado con scroll infinito
+- Búsqueda full-text en DB (título, extracto, autor, categorías, tags)
+- Posts destacados (≥ 100 likes) en sección Destacadas
+- Filtro por categoría con chips de colores deterministas
 - Detalle de post con renderizado Markdown
 - Perfil público de autor
-- Navegación por categorías y tags
 - Contador de likes visible
+- Comentarios públicos con filtro por nombre de autor
 
 **Autenticado**
-- Registro con confirmación de correo
-- Inicio / cierre de sesión
-- Crear, editar, eliminar posts propios
-- Estados: borrador / publicado / archivado
-- Imagen destacada por post (máx. 1 MB)
-- Avatar de perfil (máx. 500 KB)
-- Editar perfil (nombre, usuario, bio)
-- Dar like a posts
-- Guardar posts en favoritos
+- Registro con confirmación de correo y validación de contraseña (8 chars, mayúscula, carácter especial)
+- Inicio / cierre de sesión con dialog de confirmación neobrutalist
+- Crear, editar y eliminar posts propios
+- Estados: borrador / publicado
+- Cover image por post con gestión de conflictos (imagen vs placeholder generativo)
+- Editar perfil (nombre, usuario, bio, avatar)
+- Dar like a posts y guardar en favoritos
 - Comentar en posts y borrar comentarios propios
+
+**Admin**
+- Editar o eliminar cualquier post
+- Eliminar cualquier comentario
+- Gestión de usuarios (ban / rol) desde panel de admin
+- Bypass de RLS en categorías y tags de posts ajenos
 
 ---
 
@@ -78,15 +85,30 @@ Encuéntralas en Supabase → Project Settings → API.
 
 ### 1. Base de datos
 
-Migraciones aplicadas en Supabase → SQL Editor (en orden):
+El esquema completo está versionado en `supabase/migrations/`. Si el proyecto Supabase es eliminado por inactividad, se puede recrear la estructura vacía con:
 
-| Migración | Contenido |
-|-----------|-----------|
-| `initial_schema` | Tablas: profiles, posts, categories, tags, post_categories, post_tags + triggers updated_at + auto-creación de perfil |
-| `rls_policies` | Políticas RLS en todas las tablas |
-| `storage_policies` | Bucket `post-images` con políticas por ruta de usuario |
-| `seed_categories` | 6 categorías iniciales |
-| `comments_likes_bookmarks` | Tablas: comments, post_likes, post_bookmarks + RLS |
+```bash
+supabase db push
+```
+
+> Esto restaura tablas, RLS y funciones — no los datos ni las imágenes del Storage.
+
+Migraciones en orden:
+
+| Versión | Migración | Contenido |
+|---------|-----------|-----------|
+| 20260418042702 | `initial_schema` | Tablas core: profiles, posts, categories, tags, post_categories, post_tags |
+| 20260418042719 | `rls_policies` | Políticas RLS base en todas las tablas |
+| 20260418042734 | `storage_policies` | Bucket `post-images` público + políticas por carpeta de usuario |
+| 20260418052011 | `seed_categories` | 6 categorías iniciales |
+| 20260418054543 | `comments_likes_bookmarks` | Tablas: comments, post_likes, post_bookmarks |
+| 20260418191106 | `add_role_and_ban_to_profiles` | Columnas `role` e `is_banned` en profiles |
+| 20260418191627 | `admin_delete_any_comment` | Política admin para eliminar cualquier comentario |
+| 20260418191926 | `protect_role_and_ban_columns` | Bloquea auto-elevación de rol + política admin ban |
+| 20260418212544 | `add_cover_type_to_posts` | Columna `cover_type` (gif/video/image/code) |
+| 20260418230725 | `tags_insert_policy` | Usuarios autenticados pueden crear tags |
+| 20260419032936 | `search_posts_fulltext` | Función RPC `search_posts` con DISTINCT JOIN |
+| 20260419035240 | `admin_bypass_post_categories_tags` | Admin puede modificar categorías/tags de posts ajenos |
 
 ### 2. Storage
 
@@ -165,17 +187,16 @@ src/
 
 ---
 
-## Paletas de color
+## TweakPanel
 
-El panel flotante (botón esquina inferior derecha) permite cambiar entre 5 paletas en tiempo real:
+Panel flotante (esquina inferior derecha) para ajustar el diseño en tiempo real:
 
-| Paleta | Acento principal |
-|--------|-----------------|
-| Magenta (default) | Coral `#ff5a5f` |
-| Miami | Rosa neón `#ff4dd2` |
-| Toxic | Lima `#a6ff00` |
-| Sunset | Rojo `#ff5e5b` |
-| Dark | Modo oscuro |
+- **5 paletas de color**: Magenta (default), Miami, Toxic, Sunset, Dark
+- **Tipografía**: cambia la fuente de display entre opciones
+- **Sombras**: ajusta el offset de las sombras neobrutalist
+- **Grid**: activa/desactiva el grid de fondo del hero
+
+Los cambios se aplican vía CSS custom properties sin recargar la página.
 
 ---
 

@@ -137,6 +137,45 @@ input:focus, textarea:focus, select:focus {
   box-shadow: 6px 6px 0 var(--accent-1);
 }
 
+/* Neobrutalist checkboxes */
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  border: 2px solid var(--ink);
+  background: var(--bg-panel);
+  box-shadow: 2px 2px 0 var(--ink);
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  transition: background .1s, transform .1s, box-shadow .1s;
+}
+input[type="checkbox"]:checked {
+  background: var(--accent-2);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1;
+}
+input[type="checkbox"]:focus {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--accent-1);
+}
+input[type="checkbox"]:hover:not(:checked) {
+  background: color-mix(in oklab, var(--accent-2) 30%, var(--bg-panel));
+}
+
 ::selection { background: var(--accent-2); color: var(--ink); }
 
 /* ---------- MOBILE NAV ---------- */
@@ -242,6 +281,8 @@ a.btn, a.btn:hover { color: var(--ink); text-decoration: none; }
   box-shadow: var(--shadow);
 }
 .card-post {
+  display: flex;
+  flex-direction: column;
   background: var(--bg-panel);
   border: var(--border);
   border-radius: 0;
@@ -419,7 +460,9 @@ a.btn, a.btn:hover { color: var(--ink); text-decoration: none; }
   text-transform: uppercase;
 }
 .chip.chip-pink   { background: var(--accent-1); color: var(--ink); }
+.chip.chip-yellow { background: var(--accent-2); color: var(--ink); }
 .chip.chip-cyan   { background: var(--accent-3); color: var(--ink); }
+.chip.chip-green  { background: var(--accent-4); color: var(--ink); }
 .chip.chip-purple { background: var(--accent-5); color: var(--ink); }
 .chip-button { cursor: pointer; transition: transform .1s; }
 .chip-button:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink); }
@@ -579,9 +622,24 @@ a.btn, a.btn:hover { color: var(--ink); text-decoration: none; }
   line-height: 1.1;
   margin: 12px 0;
   letter-spacing: -0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
-.post-title.featured { font-size: 40px; }
-.post-excerpt { color: var(--ink-dim); font-size: 15px; line-height: 1.55; }
+.post-title.featured {
+  font-size: 40px;
+  -webkit-line-clamp: 2;
+}
+.post-excerpt {
+  color: var(--ink-dim);
+  font-size: 15px;
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 .post-actions {
   display: flex; align-items: center; gap: 6px;
   padding-top: 14px;
@@ -603,16 +661,19 @@ a.btn, a.btn:hover { color: var(--ink); text-decoration: none; }
 /* ---------- COMMENTS ---------- */
 .comment {
   display: flex; gap: 12px; align-items: flex-start;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--line);
 }
-.comment:last-child { border-bottom: none; }
-.comment-body { flex: 1; }
+.comment-body {
+  flex: 1; min-width: 0;
+  padding: 16px 18px;
+  background: var(--bg-panel);
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+}
 .comment-meta {
   display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
   font-size: 12px; color: var(--ink-mute);
   font-family: var(--font-mono); letter-spacing: 0.05em;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 .comment-text {
   margin: 0; font-size: 15px; line-height: 1.6;
@@ -1129,7 +1190,13 @@ a.btn, a.btn:hover { color: var(--ink); text-decoration: none; }
 .prose li { margin-bottom: 6px; line-height: 1.65; }
 .prose strong { font-weight: 800; }
 .prose a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-.prose img { max-width: 100%; border: var(--border); margin: 16px 0; }
+.prose img {
+  max-width: 100%;
+  display: block;
+  margin: 24px auto;
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+}
 .prose hr { border: none; border-top: 2px solid var(--ink); margin: 24px 0; }
 .prose table { border-collapse: collapse; width: 100%; margin: 16px 0; }
 .prose th, .prose td { border: 2px solid var(--ink); padding: 8px 12px; vertical-align: top; }

@@ -9,7 +9,9 @@ const POST_SELECT = `
   status, published_at, created_at,
   profiles!author_id (id, display_name, username, avatar_url),
   post_categories (categories (id, name, slug)),
-  post_tags (tags (id, name, slug))
+  post_tags (tags (id, name, slug)),
+  post_likes(count),
+  comments(count)
 `
 
 export function usePostsFeed() {

@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePostsFeed } from '../../features/posts/usePostsFeed'
+import { useSearchPosts } from '../../features/posts/useSearchPosts'
 import PostCard from '../../components/posts/PostCard'
 import AppLayout from '../../components/layout/AppLayout'
 import Chip from '../../components/ui/Chip'
 import Icon from '../../components/ui/Icon'
+import { categoryColor } from '../../lib/utils'
 
 function Hero({ onExplore }: { onExplore: () => void }) {
   return (
@@ -29,34 +31,41 @@ function Hero({ onExplore }: { onExplore: () => void }) {
   )
 }
 
+const FEATURED_MIN_LIKES = 100
+
 export default function HomePage() {
   const navigate = useNavigate()
-  const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = usePostsFeed()
   const [q, setQ] = useState('')
   const [activeCat, setActiveCat] = useState<string | null>(null)
 
-  const allPosts = useMemo(() => data?.pages.flat() ?? [], [data])
+  const isSearching = q.trim().length >= 2
 
+  // Feed paginado (sin búsqueda)
+  const feed = usePostsFeed()
+  const feedPosts = useMemo(() => feed.data?.pages.flat() ?? [], [feed.data])
+
+  // Búsqueda en DB (cuando hay query)
+  const search = useSearchPosts(q)
+
+  const sourcePosts = isSearching ? search.data : feedPosts
+  const isLoading = isSearching ? search.isLoading : feed.isLoading
+  const isError = isSearching ? search.isError : feed.isError
+
+  // Categorías visibles (siempre del feed para los chips)
   const allCategories = useMemo(() => {
     const seen = new Map<string, { id: string; name: string; slug: string }>()
-    allPosts.forEach(p => p.categories.forEach(c => seen.set(c.id, c)))
+    feedPosts.forEach(p => p.categories.forEach(c => seen.set(c.id, c)))
     return [...seen.values()]
-  }, [allPosts])
+  }, [feedPosts])
 
+  // Filtro de categoría encima de la fuente activa
   const filtered = useMemo(() => {
-    return allPosts.filter(p => {
-      if (activeCat && !p.categories.some(c => c.id === activeCat)) return false
-      if (q) {
-        const needle = q.toLowerCase()
-        const hay = [p.title, p.excerpt ?? '', p.author.display_name, ...p.tags.map(t => t.name)].join(' ').toLowerCase()
-        if (!hay.includes(needle)) return false
-      }
-      return true
-    })
-  }, [allPosts, q, activeCat])
+    if (!activeCat) return sourcePosts
+    return sourcePosts.filter(p => p.categories.some(c => c.id === activeCat))
+  }, [sourcePosts, activeCat])
 
-  const featured = filtered[0]
-  const rest = filtered.slice(1)
+  const featured = filtered.filter(p => (p.likes_count ?? 0) >= FEATURED_MIN_LIKES)
+  const rest = filtered.filter(p => (p.likes_count ?? 0) < FEATURED_MIN_LIKES)
 
   return (
     <AppLayout>
@@ -77,7 +86,12 @@ export default function HomePage() {
           <div className="row gap-2 wrap">
             <Chip onClick={() => setActiveCat(null)} active={activeCat === null}>Todas</Chip>
             {allCategories.map(c => (
-              <Chip key={c.id} color="pink" onClick={() => setActiveCat(activeCat === c.id ? null : c.id)} active={activeCat === c.id}>
+              <Chip
+                key={c.id}
+                color={categoryColor(c.id)}
+                onClick={() => setActiveCat(activeCat === c.id ? null : c.id)}
+                active={activeCat === c.id}
+              >
                 {c.name}
               </Chip>
             ))}
@@ -87,7 +101,7 @@ export default function HomePage() {
         {isLoading && (
           <div className="spinner">
             <div className="spinner-ring" />
-            <span className="spinner-label">▒ cargando posts...</span>
+            <span className="spinner-label">{isSearching ? '▒ buscando...' : '▒ cargando posts...'}</span>
           </div>
         )}
 
@@ -97,7 +111,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {!isLoading && !isError && allPosts.length === 0 && (
+        {!isLoading && !isError && feedPosts.length === 0 && !isSearching && (
           <div className="panel" style={{ padding: 60, textAlign: 'center' }}>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, letterSpacing: '-0.02em', marginBottom: 12 }}>
               ▒ Sin emisión aún ▒
@@ -108,18 +122,18 @@ export default function HomePage() {
           </div>
         )}
 
-        {!isLoading && !isError && allPosts.length > 0 && filtered.length === 0 && (q || activeCat) && (
+        {!isLoading && !isError && filtered.length === 0 && (isSearching || activeCat) && (
           <div className="panel" style={{ padding: 40, textAlign: 'center' }}>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: 28 }}>— Sin resultados —</div>
             <div className="text-mute mt-3">No hay publicaciones que encajen con tu búsqueda.</div>
           </div>
         )}
 
-        {featured && (
+        {featured.length > 0 && (
           <>
-            <h2 className="section-title">▸ Destacada</h2>
+            <h2 className="section-title">▸ Destacadas</h2>
             <div className="feed-grid mb-6">
-              <PostCard post={featured} featured />
+              {featured.map(p => <PostCard key={p.id} post={p} featured />)}
             </div>
           </>
         )}
@@ -133,23 +147,23 @@ export default function HomePage() {
           </>
         )}
 
-        {/* Cargar más */}
-        {hasNextPage && !q && !activeCat && (
+        {/* Cargar más — solo en modo feed, no en búsqueda */}
+        {!isSearching && feed.hasNextPage && !activeCat && (
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 40 }}>
             <button
               className="btn btn-primary"
-              onClick={() => fetchNextPage()}
-              disabled={isFetchingNextPage}
+              onClick={() => feed.fetchNextPage()}
+              disabled={feed.isFetchingNextPage}
               style={{ minWidth: 160 }}
             >
-              {isFetchingNextPage
+              {feed.isFetchingNextPage
                 ? <><div className="spinner-ring" style={{ width: 14, height: 14, borderWidth: 2 }} /> Cargando…</>
                 : '▸ Cargar más'}
             </button>
           </div>
         )}
 
-        {!hasNextPage && allPosts.length >= 9 && !q && !activeCat && (
+        {!isSearching && !feed.hasNextPage && feedPosts.length >= 9 && !activeCat && (
           <div style={{ textAlign: 'center', marginTop: 40, fontSize: 11, fontFamily: 'var(--font-mono)', letterSpacing: '0.2em', color: 'var(--ink-mute)', textTransform: 'uppercase' }}>
             ▒ Has llegado al final del feed ▒
           </div>

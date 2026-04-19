@@ -1,4 +1,4 @@
-type ChipColor = 'pink' | 'cyan' | 'purple' | undefined
+type ChipColor = 'pink' | 'yellow' | 'cyan' | 'green' | 'purple' | undefined
 
 interface ChipProps {
   children: React.ReactNode

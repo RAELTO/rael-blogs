@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useIsAdmin } from '../../features/auth/useIsAdmin'
@@ -17,10 +17,18 @@ export default function CommentSection({ postId, postAuthorId }: CommentSectionP
   const { user } = useAuth()
   const isAdmin = useIsAdmin()
   const toast = useToast()
-  const { data: comments = [], isLoading } = useComments(postId)
+  const [text, setText] = useState('')
+  const [authorInput, setAuthorInput] = useState('')
+  const [authorFilter, setAuthorFilter] = useState('')
+
+  useEffect(() => {
+    const t = setTimeout(() => setAuthorFilter(authorInput), 400)
+    return () => clearTimeout(t)
+  }, [authorInput])
+
+  const { data: comments = [], isLoading } = useComments(postId, authorFilter)
   const createComment = useCreateComment(postId)
   const deleteComment = useDeleteComment(postId)
-  const [text, setText] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,9 +54,27 @@ export default function CommentSection({ postId, postAuthorId }: CommentSectionP
 
   return (
     <div style={{ marginTop: 48 }}>
-      <h2 className="section-title mb-5">
-        ▸ Comentarios {comments.length > 0 && `(${comments.length})`}
-      </h2>
+      <div className="row between items-center wrap gap-3 mb-5">
+        <h2 className="section-title" style={{ margin: 0 }}>
+          ▸ Comentarios {comments.length > 0 && `(${comments.length})`}
+        </h2>
+        <div style={{ position: 'relative', width: 220 }}>
+          <input
+            placeholder="Filtrar por autor…"
+            value={authorInput}
+            onChange={e => setAuthorInput(e.target.value)}
+            style={{ paddingLeft: 32, fontSize: 13, padding: '8px 10px 8px 32px' }}
+          />
+          <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 15, pointerEvents: 'none', color: 'var(--ink-mute)' }}>⌕</span>
+          {authorInput && (
+            <button
+              type="button"
+              onClick={() => setAuthorInput('')}
+              style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--ink-mute)', padding: 0 }}
+            >✕</button>
+          )}
+        </div>
+      </div>
 
       {/* Form */}
       {user ? (
@@ -92,9 +118,14 @@ export default function CommentSection({ postId, postAuthorId }: CommentSectionP
         </div>
       )}
 
-      {!isLoading && comments.length === 0 && (
+      {!isLoading && comments.length === 0 && !authorFilter && (
         <div className="panel" style={{ padding: 28, textAlign: 'center', color: 'var(--ink-mute)', fontSize: 14 }}>
           Sin comentarios aún. ¡Sé el primero!
+        </div>
+      )}
+      {!isLoading && comments.length === 0 && authorFilter && (
+        <div className="panel" style={{ padding: 28, textAlign: 'center', color: 'var(--ink-mute)', fontSize: 14 }}>
+          Ningún comentario de "<strong>{authorFilter}</strong>".
         </div>
       )}
 
@@ -114,7 +145,7 @@ export default function CommentSection({ postId, postAuthorId }: CommentSectionP
                 {user && (c.author_id === user.id || isAdmin) && (
                   <button
                     className="btn btn-ghost btn-small"
-                    style={{ color: 'var(--accent-1)', fontSize: 11, marginLeft: 'auto' }}
+                    style={{ color: 'var(--accent-1)', fontSize: 11, marginLeft: 'auto', border: '1.5px solid var(--accent-1)' }}
                     onClick={() => handleDelete(c.id)}
                     disabled={deleteComment.isPending}
                     title={isAdmin && c.author_id !== user.id ? 'Eliminar (admin)' : 'Eliminar'}

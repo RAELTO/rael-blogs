@@ -4,22 +4,29 @@ import { useAuth } from '../../features/auth/AuthContext'
 import { useProfile } from '../../features/profile/useProfile'
 import Avatar from '../ui/Avatar'
 import Icon from '../ui/Icon'
+import ConfirmDialog from '../ui/ConfirmDialog'
+import { useToast } from '../ui/Toast'
 
 export default function Header() {
   const { user, signOut } = useAuth()
   const { data: profile } = useProfile(user?.id)
   const navigate = useNavigate()
+  const toast = useToast()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [confirmSignOut, setConfirmSignOut] = useState(false)
 
   const handleSignOut = async () => {
     await signOut()
+    toast('▒ Sesión cerrada — hasta la próxima emisión.')
     navigate('/')
     setMenuOpen(false)
+    setConfirmSignOut(false)
   }
 
   const close = () => setMenuOpen(false)
 
   return (
+    <>
     <header className="app-header">
       <div className="app-header-inner">
         <NavLink to="/" className="brand-logo" onClick={close}>
@@ -50,14 +57,14 @@ export default function Header() {
               <NavLink to="/dashboard/posts/new" className="btn btn-primary btn-small">
                 <Icon name="plus" size={14} /> Nueva
               </NavLink>
-              <NavLink to="/dashboard/profile" aria-label="Tu perfil" style={{ display: 'flex', alignItems: 'center' }}>
+              <NavLink to="/dashboard/profile" aria-label="Tu perfil" title="Mi perfil" style={{ display: 'flex', alignItems: 'center' }}>
                 <Avatar
                   name={profile?.display_name ?? user.email ?? 'U'}
                   size="sm"
                   src={profile?.avatar_url}
                 />
               </NavLink>
-              <button className="btn btn-ghost btn-icon" title="Cerrar sesión" aria-label="Cerrar sesión" onClick={handleSignOut}>
+              <button className="btn btn-ghost btn-icon" title="Cerrar sesión" aria-label="Cerrar sesión" onClick={() => setConfirmSignOut(true)}>
                 <Icon name="logout" size={18} />
               </button>
             </>
@@ -109,7 +116,7 @@ export default function Header() {
             </NavLink>
           )}
           {user ? (
-            <button className="nav-mobile-link" style={{ border: 'none', background: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', color: 'var(--accent-1)' }} onClick={handleSignOut}>
+            <button className="nav-mobile-link" style={{ border: 'none', background: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', color: 'var(--accent-1)' }} onClick={() => setConfirmSignOut(true)}>
               → Cerrar sesión
             </button>
           ) : (
@@ -120,5 +127,16 @@ export default function Header() {
         </nav>
       )}
     </header>
+
+    <ConfirmDialog
+      open={confirmSignOut}
+      title="¿Cerramos la señal?"
+      message="Estás a punto de cerrar tu sesión. Tendrás que volver a identificarte para acceder al panel, publicar o guardar favoritos."
+      confirmLabel="Sí, cerrar sesión"
+      cancelLabel="Quedarme"
+      onConfirm={handleSignOut}
+      onCancel={() => setConfirmSignOut(false)}
+    />
+    </>
   )
 }

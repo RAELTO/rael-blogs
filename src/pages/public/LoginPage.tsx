@@ -23,6 +23,13 @@ export default function LoginPage() {
   const loading = loadingIn || loadingUp
   const error = validationError || errorIn || errorUp
 
+  const pwRules = {
+    length:  password.length >= 8,
+    upper:   /[A-Z]/.test(password),
+    special: /[^a-zA-Z0-9]/.test(password),
+  }
+  const pwValid = pwRules.length && pwRules.upper && pwRules.special
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setValidationError('')
@@ -37,6 +44,10 @@ export default function LoginPage() {
     }
     if (mode === 'register' && !username.trim()) {
       setValidationError('El nombre de usuario es obligatorio.')
+      return
+    }
+    if (mode === 'register' && !pwValid) {
+      setValidationError('La contraseña no cumple los requisitos de seguridad.')
       return
     }
 
@@ -60,6 +71,32 @@ export default function LoginPage() {
         <div className="hero-grid-bg" />
         <div className="hero-sun" />
       </div>
+
+      <button
+        type="button"
+        onClick={() => navigate('/')}
+        style={{
+          position: 'relative', zIndex: 1,
+          display: 'flex', alignItems: 'center', gap: 6,
+          marginBottom: 20,
+          background: 'var(--bg-panel)',
+          border: '2px solid var(--ink)',
+          boxShadow: '3px 3px 0 var(--ink)',
+          padding: '6px 14px',
+          fontFamily: 'var(--font-mono)',
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: '0.15em',
+          textTransform: 'uppercase',
+          cursor: 'pointer',
+          color: 'var(--ink)',
+          transition: 'box-shadow 0.1s, transform 0.1s',
+        }}
+        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = '1px 1px 0 var(--ink)'; (e.currentTarget as HTMLButtonElement).style.transform = 'translate(2px,2px)' }}
+        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = '3px 3px 0 var(--ink)'; (e.currentTarget as HTMLButtonElement).style.transform = '' }}
+      >
+        ← Volver al feed
+      </button>
 
       <div className="auth-card">
         <div className="auth-title">
@@ -125,6 +162,32 @@ export default function LoginPage() {
               onChange={e => setPassword(e.target.value)}
               placeholder="••••••••"
             />
+            {mode === 'register' && password.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
+                {([
+                  [pwRules.length,  '8 caracteres mínimo'],
+                  [pwRules.upper,   'Una mayúscula'],
+                  [pwRules.special, 'Un carácter especial (!@#$…)'],
+                ] as [boolean, string][]).map(([ok, label]) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                      width: 16, height: 16, minWidth: 16,
+                      border: '2px solid var(--ink)',
+                      boxShadow: '2px 2px 0 var(--ink)',
+                      background: ok ? 'var(--accent-4)' : 'var(--accent-1)',
+                      fontSize: 10, fontWeight: 900, color: 'var(--ink)',
+                      lineHeight: 1,
+                    }}>
+                      {ok ? '✓' : '✕'}
+                    </span>
+                    <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: ok ? 'var(--ink)' : 'var(--ink-mute)' }}>
+                      {label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {error && (

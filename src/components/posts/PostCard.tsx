@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import type { PostWithMeta } from '../../features/posts/usePosts'
-import { formatDate, readTime } from '../../lib/utils'
+import { formatDate, readTime, categoryColor } from '../../lib/utils'
 import Avatar from '../ui/Avatar'
 import Chip from '../ui/Chip'
 import LikeButton from './LikeButton'
@@ -47,9 +47,9 @@ export default function PostCard({ post, featured }: PostCardProps) {
         />
       )}
 
-      <div style={{ padding: 20 }}>
+      <div style={{ padding: 20, display: 'flex', flexDirection: 'column', flex: 1 }}>
         <div className="post-meta-row" style={{ marginBottom: 8 }}>
-          {category && <Chip color="pink">{category.name}</Chip>}
+          {category && <Chip color={categoryColor(category.id)}>{category.name}</Chip>}
           <span>{date}</span>
           <span>· {mins} min</span>
         </div>
@@ -57,10 +57,10 @@ export default function PostCard({ post, featured }: PostCardProps) {
         <h3 className={`post-title ${featured ? 'featured' : ''}`}>{post.title}</h3>
         {post.excerpt && <p className="post-excerpt">{post.excerpt}</p>}
 
-        <div className="row gap-3 mt-4" style={{ marginBottom: 14 }}>
+        <div className="row gap-3 mt-4" style={{ marginBottom: 14, marginTop: 'auto' }}>
           <Avatar name={post.author.display_name} size="sm" src={post.author.avatar_url} />
           <div>
-            <div style={{ fontSize: 12, color: 'var(--ink)' }}>{post.author.display_name}</div>
+            <div style={{ fontSize: 12, color: 'var(--ink)', fontWeight: 600 }}>{post.author.display_name}</div>
             <div style={{ fontSize: 10, color: 'var(--ink-mute)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
               @{post.author.username}
             </div>
@@ -69,7 +69,10 @@ export default function PostCard({ post, featured }: PostCardProps) {
 
         <div className="post-actions">
           <LikeButton postId={post.id} small />
-          <span className="post-action"><Icon name="comment" size={14} /></span>
+          <span className="post-action">
+            <Icon name="comment" size={14} />
+            <span style={{ fontSize: 11, fontWeight: 700 }}>{post.comments_count ?? 0}</span>
+          </span>
           <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--ink-mute)', letterSpacing: '0.2em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 4 }}>
             Leer <Icon name="arrowRight" size={12} />
           </span>

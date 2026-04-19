@@ -109,12 +109,6 @@ export default function PostPage() {
               </div>
             </div>
 
-            {post.cover_image_url && (
-              <div style={{ border: '1px solid var(--line)', borderRadius: 10, marginBottom: 28, overflow: 'hidden' }}>
-                <img src={post.cover_image_url} alt={post.title} style={{ width: '100%', display: 'block' }} />
-              </div>
-            )}
-
             <div style={{
               background: 'var(--bg-panel)',
               border: '2px solid var(--ink)',

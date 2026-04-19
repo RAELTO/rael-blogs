@@ -22,6 +22,14 @@ export function formatDate(dateStr: string): string {
   })
 }
 
+const CHIP_COLORS = ['pink', 'yellow', 'cyan', 'green', 'purple'] as const
+export type ChipColor = typeof CHIP_COLORS[number]
+
+export function categoryColor(id: string): ChipColor {
+  const sum = id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
+  return CHIP_COLORS[sum % CHIP_COLORS.length]
+}
+
 export function getInitials(name: string): string {
   return name
     .split(' ')
