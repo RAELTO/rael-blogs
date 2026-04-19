@@ -16,6 +16,7 @@ dist-ssr
 .mcp.json
 .claude/
 .agents/
+.vercel/
 skills-lock.json
 example.env
 
