@@ -9,7 +9,7 @@ async function fetchMyPostById(id: string): Promise<PostWithMeta | null> {
   const { data, error } = await supabase
     .from('posts')
     .select(`
-      id, title, slug, excerpt, content, cover_image_url, status, published_at, created_at,
+      id, title, slug, excerpt, content, cover_image_url, cover_type, status, published_at, created_at,
       profiles!author_id (id, display_name, username, avatar_url),
       post_categories (categories (id, name, slug)),
       post_tags (tags (id, name, slug))

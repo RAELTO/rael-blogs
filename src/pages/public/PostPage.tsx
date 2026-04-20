@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import DOMPurify from 'dompurify'
 import parse from 'html-react-parser'
@@ -16,6 +17,7 @@ import BookmarkButton from '../../components/posts/BookmarkButton'
 import CommentSection from '../../components/posts/CommentSection'
 import AdminOnly from '../../components/auth/AdminOnly'
 import AdminBadge from '../../components/ui/AdminBadge'
+import ConfirmDialog from '../../components/ui/ConfirmDialog'
 import Icon from '../../components/ui/Icon'
 import { useToast } from '../../components/ui/Toast'
 
@@ -26,6 +28,7 @@ export default function PostPage() {
   const { data: post, isLoading, isError } = usePost(slug)
   const { data: allPosts = [] } = usePosts()
   const adminDelete = useAdminDeletePost()
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   if (isLoading) {
     return (
@@ -74,7 +77,6 @@ export default function PostPage() {
   })
 
   const handleAdminDelete = async () => {
-    if (!confirm(`¿Eliminar "${post.title}"? Esta acción no se puede deshacer.`)) return
     await adminDelete.mutateAsync(post.id)
     toast('Post eliminado')
     navigate('/')
@@ -166,7 +168,7 @@ export default function PostPage() {
                 <button className="btn btn-small" onClick={() => navigate(`/dashboard/posts/${post.id}/edit`)}>
                   <Icon name="edit" size={13} /> Editar
                 </button>
-                <button className="btn btn-small" style={{ color: 'var(--accent-1)' }} onClick={handleAdminDelete} disabled={adminDelete.isPending}>
+                <button className="btn btn-small" style={{ color: 'var(--accent-1)' }} onClick={() => setConfirmDelete(true)} disabled={adminDelete.isPending}>
                   <Icon name="trash" size={13} /> Eliminar
                 </button>
               </div>
@@ -205,6 +207,16 @@ export default function PostPage() {
           </aside>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Eliminar publicación"
+        message={`¿Eliminar "${post.title}"? Esta acción no se puede deshacer.`}
+        confirmLabel="Sí, eliminar"
+        cancelLabel="Cancelar"
+        onConfirm={handleAdminDelete}
+        onCancel={() => setConfirmDelete(false)}
+      />
     </AppLayout>
   )
 }

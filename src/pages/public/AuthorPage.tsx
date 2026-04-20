@@ -1,27 +1,36 @@
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { usePostsByAuthor } from '../../features/posts/usePostsByAuthor'
 import { useBanUser } from '../../features/admin/useAdminActions'
 import { useIsAdmin } from '../../features/auth/useIsAdmin'
+import { useAuth } from '../../features/auth/AuthContext'
 import { useToast } from '../../components/ui/Toast'
 import AppLayout from '../../components/layout/AppLayout'
 import Avatar from '../../components/ui/Avatar'
 import AdminOnly from '../../components/auth/AdminOnly'
 import PostCard from '../../components/posts/PostCard'
 import AdminBadge from '../../components/ui/AdminBadge'
+import ConfirmDialog from '../../components/ui/ConfirmDialog'
 
 export default function AuthorPage() {
   const { username = '' } = useParams()
   const navigate = useNavigate()
   const toast = useToast()
   const isAdmin = useIsAdmin()
+  const { user } = useAuth()
   const banUser = useBanUser()
   const { data, isLoading, isError } = usePostsByAuthor(username)
+  const [confirmBan, setConfirmBan] = useState<{ userId: string; currentlyBanned: boolean } | null>(null)
 
-  const handleBan = async (userId: string, currentlyBanned: boolean) => {
-    const action = currentlyBanned ? 'desbanear' : 'banear'
-    if (!confirm(`¿${action} a @${username}?`)) return
-    await banUser.mutateAsync({ userId, ban: !currentlyBanned })
-    toast(`Usuario ${currentlyBanned ? 'desbaneado' : 'baneado'}`)
+  const handleBan = (userId: string, currentlyBanned: boolean) => {
+    setConfirmBan({ userId, currentlyBanned })
+  }
+
+  const doBan = async () => {
+    if (!confirmBan) return
+    await banUser.mutateAsync({ userId: confirmBan.userId, ban: !confirmBan.currentlyBanned })
+    toast(`Usuario ${confirmBan.currentlyBanned ? 'desbaneado' : 'baneado'}`)
+    setConfirmBan(null)
   }
 
   if (isLoading) {
@@ -76,16 +85,18 @@ export default function AuthorPage() {
                 <div className="stat-value">{posts.length}</div>
                 <div className="stat-label">Publicaciones</div>
               </div>
-              <AdminOnly>
-                <button
-                  className="btn btn-small"
-                  style={{ color: author.is_banned ? 'inherit' : 'var(--accent-1)', borderColor: author.is_banned ? 'var(--line)' : 'var(--accent-1)' }}
-                  onClick={() => handleBan(author.id, author.is_banned)}
-                  disabled={banUser.isPending}
-                >
-                  {author.is_banned ? '✓ Desbanear' : '⊘ Banear usuario'}
-                </button>
-              </AdminOnly>
+              {user?.id !== author.id && (
+                <AdminOnly>
+                  <button
+                    className="btn btn-small"
+                    style={{ color: author.is_banned ? 'inherit' : 'var(--accent-1)', borderColor: author.is_banned ? 'var(--line)' : 'var(--accent-1)' }}
+                    onClick={() => handleBan(author.id, author.is_banned)}
+                    disabled={banUser.isPending}
+                  >
+                    {author.is_banned ? '✓ Desbanear' : '⊘ Banear usuario'}
+                  </button>
+                </AdminOnly>
+              )}
             </div>
           </div>
         </div>
@@ -110,6 +121,15 @@ export default function AuthorPage() {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={!!confirmBan}
+        title={confirmBan?.currentlyBanned ? 'Desbanear usuario' : 'Banear usuario'}
+        message={confirmBan?.currentlyBanned ? `¿Desbanear a @${username}?` : `¿Banear a @${username}? Sus publicaciones dejarán de ser visibles.`}
+        confirmLabel={confirmBan?.currentlyBanned ? 'Sí, desbanear' : 'Sí, banear'}
+        cancelLabel="Cancelar"
+        onConfirm={doBan}
+        onCancel={() => setConfirmBan(null)}
+      />
     </AppLayout>
   )
 }

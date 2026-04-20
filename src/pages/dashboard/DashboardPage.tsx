@@ -10,6 +10,7 @@ import Avatar from '../../components/ui/Avatar'
 import Chip from '../../components/ui/Chip'
 import Icon from '../../components/ui/Icon'
 import { useToast } from '../../components/ui/Toast'
+import ConfirmDialog from '../../components/ui/ConfirmDialog'
 
 type Tab = 'posts' | 'drafts'
 
@@ -21,14 +22,21 @@ export default function DashboardPage() {
   const { data: posts = [], isLoading } = useMyPosts()
   const deletePost = useDeletePost()
   const [tab, setTab] = useState<Tab>('posts')
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; title: string } | null>(null)
 
-  const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`¿Eliminar "${title}"? Esta acción no se puede deshacer.`)) return
+  const handleDelete = (id: string, title: string) => {
+    setConfirmDelete({ id, title })
+  }
+
+  const doDelete = async () => {
+    if (!confirmDelete) return
     try {
-      await deletePost.mutateAsync(id)
+      await deletePost.mutateAsync(confirmDelete.id)
       toast('Post eliminado')
     } catch {
       toast('⚠ Error al eliminar')
+    } finally {
+      setConfirmDelete(null)
     }
   }
 
@@ -204,6 +212,16 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title="Eliminar publicación"
+        message={`¿Eliminar "${confirmDelete?.title}"? Esta acción no se puede deshacer.`}
+        confirmLabel="Sí, eliminar"
+        cancelLabel="Cancelar"
+        onConfirm={doDelete}
+        onCancel={() => setConfirmDelete(null)}
+      />
     </AppLayout>
   )
 }

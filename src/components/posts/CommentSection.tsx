@@ -8,6 +8,7 @@ import Avatar from '../ui/Avatar'
 import AdminBadge from '../ui/AdminBadge'
 import Icon from '../ui/Icon'
 import { useToast } from '../ui/Toast'
+import ConfirmDialog from '../ui/ConfirmDialog'
 
 interface CommentSectionProps {
   postId: string
@@ -21,6 +22,7 @@ export default function CommentSection({ postId, postAuthorId }: CommentSectionP
   const [text, setText] = useState('')
   const [authorInput, setAuthorInput] = useState('')
   const [authorFilter, setAuthorFilter] = useState('')
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   useEffect(() => {
     const t = setTimeout(() => setAuthorFilter(authorInput), 400)
@@ -42,12 +44,18 @@ export default function CommentSection({ postId, postAuthorId }: CommentSectionP
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('¿Eliminar este comentario?')) return
+  const handleDelete = (id: string) => {
+    setConfirmDeleteId(id)
+  }
+
+  const doDelete = async () => {
+    if (!confirmDeleteId) return
     try {
-      await deleteComment.mutateAsync(id)
+      await deleteComment.mutateAsync(confirmDeleteId)
     } catch {
       toast('⚠ No se pudo eliminar el comentario.')
+    } finally {
+      setConfirmDeleteId(null)
     }
   }
 
@@ -161,6 +169,15 @@ export default function CommentSection({ postId, postAuthorId }: CommentSectionP
           </div>
         ))}
       </div>
+      <ConfirmDialog
+        open={!!confirmDeleteId}
+        title="Eliminar comentario"
+        message="¿Eliminar este comentario? Esta acción no se puede deshacer."
+        confirmLabel="Sí, eliminar"
+        cancelLabel="Cancelar"
+        onConfirm={doDelete}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </div>
   )
 }
