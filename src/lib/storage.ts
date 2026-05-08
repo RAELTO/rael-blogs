@@ -56,5 +56,5 @@ export async function deleteImage(url: string): Promise<void> {
     if (pathStart === -1) return
     const filePath = urlObj.pathname.slice(pathStart + `/object/public/${BUCKET}/`.length)
     await supabase.storage.from(BUCKET).remove([filePath])
-  } catch (_) {}
+  } catch { /* best-effort: ignore if file not found */ }
 }

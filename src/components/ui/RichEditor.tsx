@@ -53,6 +53,35 @@ interface RichEditorProps {
   placeholder?: string
 }
 
+interface BtnProps {
+  label: string
+  action: () => void
+  active?: boolean
+  bold?: boolean
+  italic?: boolean
+  title?: string
+}
+
+function Btn({ label, action, active = false, bold, italic, title }: BtnProps) {
+  return (
+    <button
+      type="button"
+      title={title ?? label}
+      onMouseDown={e => { e.preventDefault(); action() }}
+      style={{
+        fontWeight: bold ? 800 : 500,
+        fontStyle: italic ? 'italic' : 'normal',
+        fontFamily: italic ? 'Georgia, serif' : 'inherit',
+        background: active ? 'var(--ink)' : 'transparent',
+        color: active ? 'var(--bg)' : 'var(--ink)',
+        borderRadius: 0,
+      }}
+    >
+      {label}
+    </button>
+  )
+}
+
 type Panel = 'color' | 'highlight' | 'font-family' | 'font-size' | 'link' | 'image' | null
 
 export default function RichEditor({ value, onChange, placeholder }: RichEditorProps) {
@@ -139,31 +168,6 @@ export default function RichEditor({ value, onChange, placeholder }: RichEditorP
     setPanel(null)
     setLinkInput('')
   }
-
-  // Helper: toolbar button
-  const Btn = ({
-    label, action, active = false,
-    bold, italic, title,
-  }: {
-    label: string; action: () => void; active?: boolean
-    bold?: boolean; italic?: boolean; title?: string
-  }) => (
-    <button
-      type="button"
-      title={title ?? label}
-      onMouseDown={e => { e.preventDefault(); action() }}
-      style={{
-        fontWeight: bold ? 800 : 500,
-        fontStyle: italic ? 'italic' : 'normal',
-        fontFamily: italic ? 'Georgia, serif' : 'inherit',
-        background: active ? 'var(--ink)' : 'transparent',
-        color: active ? 'var(--bg)' : 'var(--ink)',
-        borderRadius: 0,
-      }}
-    >
-      {label}
-    </button>
-  )
 
   const currentColor = editor.getAttributes('textStyle').color as string | undefined
 

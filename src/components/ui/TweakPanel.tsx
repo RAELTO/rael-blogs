@@ -28,7 +28,7 @@ function loadTweaks(): Tweaks {
       const palette = parsed.palette ?? 'magenta'
       return { palette: palette as Palette, effectsIntensity: parsed.effectsIntensity ?? 'medium' }
     }
-  } catch (_) {}
+  } catch { /* use defaults if localStorage is corrupted */ }
   return { palette: 'magenta', effectsIntensity: 'medium' }
 }
 
