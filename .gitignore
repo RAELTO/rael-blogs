@@ -19,6 +19,7 @@ dist-ssr
 .vercel/
 skills-lock.json
 example.env
+supabase/.temp/
 
 # Environment variables - never commit real values
 *.local

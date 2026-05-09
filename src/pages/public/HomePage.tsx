@@ -1,174 +1,97 @@
-import { useState, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { usePostsFeed } from '../../features/posts/usePostsFeed'
-import { useSearchPosts } from '../../features/posts/useSearchPosts'
-import PostCard from '../../components/posts/PostCard'
-import AppLayout from '../../components/layout/AppLayout'
-import Chip from '../../components/ui/Chip'
-import Icon from '../../components/ui/Icon'
-import { categoryColor } from '../../lib/utils'
+import { useState } from 'react'
+import { useAuth } from '../../features/auth/AuthContext'
+import { useBoxFeed, useDeleteBox, type FeedMode } from '../../features/boxes/useBoxes'
+import AppShell from '../../components/layout/AppShell'
+import LeftSidebar from '../../components/layout/LeftSidebar'
+import RightSidebar from '../../components/layout/RightSidebar'
+import StoriesRail from '../../components/feed/StoriesRail'
+import ComposerCard from '../../components/feed/ComposerCard'
+import ModeSelector from '../../components/feed/ModeSelector'
+import BoxCard from '../../components/feed/BoxCard'
+import DropModal from '../../components/feed/DropModal'
+import { useToast } from '../../components/ui/Toast'
+import type { BoxType } from '../../types/database'
 
-function Hero({ onExplore }: { onExplore: () => void }) {
+function EmptyFeed({ mode }: { mode: FeedMode }) {
   return (
-    <section className="hero">
-      <div className="hero-grid-bg" />
-      <div className="hero-sun" />
-      <div className="hero-inner">
-        <div className="hero-eyebrow">▓ RAEL'S BLOGS · en vivo</div>
-        <h1 className="hero-title">
-          <span className="mark">RAEL'S</span> blogs.
-        </h1>
-        <p className="hero-subtitle">
-          Un blog sobre narrativas digitales y multimedia. Desmontamos argumentos,
-          mapeamos hipervínculos y chequeamos la lógica de lo que miramos — sin
-          filtros, directo al grano.
-        </p>
-        <div className="row gap-3 wrap">
-          <button className="btn btn-primary" onClick={onExplore}><Icon name="bolt" size={14} /> Explorar categorías</button>
-        </div>
+    <div className="panel" style={{ padding: 48, textAlign: 'center' }}>
+      <div className="mp mp-gif" style={{ height: 100, maxWidth: 200, margin: '0 auto 20px', borderBottom: 'none' }} />
+      <div style={{ fontFamily: 'var(--font-display)', fontSize: 24, letterSpacing: '-0.02em', marginBottom: 8 }}>
+        {mode === 'following' ? 'Aún no sigues a nadie' : 'Sin boxes aún'}
       </div>
-    </section>
+      <div className="text-mute text-sm">
+        {mode === 'following'
+          ? 'Ve a Explore para encontrar gente que dropea boxes interesantes.'
+          : 'Sé el primero en dropear algo brutal.'}
+      </div>
+    </div>
   )
 }
 
-const FEATURED_MIN_LIKES = 100
-
 export default function HomePage() {
-  const navigate = useNavigate()
-  const [q, setQ] = useState('')
-  const [activeCat, setActiveCat] = useState<string | null>(null)
+  const { user } = useAuth()
+  const [mode, setMode] = useState<FeedMode>('foryou')
+  const [dropOpen, setDropOpen] = useState<BoxType | null>(null)
+  const toast = useToast()
 
-  const isSearching = q.trim().length >= 2
+  const { data: boxes, isLoading, isError } = useBoxFeed(mode, user?.id)
+  const deleteBox = useDeleteBox()
 
-  // Feed paginado (sin búsqueda)
-  const feed = usePostsFeed()
-  const feedPosts = useMemo(() => feed.data?.pages.flat() ?? [], [feed.data])
+  function openDrop(type: BoxType = 'quick') {
+    if (!user) { toast('Inicia sesión para dropear.'); return }
+    setDropOpen(type)
+  }
 
-  // Búsqueda en DB (cuando hay query)
-  const search = useSearchPosts(q)
-
-  const sourcePosts = isSearching ? search.data : feedPosts
-  const isLoading = isSearching ? search.isLoading : feed.isLoading
-  const isError = isSearching ? search.isError : feed.isError
-
-  // Categorías visibles (siempre del feed para los chips)
-  const allCategories = useMemo(() => {
-    const seen = new Map<string, { id: string; name: string; slug: string }>()
-    feedPosts.forEach(p => p.categories.forEach(c => seen.set(c.id, c)))
-    return [...seen.values()]
-  }, [feedPosts])
-
-  // Filtro de categoría encima de la fuente activa
-  const filtered = useMemo(() => {
-    if (!activeCat) return sourcePosts
-    return sourcePosts.filter(p => p.categories.some(c => c.id === activeCat))
-  }, [sourcePosts, activeCat])
-
-  const featured = filtered.filter(p => (p.likes_count ?? 0) >= FEATURED_MIN_LIKES)
-  const rest = filtered.filter(p => (p.likes_count ?? 0) < FEATURED_MIN_LIKES)
+  function handleDelete(id: string) {
+    deleteBox.mutate(id, {
+      onSuccess: () => toast('Box eliminada.'),
+      onError:   () => toast('Error al eliminar.'),
+    })
+  }
 
   return (
-    <AppLayout>
-      <Hero onExplore={() => navigate('/categories')} />
-
-      <div className="page" style={{ paddingTop: 0 }}>
-        {/* Filtros */}
-        <div className="row between items-center wrap gap-4 mb-5">
-          <div style={{ position: 'relative', width: 360, maxWidth: '100%' }}>
-            <input
-              placeholder="Buscar publicaciones, tags, autores…"
-              value={q}
-              onChange={e => setQ(e.target.value)}
-              style={{ paddingLeft: 36 }}
-            />
-            <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 18, pointerEvents: 'none' }}>⌕</span>
-          </div>
-          <div className="row gap-2 wrap">
-            <Chip onClick={() => setActiveCat(null)} active={activeCat === null}>Todas</Chip>
-            {allCategories.map(c => (
-              <Chip
-                key={c.id}
-                color={categoryColor(c.id)}
-                onClick={() => setActiveCat(activeCat === c.id ? null : c.id)}
-                active={activeCat === c.id}
-              >
-                {c.name}
-              </Chip>
-            ))}
-          </div>
-        </div>
+    <>
+      <AppShell
+        left={<LeftSidebar />}
+        right={<RightSidebar />}
+        onDropClick={() => openDrop('quick')}
+      >
+        <StoriesRail onCreateStory={() => toast('Stories próximamente')} />
+        <ComposerCard onOpenModal={openDrop} />
+        <ModeSelector value={mode} onChange={setMode} />
 
         {isLoading && (
           <div className="spinner">
             <div className="spinner-ring" />
-            <span className="spinner-label">{isSearching ? '▒ buscando...' : '▒ cargando posts...'}</span>
+            <span className="spinner-label">▒ cargando boxes...</span>
           </div>
         )}
 
         {isError && (
           <div className="panel" style={{ padding: 40, textAlign: 'center', color: 'var(--accent-1)', fontWeight: 700 }}>
-            ⚠ Error cargando publicaciones. Intenta de nuevo.
+            ⚠ Error al cargar el feed. Intenta de nuevo.
           </div>
         )}
 
-        {!isLoading && !isError && feedPosts.length === 0 && !isSearching && (
-          <div className="panel" style={{ padding: 60, textAlign: 'center' }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, letterSpacing: '-0.02em', marginBottom: 12 }}>
-              ▒ Sin emisión aún ▒
-            </div>
-            <div style={{ fontSize: 15, color: 'var(--ink-mute)', maxWidth: 400, margin: '0 auto', lineHeight: 1.6 }}>
-              El feed está en stand-by. Publica el primer post y aparecerá aquí.
-            </div>
-          </div>
+        {!isLoading && !isError && (boxes ?? []).length === 0 && (
+          <EmptyFeed mode={mode} />
         )}
 
-        {!isLoading && !isError && filtered.length === 0 && (isSearching || activeCat) && (
-          <div className="panel" style={{ padding: 40, textAlign: 'center' }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 28 }}>— Sin resultados —</div>
-            <div className="text-mute mt-3">No hay publicaciones que encajen con tu búsqueda.</div>
-          </div>
-        )}
+        {(boxes ?? []).map(box => (
+          <BoxCard
+            key={box.id}
+            box={box}
+            onDelete={user?.id === box.author_id ? handleDelete : undefined}
+          />
+        ))}
+      </AppShell>
 
-        {featured.length > 0 && (
-          <>
-            <h2 className="section-title">▸ Destacadas</h2>
-            <div className="feed-grid mb-6">
-              {featured.map(p => <PostCard key={p.id} post={p} featured />)}
-            </div>
-          </>
-        )}
-
-        {rest.length > 0 && (
-          <>
-            <h2 className="section-title">▸ Más del feed</h2>
-            <div className="feed-grid">
-              {rest.map(p => <PostCard key={p.id} post={p} />)}
-            </div>
-          </>
-        )}
-
-        {/* Cargar más — solo en modo feed, no en búsqueda */}
-        {!isSearching && feed.hasNextPage && !activeCat && (
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 40 }}>
-            <button
-              className="btn btn-primary"
-              onClick={() => feed.fetchNextPage()}
-              disabled={feed.isFetchingNextPage}
-              style={{ minWidth: 160 }}
-            >
-              {feed.isFetchingNextPage
-                ? <><div className="spinner-ring" style={{ width: 14, height: 14, borderWidth: 2 }} /> Cargando…</>
-                : '▸ Cargar más'}
-            </button>
-          </div>
-        )}
-
-        {!isSearching && !feed.hasNextPage && feedPosts.length >= 9 && !activeCat && (
-          <div style={{ textAlign: 'center', marginTop: 40, fontSize: 11, fontFamily: 'var(--font-mono)', letterSpacing: '0.2em', color: 'var(--ink-mute)', textTransform: 'uppercase' }}>
-            ▒ Has llegado al final del feed ▒
-          </div>
-        )}
-      </div>
-    </AppLayout>
+      {dropOpen && (
+        <DropModal
+          initialType={dropOpen}
+          onClose={() => setDropOpen(null)}
+        />
+      )}
+    </>
   )
 }

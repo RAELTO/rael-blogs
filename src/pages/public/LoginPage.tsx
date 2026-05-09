@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, NavLink } from 'react-router-dom'
+import { LogIn, UserPlus } from 'lucide-react'
+import NboxLogo from '../../assets/icons/NboxLogo'
 import { useSignIn } from '../../features/auth/useSignIn'
 import { useSignUp } from '../../features/auth/useSignUp'
 import { useToast } from '../../components/ui/Toast'
@@ -51,9 +53,11 @@ export default function LoginPage() {
       return
     }
 
+    const next = searchParams.get('next') ?? '/'
+
     if (mode === 'login') {
       const ok = await signIn(email, password)
-      if (ok) { toast('Bienvenido de vuelta'); navigate('/') }
+      if (ok) { toast('Bienvenido de vuelta'); navigate(next, { replace: true }) }
     } else {
       const ok = await signUp(email, password, displayName, username)
       if (ok) { navigate(`/check-email?email=${encodeURIComponent(email)}`) }
@@ -72,38 +76,16 @@ export default function LoginPage() {
         <div className="hero-sun" />
       </div>
 
-      <button
-        type="button"
-        onClick={() => navigate('/')}
-        style={{
-          position: 'relative', zIndex: 1,
-          display: 'flex', alignItems: 'center', gap: 6,
-          marginBottom: 20,
-          background: 'var(--bg-panel)',
-          border: '2px solid var(--ink)',
-          boxShadow: '3px 3px 0 var(--ink)',
-          padding: '6px 14px',
-          fontFamily: 'var(--font-mono)',
-          fontSize: 11,
-          fontWeight: 700,
-          letterSpacing: '0.15em',
-          textTransform: 'uppercase',
-          cursor: 'pointer',
-          color: 'var(--ink)',
-          transition: 'box-shadow 0.1s, transform 0.1s',
-        }}
-        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = '1px 1px 0 var(--ink)'; (e.currentTarget as HTMLButtonElement).style.transform = 'translate(2px,2px)' }}
-        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.boxShadow = '3px 3px 0 var(--ink)'; (e.currentTarget as HTMLButtonElement).style.transform = '' }}
-      >
-        ← Volver al feed
-      </button>
-
       <div className="auth-card">
         <div className="auth-title">
-          <span className="mark">RAEL'S</span>{' '}
-          <span>blogs</span>
+          <NavLink to="/" className="brand-logo" style={{ textDecoration: 'none', justifyContent: 'center' }}>
+            <span className="brand-mark">
+              <NboxLogo style={{ width: 34, height: 34, display: 'block' }} />
+            </span>
+            <span>NBOX</span>
+          </NavLink>
         </div>
-        <div className="auth-subtitle">▸ narrativas digitales · multimedia · lógica</div>
+        <div className="auth-subtitle">▸ Neo Brutal Box · Post bold. Drop loud.</div>
 
         <div className="auth-tabs">
           <button
@@ -202,11 +184,9 @@ export default function LoginPage() {
             style={{ width: '100%', justifyContent: 'center', marginTop: 6 }}
             disabled={loading}
           >
-            {loading
-              ? '...'
-              : mode === 'login'
-                ? '▶ Entrar al feed'
-                : '◉ Crear cuenta'}
+            {loading ? '...' : mode === 'login'
+              ? <><LogIn size={16} strokeWidth={2.5} /> Entrar al feed</>
+              : <><UserPlus size={16} strokeWidth={2.5} /> Crear cuenta</>}
           </button>
 
           <div style={{ textAlign: 'center', marginTop: 18, fontSize: 11, color: 'var(--ink-mute)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>

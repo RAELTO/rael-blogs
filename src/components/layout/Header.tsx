@@ -1,72 +1,123 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
+import { Home, Inbox, Bell, Search, Plus } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useProfile } from '../../features/profile/useProfile'
 import Avatar from '../ui/Avatar'
-import Icon from '../ui/Icon'
-import ConfirmDialog from '../ui/ConfirmDialog'
-import { useToast } from '../ui/Toast'
+import NboxLogo from '../../assets/icons/NboxLogo'
+import NotificationsDropdown from './NotificationsDropdown'
+import { UNREAD_COUNT } from '../../data/notifications'
 
-export default function Header() {
-  const { user, signOut } = useAuth()
+interface Tab {
+  to: string
+  Icon: React.ElementType
+  label: string
+  end: boolean
+  badge?: number
+}
+
+const NAV_TABS: Tab[] = [
+  { to: '/',              Icon: Home,  label: 'Home',           end: true  },
+  { to: '/inbox',         Icon: Inbox, label: 'NBOX',           end: false, badge: 0 },
+  { to: '/notifications', Icon: Bell,  label: 'Notificaciones', end: false, badge: 0 },
+]
+
+interface HeaderProps {
+  onDropClick?: () => void
+}
+
+export default function Header({ onDropClick }: HeaderProps) {
+  const { user } = useAuth()
   const { data: profile } = useProfile(user?.id)
   const navigate = useNavigate()
-  const toast = useToast()
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [confirmSignOut, setConfirmSignOut] = useState(false)
+  const [search, setSearch] = useState('')
+  const [notifOpen, setNotifOpen] = useState(false)
+  const bellRef = useRef<HTMLButtonElement>(null)
 
-  const handleSignOut = async () => {
-    await signOut()
-    toast('▒ Sesión cerrada — hasta la próxima emisión.')
-    navigate('/')
-    setMenuOpen(false)
-    setConfirmSignOut(false)
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault()
+    const q = search.trim()
+    if (q) navigate(`/explore?q=${encodeURIComponent(q)}`)
   }
 
-  const close = () => setMenuOpen(false)
-
   return (
-    <>
     <header className="app-header">
       <div className="app-header-inner">
-        <NavLink to="/" className="brand-logo" onClick={close}>
-          <span className="brand-mark">R</span>
-          <span className="brand-name">Rael's blogs</span>
+        {/* Brand */}
+        <NavLink to="/" className="brand-logo">
+          <span className="brand-mark">
+            <NboxLogo style={{ width: 34, height: 34, display: 'block' }} />
+          </span>
+          <span className="brand-name">NBOX</span>
         </NavLink>
-        <div className="brand-sub">ed.001</div>
 
-        {/* Desktop nav */}
-        <nav className="nav-links nav-desktop" aria-label="Navegación principal">
-          <NavLink to="/" end className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-            Feed
-          </NavLink>
-          <NavLink to="/categories" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-            Categorías
-          </NavLink>
-          {user && (
-            <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-              Panel
-            </NavLink>
-          )}
+        {/* Search */}
+        <form className="header-search" onSubmit={handleSearch}>
+          <span className="header-search-icon">
+            <Search size={17} strokeWidth={2.5} />
+          </span>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Buscar en NBOX"
+            aria-label="Buscar"
+          />
+        </form>
+
+        {/* Center nav tabs — Inbox y Bell solo visibles si está logueado */}
+        <nav className="header-tabs" aria-label="Navegación">
+          {NAV_TABS.filter(t => user || t.Icon === Home).map(({ to, Icon, label, end, badge }) => {
+            if (Icon === Bell) {
+              return (
+                <button
+                  key={to}
+                  ref={bellRef}
+                  className={`header-tab${notifOpen ? ' active' : ''}`}
+                  title={label}
+                  onClick={() => setNotifOpen(o => !o)}
+                  style={{ position: 'relative' }}
+                >
+                  <Bell size={22} strokeWidth={2.5} />
+                  {UNREAD_COUNT > 0 && <span className="badge">{UNREAD_COUNT}</span>}
+                </button>
+              )
+            }
+            return (
+              <NavLink
+                key={to}
+                to={to}
+                end={end}
+                className={({ isActive }) => `header-tab${isActive ? ' active' : ''}`}
+                title={label}
+              >
+                <Icon size={22} strokeWidth={2.5} />
+                {!!badge && badge > 0 && <span className="badge">{badge}</span>}
+              </NavLink>
+            )
+          })}
         </nav>
 
-        {/* Desktop right */}
-        <div className="header-right nav-desktop">
+        {notifOpen && (
+          <NotificationsDropdown
+            anchorRef={bellRef}
+            onClose={() => setNotifOpen(false)}
+          />
+        )}
+
+        {/* Right actions */}
+        <div className="header-right">
           {user ? (
             <>
-              <NavLink to="/dashboard/posts/new" className="btn btn-primary btn-small">
-                <Icon name="plus" size={14} /> Nueva
-              </NavLink>
-              <NavLink to="/dashboard/profile" aria-label="Tu perfil" title="Mi perfil" style={{ display: 'flex', alignItems: 'center' }}>
+              <button className="btn btn-icon btn-primary" title="Drop" onClick={onDropClick}>
+                <Plus size={20} strokeWidth={2.5} />
+              </button>
+              <NavLink to="/my-box" style={{ display: 'flex' }} title="Mi Perfil">
                 <Avatar
                   name={profile?.display_name ?? user.email ?? 'U'}
                   size="sm"
                   src={profile?.avatar_url}
                 />
               </NavLink>
-              <button className="btn btn-ghost btn-icon" title="Cerrar sesión" aria-label="Cerrar sesión" onClick={() => setConfirmSignOut(true)}>
-                <Icon name="logout" size={18} />
-              </button>
             </>
           ) : (
             <NavLink to="/login" className="btn btn-primary btn-small">
@@ -74,69 +125,7 @@ export default function Header() {
             </NavLink>
           )}
         </div>
-
-        {/* Mobile hamburger */}
-        <button
-          className="btn btn-ghost btn-icon nav-mobile-toggle"
-          aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen(o => !o)}
-        >
-          {menuOpen ? <Icon name="close" size={20} /> : <Icon name="menu" size={20} />}
-        </button>
       </div>
-
-      {/* Mobile drawer */}
-      {menuOpen && (
-        <nav className="nav-mobile-drawer" aria-label="Menú móvil">
-          <NavLink to="/" end className={({ isActive }) => `nav-mobile-link ${isActive ? 'active' : ''}`} onClick={close}>
-            Feed
-          </NavLink>
-          <NavLink to="/categories" className={({ isActive }) => `nav-mobile-link ${isActive ? 'active' : ''}`} onClick={close}>
-            Categorías
-          </NavLink>
-          {user && (
-            <NavLink to="/dashboard" className={({ isActive }) => `nav-mobile-link ${isActive ? 'active' : ''}`} onClick={close}>
-              Panel
-            </NavLink>
-          )}
-          {user && (
-            <NavLink to="/dashboard/posts/new" className={({ isActive }) => `nav-mobile-link ${isActive ? 'active' : ''}`} onClick={close}>
-              + Nueva publicación
-            </NavLink>
-          )}
-          {user && (
-            <NavLink to="/dashboard/favorites" className={({ isActive }) => `nav-mobile-link ${isActive ? 'active' : ''}`} onClick={close}>
-              ★ Favoritos
-            </NavLink>
-          )}
-          {user && (
-            <NavLink to="/dashboard/profile" className={({ isActive }) => `nav-mobile-link ${isActive ? 'active' : ''}`} onClick={close}>
-              ✏ Mi perfil
-            </NavLink>
-          )}
-          {user ? (
-            <button className="nav-mobile-link" style={{ border: 'none', background: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', color: 'var(--accent-1)' }} onClick={() => setConfirmSignOut(true)}>
-              → Cerrar sesión
-            </button>
-          ) : (
-            <NavLink to="/login" className="nav-mobile-link" onClick={close}>
-              Entrar
-            </NavLink>
-          )}
-        </nav>
-      )}
     </header>
-
-    <ConfirmDialog
-      open={confirmSignOut}
-      title="¿Cerramos la señal?"
-      message="Estás a punto de cerrar tu sesión. Tendrás que volver a identificarte para acceder al panel, publicar o guardar favoritos."
-      confirmLabel="Sí, cerrar sesión"
-      cancelLabel="Quedarme"
-      onConfirm={handleSignOut}
-      onCancel={() => setConfirmSignOut(false)}
-    />
-    </>
   )
 }
