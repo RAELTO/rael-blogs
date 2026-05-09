@@ -1,51 +1,80 @@
-import { useParams, useNavigate } from 'react-router-dom'
-import { usePostsByTag } from '../../features/posts/usePostsByTag'
-import PostCard from '../../components/posts/PostCard'
-import AppLayout from '../../components/layout/AppLayout'
+import { useParams } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { supabase } from '../../lib/supabase'
+import AppShell from '../../components/layout/AppShell'
+import LeftSidebar from '../../components/layout/LeftSidebar'
+import RightSidebar from '../../components/layout/RightSidebar'
+import BoxCard from '../../components/feed/BoxCard'
+import type { BoxWithAuthor } from '../../types/database'
+
+function useBoxesByTag(slug: string) {
+  return useQuery({
+    queryKey: ['boxes', 'tag', slug],
+    queryFn: async () => {
+      const { data: tagRow } = await supabase
+        .from('tags')
+        .select('id')
+        .eq('slug', slug)
+        .maybeSingle()
+      if (!tagRow) return []
+
+      const { data } = await supabase
+        .from('box_tags')
+        .select(`
+          box:boxes(
+            *,
+            author:profiles!boxes_author_id_fkey(id, username, display_name, avatar_url),
+            reaction_count:box_reactions(count),
+            comment_count:box_comments(count)
+          )
+        `)
+        .eq('tag_id', tagRow.id)
+      return (data ?? [])
+        .map(row => row.box)
+        .filter(Boolean)
+        .filter((b: Record<string, unknown>) => b.status === 'published')
+        .map((b: Record<string, unknown>) => ({
+          ...b,
+          reaction_count: ((b.reaction_count as { count: number }[] | null)?.[0]?.count) ?? 0,
+          comment_count:  ((b.comment_count  as { count: number }[] | null)?.[0]?.count) ?? 0,
+        })) as BoxWithAuthor[]
+    },
+    enabled: !!slug,
+  })
+}
 
 export default function TagPage() {
   const { slug = '' } = useParams()
-  const navigate = useNavigate()
-  const { data: posts = [], isLoading } = usePostsByTag(slug)
+  const { data: boxes = [], isLoading } = useBoxesByTag(slug)
 
   return (
-    <AppLayout>
-      <div className="page">
-        <button className="btn btn-ghost mb-4" onClick={() => navigate(-1)}>
-          ← Volver
-        </button>
-
-        <div className="mb-6">
-          <div className="hero-eyebrow" style={{ marginBottom: 12 }}>▓ etiqueta</div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 48, margin: '8px 0', letterSpacing: '-0.02em', lineHeight: 1 }}>
-            <span style={{ background: 'var(--accent-3)', border: '3px solid var(--ink)', padding: '0 12px', boxShadow: '5px 5px 0 var(--ink)', display: 'inline-block' }}>
-              #{slug}
-            </span>
-          </h1>
+    <AppShell left={<LeftSidebar />} right={<RightSidebar />}>
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink-mute)', marginBottom: 8 }}>
+          ▓ tag
         </div>
-
-        {isLoading && (
-          <div className="panel" style={{ padding: 40, textAlign: 'center', fontFamily: 'var(--font-mono)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-            ▒ cargando...
-          </div>
-        )}
-
-        {!isLoading && posts.length === 0 && (
-          <div className="panel" style={{ padding: 40, textAlign: 'center' }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 24 }}>— Sin publicaciones con este tag —</div>
-            <button className="btn mt-4" onClick={() => navigate('/')}>← Volver al feed</button>
-          </div>
-        )}
-
-        {posts.length > 0 && (
-          <>
-            <div className="section-title">▸ {posts.length} publicación{posts.length !== 1 ? 'es' : ''}</div>
-            <div className="feed-grid mt-4">
-              {posts.map(p => <PostCard key={p.id} post={p} />)}
-            </div>
-          </>
-        )}
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 40, margin: 0, letterSpacing: '-0.02em', lineHeight: 1 }}>
+          <span style={{ background: 'var(--accent-3)', border: 'var(--border)', padding: '0 12px', boxShadow: 'var(--shadow)', display: 'inline-block' }}>
+            #{slug}
+          </span>
+        </h1>
       </div>
-    </AppLayout>
+
+      {isLoading && (
+        <div className="spinner">
+          <div className="spinner-ring" />
+          <span className="spinner-label">▒ cargando...</span>
+        </div>
+      )}
+
+      {!isLoading && boxes.length === 0 && (
+        <div className="panel" style={{ padding: 40, textAlign: 'center' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: 22 }}>Sin boxes con este tag</div>
+          <div className="text-mute text-sm mt-2">Nadie ha dropeado nada con #{slug} todavía.</div>
+        </div>
+      )}
+
+      {boxes.map(box => <BoxCard key={box.id} box={box} />)}
+    </AppShell>
   )
 }

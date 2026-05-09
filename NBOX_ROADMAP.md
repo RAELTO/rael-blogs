@@ -2,264 +2,267 @@
 
 ## Vision
 
-NBOX es la evolucion de este proyecto desde un blog experimental hacia una plataforma social editorial con identidad neobrutalista.
-
-La meta no es copiar una red social existente, sino construir una experiencia modular, fuerte visualmente y preparada para crecer hacia publicaciones, perfiles, interacciones, comunidades, notificaciones y mensajeria.
-
-Concepto base:
+NBOX (Neo Brutal Box) es una plataforma social con identidad neobrutalista fuerte. No es un blog ni una red social generica: es una experiencia modular, visual y directa donde las publicaciones se llaman Boxes y publicar se llama Drop.
 
 > Neo Brutal Box: a brutal social space for posts, people, and messages.
 
-## Principios De Producto
-
-- Mantener el estilo neobrutalista como identidad central, no solo como decoracion.
-- Evolucionar por fases, sin intentar construir una red social completa de una sola vez.
-- Aprovechar la base actual: posts, perfiles, comentarios, likes, favoritos, auth, storage y Supabase.
-- Priorizar una experiencia social/editorial antes de agregar chat.
-- Disenar primero los flujos principales y luego adaptar la arquitectura cuando el producto lo necesite.
-- Evitar que NBOX se sienta como una red social generica.
+---
 
 ## Identidad
 
-Nombre principal: `NBOX`
+**Nombre:** NBOX | **Variantes graficas:** N-Box / N.BOX / [N]BOX
+**Significado:** Neo + Brutal + Box (caja, modulo, post, perfil, mensaje)
+**Dominio considerado:** n-box.app
+
+**Vocabulario:**
+
+| Termino | Significado |
+|---|---|
+| Box | Publicacion / post |
+| Drop | Acto de publicar ("dropear") |
+| Quick Drop | Box de texto corto |
+| Media Box | Box con imagen o video |
+| Poll Box | Box de encuesta |
+| Mood Box | Box con fondo de color grande |
+| Link Box | Box con URL y preview |
+| Thread Box | Box de hilo numerado |
+| My Box | Perfil propio |
+| NBOX / Inbox | Mensajeria privada |
+| Loud | Contenido con alta actividad |
+| Fresh Drops | Publicaciones nuevas |
+| Pinned Box | Box destacada en perfil |
+| Box Collections | Guardados organizados |
+| Bold/Loud/Fire/Sharp/Save | Tipos de reaccion (reemplazan al like) |
+
+---
+
+## Principios
+
+- Neobrutalismo como identidad, no decoracion.
+- Crecer por fases sin sobredisenar.
+- Sin categorias (organizacion por tags y follows).
+- Feed primero, chat despues.
+- Mobile-responsive desde el inicio.
+
+---
+
+## Diseno (sistema compartido con el prototipo)
+
+**Fuentes:** Archivo Black (display) + Space Grotesk (body) + Space Mono (mono)
+**Fondo:** `#f5f0e6` (beige) con dot-grid 22px
+**Bordes:** `3px solid #111`
+**Sombras:** hard offset (4-10px negro, sin blur)
+**Border-radius:** 0 (cero redondeo)
+**Hover:** translate(-2px, -2px) + shadow mas grande
+**Active:** translate(+2px, +2px) + shadow colapsada
+
+**Paletas** (via `data-palette`):
+- `coral` (default): rojo / amarillo / cyan
+- `electric`: magenta / cyan / amarillo
+- `lime`: lima / magenta / cyan
+- `dusk`: purpura / naranja / cyan
+- `dark`: fondo negro, acentos sobre oscuro
+
+**Modos de sombra** (via `data-shadow`):
+- `low` | `medium` (default) | `high`
+
+**Animacion gif-shake:** el cuadrado color-shift que evoca pixel art.
+Usos: auth decorativo, empty states, story "crear", 404.
+
+---
+
+## Estructura DB actual → NBOX
+
+| Tabla actual | Destino | Accion |
+|---|---|---|
+| `profiles` | `profiles` | Conservar + followers_count / following_count |
+| `posts` | `boxes` | Renombrar + type + mood_color + payload JSONB |
+| `categories` | — | Eliminar (concepto blog) |
+| `post_categories` | — | Eliminar |
+| `tags` | `tags` | Conservar |
+| `post_tags` | `box_tags` | Renombrar |
+| `post_likes` | `box_reactions` | Reemplazar con reaction_type (bold/loud/fire/sharp/save) |
+| `post_bookmarks` | `box_saves` | Renombrar |
+| `comments` | `box_comments` | Renombrar |
+| — | `follows` | Nueva: follower_id + following_id |
+
+---
+
+## Arquitectura de carpetas objetivo
+
+```
+src/
+├── app/          router + providers
+├── components/
+│   ├── layout/   AppShell, Header, LeftSidebar, RightSidebar, MobileBar
+│   └── ui/       Avatar, Chip, Icon, Toast, TweakPanel, BoxCard...
+├── features/
+│   ├── auth/     AuthContext, hooks
+│   ├── boxes/    useBoxes, useBox, useCreateBox, useFeed...
+│   ├── reactions/ useReactions
+│   ├── comments/ useComments
+│   ├── follows/  useFollows
+│   ├── profile/  useProfile
+│   ├── explore/  useExplore, useTrending
+│   └── admin/    useAdminActions
+├── pages/
+│   ├── HomeFeedPage
+│   ├── ExplorePage
+│   ├── BoxPage (single box)
+│   ├── ProfilePage (publica + propia)
+│   ├── NotificationsPage
+│   ├── InboxPage
+│   └── AuthPage
+└── lib/          supabase, storage, sanitize, utils
+```
+
+---
+
+## FASE 0: Base tecnica — COMPLETADA
+
+- [x] RLS correcto en todas las tablas
+- [x] Policies admin para posts (update/delete)
+- [x] search_path seguro en funciones security definer
+- [x] is_banned enforced a nivel DB en 6 policies
+- [x] 0 errores de lint (ESLint)
+- [x] Validacion de env vars en supabase.ts
+- [x] Migraciones ordenadas correctamente
+
+---
+
+## FASE 1: Home Feed — EN CURSO
+
+**Objetivo:** Vista principal funcional conectada a Supabase. Fin del blog, inicio de la red social.
+
+### DB
+- [ ] Migrar posts → boxes (type, mood_color, payload JSONB)
+- [ ] Eliminar categories y post_categories
+- [ ] Crear follows table
+- [ ] Reemplazar post_likes por box_reactions (con reaction_type)
+- [ ] Renombrar post_bookmarks → box_saves, post_tags → box_tags, comments → box_comments
+- [ ] Aplicar las 3 migraciones pendientes a Supabase
 
-Variantes visuales posibles:
+### UI / Componentes
+- [ ] AppShell: header tabs centrados + grid 3 cols (280 | 1fr | 320) + mobile bar
+- [ ] Header: Brand NBOX + search + tabs iconos (Home/Explore/Notifs) + avatar + Drop btn
+- [ ] LeftSidebar: profile snippet + nav links
+- [ ] RightSidebar: trending tags + suggested users + contacts
+- [ ] MobileBottomBar: 5 tabs (Home/Explore/Drop/Notifs/Yo)
+- [ ] StoriesRail: rail decorativo 6 stories (grid 9:14, colores sistema, sin backend)
+- [ ] ComposerCard: avatar + input + botones Quick/Media/Poll/Mood/Link
+- [ ] ModeSelector: For You | Following | Fresh | Loud
+- [ ] BoxCard: tarjeta box con head (avatar+nombre+meta+menu), body, tags, stats, actions
+- [ ] Reacciones en BoxCard: Bold/Loud/Fire/Sharp/Save (popover al hover)
+- [ ] AuthPage: rediseno NBOX con gif-shake decorativo
+- [ ] TweakPanel: renombrar paletas a coral/electric/lime/dusk/dark, shadow low/medium/high
 
-- `N-Box`
-- `N.BOX`
-- `[N]BOX`
-- `N/BOX`
+### Features
+- [ ] Feed "For You": todas las boxes ordenadas por recientes
+- [ ] Feed "Fresh": ultimas boxes
+- [ ] Feed "Loud": boxes con mas reacciones
+- [ ] Feed "Following": boxes de usuarios que sigo (requiere follows)
+- [ ] Quick Drop: crear box de texto desde ComposerCard
+- [ ] Remover todo lo de blog: categorias, tags academicos, hero de blog, dashboard de posts
 
-Significado conceptual:
+---
 
-- `N`: Neo / Neobrutal
-- `BOX`: caja, modulo, post, perfil, espacio, mensaje
+## FASE 2: Box individual + Compositor completo
 
-Frases posibles:
+**Objetivo:** Ver una box completa y crear cualquier tipo de box.
 
-- Neo Brutal Box
-- Your brutal inbox for the web.
-- Post bold. Chat loud.
-- A neo-brutal space for posts and people.
-- The social box for loud ideas.
+- [ ] BoxPage: vista individual + comentarios expandidos + header de autor
+- [ ] DropModal: selector de tipo + formulario por tipo
+- [ ] Media Box: subir imagen o URL de video
+- [ ] Mood Box: 5 colores de fondo + texto grande con Archivo Black
+- [ ] Link Box: pegar URL → preview con titulo + host + thumbnail
+- [ ] Poll Box: opciones + barra de votos en tiempo real
+- [ ] Thread Box: items numerados
+- [ ] Comentarios anidados: responder a un comentario
+- [ ] Comentario fijado por autor
 
-## Fase 0: Base Actual
+---
 
-Estado actual del proyecto:
+## FASE 3: My Box (Perfil)
 
-- Blog/CMS con React, TypeScript, Vite y Supabase.
-- Publicaciones con categorias, tags, portada y contenido enriquecido.
-- Perfiles de autor.
-- Comentarios, likes y favoritos.
-- Dashboard privado.
-- Autenticacion con Supabase.
-- Storage para imagenes.
-- RLS y migraciones versionadas.
+**Objetivo:** Perfil propio como espacio personal rico.
 
-Antes de crecer demasiado, conviene corregir:
+- [ ] ProfilePage publica: portada (patron diagonal) + avatar lg + nombre + @user + bio
+- [ ] Stats: boxes, followers, following
+- [ ] Tabs: Boxes | Media | Saved | About
+- [ ] Pinned Box en el perfil
+- [ ] Editar perfil: avatar, portada, bio, color de acento, frase corta
+- [ ] Seguir / Dejar de seguir usuario
+- [ ] ProfilePage propia = My Box (con editar disponible)
 
-- Orden de migraciones Supabase.
-- Policies admin faltantes sobre posts.
-- Errores de lint.
-- README desactualizado.
-- Validacion de variables de entorno.
+---
 
-## Fase 1: Rebranding A NBOX
+## FASE 4: Explore
 
-Objetivo: que el proyecto deje de sentirse como un blog personal y empiece a sentirse como una plataforma social.
+**Objetivo:** Descubrir contenido y usuarios mas alla del feed.
 
-Cambios sugeridos:
+- [ ] ExplorePage: grid de boxes destacadas (patron de colores nth-child)
+- [ ] Tags populares con conteo de boxes
+- [ ] Usuarios activos / sugeridos
+- [ ] Busqueda de boxes por texto
+- [ ] Tag page: su propio feed de boxes
+- [ ] Trending: Loud This Week
 
-- Cambiar textos visibles de `Rael's Blogs` a `NBOX`.
-- Actualizar metadata, titulo de pagina, favicon/logo y README.
-- Definir un pequeno sistema verbal de marca.
-- Ajustar navegacion principal:
-  - `Feed`
-  - `Explore`
-  - `My Box`
-  - `Saved`
-- Renombrar mentalmente el dashboard como espacio personal del usuario.
+---
 
-Resultado esperado:
+## FASE 5: Notificaciones
 
-La app sigue teniendo las mismas funcionalidades, pero ya comunica una direccion de producto mas amplia.
+**Objetivo:** Centro de actividad con badge y filtros.
 
-## Fase 2: Vista Principal Tipo Feed Social
+- [ ] Tabla `notifications` en DB
+- [ ] NotificationsPage: feed con filtros (todo / no leido / reacciones / comentarios / follows)
+- [ ] Badge en header y mobile bar
+- [ ] Marcar leido (individual y todo)
+- [ ] Tipos: reaccion, comentario, respuesta, follow, mencion, sistema
+- [ ] Menciones @usuario en boxes y comentarios
 
-Objetivo: redisenar la vista principal para que sea el centro social/editorial de NBOX.
+---
 
-Referencia de direccion:
+## FASE 6: NBOX Inbox (Chat)
 
-- Puede tomar inspiracion de Facebook o Instagram.
-- Debe conservar el toque neobrutalista.
-- No debe parecer una plantilla generica.
+**Objetivo:** Mensajeria privada 1 a 1 con Supabase Realtime.
 
-Elementos esperados:
+- [ ] Tablas: conversations, conversation_participants, messages
+- [ ] InboxPage: lista de hilos + thread activo (estilo WhatsApp)
+- [ ] Floating chat windows: hasta 3 simultaneos, anclados a la derecha
+- [ ] Mensajes en tiempo real (Supabase Realtime)
+- [ ] Estados: enviado / leido
+- [ ] Mobile: pantalla fullscreen de chat
 
-- Feed de publicaciones.
-- Tarjetas de post mas sociales y escaneables.
-- Acciones visibles: like, comentar, guardar, compartir.
-- Autor destacado en cada publicacion.
-- Filtros o secciones de descubrimiento.
-- Estados vacios con personalidad visual.
-- Layout responsive bien definido.
+Ver NBOX_CHAT_SCALE_PLAN.md para arquitectura futura de escala.
 
-Ideas posibles:
+---
 
-- Columna central para el feed.
-- Sidebar con categorias, tags, usuarios o actividad.
-- Bloque superior para crear/publicar rapido.
-- Seccion de destacados o tendencias.
+## FASE 7: Admin + Moderacion
 
-## Fase 3: Perfiles Como "My Box"
+**Objetivo:** Panel de control para el administrador.
 
-Objetivo: convertir los perfiles en espacios personales mas ricos.
+- [ ] Panel admin accesible solo a rol "admin"
+- [ ] Listar y banear usuarios
+- [ ] Eliminar cualquier box o comentario
+- [ ] Ver reportes de usuarios
+- [ ] Reportar box o usuario (lado usuario)
+- [ ] Bloquear / ocultar usuario
 
-Elementos sugeridos:
+---
 
-- Header de perfil con avatar, nombre, usuario y bio.
-- Posts del usuario.
-- Estadisticas sociales basicas.
-- Favoritos o colecciones publicas, si aplica.
-- Identidad visual por usuario en el futuro.
+## FASE 9: Stories (opcional, post-chat)
 
-Nombre conceptual:
+- [ ] Story: caja temporal 24h con fondo y texto
+- [ ] StoriesRail funcional (backend)
+- [ ] Ver story en modo fullscreen con timer
+- [ ] Reacciones rapidas a stories
 
-- `My Box`: perfil propio.
-- `User Box`: perfil publico.
+---
 
-## Fase 4: Interaccion Social Ampliada
+## Notas tecnicas
 
-Objetivo: aumentar la sensacion de red social sin saltar todavia a chat.
-
-Features posibles:
-
-- Seguir usuarios.
-- Feed basado en usuarios seguidos.
-- Notificaciones basicas.
-- Menciones.
-- Respuestas a comentarios.
-- Reacciones alternativas o contadores mas visibles.
-
-Prioridad recomendada:
-
-1. Seguir usuarios.
-2. Feed de usuarios seguidos.
-3. Notificaciones.
-4. Respuestas a comentarios.
-
-## Fase 5: Exploracion Y Comunidades
-
-Objetivo: que NBOX tenga espacios de descubrimiento mas alla del feed principal.
-
-Features posibles:
-
-- Pagina `Explore`.
-- Tendencias por tags.
-- Categorias como espacios editoriales.
-- Colecciones o boxes tematicos.
-- Busqueda mas potente.
-
-Ideas de naming:
-
-- `Boxes`: espacios, colecciones o comunidades.
-- `Drop Box`: crear una publicacion.
-- `Brutal Box`: publicacion destacada.
-
-## Fase 6: Notificaciones
-
-Objetivo: preparar la app para actividad social continua.
-
-Eventos posibles:
-
-- Like recibido.
-- Comentario recibido.
-- Nuevo seguidor.
-- Mencion.
-- Respuesta a comentario.
-- Publicacion guardada, si se decide mostrar.
-
-Notas tecnicas:
-
-- Supabase Realtime puede ser util mas adelante.
-- Primero se puede implementar una tabla de notificaciones simple.
-- No bloquear el avance del feed por esta fase.
-
-## Fase 7: Chat / Inbox
-
-Objetivo: agregar mensajeria privada cuando la base social ya tenga suficiente sentido.
-
-No empezar por aqui.
-
-Features posibles:
-
-- Conversaciones 1 a 1.
-- Lista de chats.
-- Mensajes en tiempo real.
-- Estados de lectura.
-- Adjuntos ligeros.
-
-Naming:
-
-- `Inbox`
-- `NBOX Chat`
-
-Notas tecnicas:
-
-- Supabase Realtime puede soportar una primera version.
-- Requiere diseno cuidadoso de RLS.
-- Requiere tablas separadas para conversaciones, participantes y mensajes.
-
-## Orden Recomendado
-
-1. Corregir base tecnica critica.
-2. Rebranding a NBOX.
-3. Redisenar home como feed social.
-4. Mejorar perfiles.
-5. Agregar seguidores.
-6. Crear feed personalizado.
-7. Agregar notificaciones.
-8. Explorar comunidades o boxes.
-9. Implementar chat.
-
-## Pendientes De Diseno
-
-- Vista principal tipo Facebook/Instagram con estilo NBOX.
-- Tarjeta de publicacion.
-- Header/nav principal.
-- Perfil propio `My Box`.
-- Perfil publico.
-- Vista de exploracion.
-- Vista de favoritos/guardados.
-- Vista futura de notificaciones.
-- Vista futura de inbox/chat.
-
-## Notas De Arquitectura
-
-La estructura actual puede mantenerse inicialmente:
-
-- `features/posts`: feed, publicaciones y mutaciones.
-- `features/profile`: perfiles y datos del usuario.
-- `features/interactions`: likes, comentarios y favoritos.
-- `pages/public`: vistas publicas y feed.
-- `pages/dashboard`: espacio privado del usuario.
-
-Cuando el proyecto crezca, considerar nuevas areas:
-
-- `features/follows`
-- `features/notifications`
-- `features/messages`
-- `features/explore`
-- `features/communities`
-
-## Criterio De Evolucion
-
-Una feature debe agregarse cuando:
-
-- Refuerza la identidad social/editorial de NBOX.
-- Aprovecha la base existente.
-- Tiene un flujo visual claro.
-- No obliga a reescribir partes grandes sin necesidad.
-- Puede verificarse con Supabase, build y lint.
-
-NBOX debe crecer como producto por capas: primero identidad y feed, luego perfiles e interaccion, despues notificaciones y finalmente chat.
+- Stack: React 19 + TypeScript + Vite 8 + Tailwind CSS 4 + Supabase + TanStack Query v5 + RHF + Zod
+- Auth: email/password via Supabase (sin OAuth por ahora)
+- Imagenes: Supabase Storage, bucket `post-images`
+- Mobile futuro: primero PWA, luego Expo si el producto lo justifica
+- El usuario admin (elias-toro@outlook.com) se preserva en todos los resets de DB

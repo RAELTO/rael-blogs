@@ -1,17 +1,19 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useRef, useState } from 'react'
 
 interface ToastContextValue {
-  show: (msg: string) => void
+  show: (msg: string, duration?: number) => void
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null)
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [msg, setMsg] = useState<string | null>(null)
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
-  const show = (m: string) => {
+  const show = (m: string, duration = 1900) => {
+    clearTimeout(timer.current)
     setMsg(m)
-    setTimeout(() => setMsg(null), 1900)
+    timer.current = setTimeout(() => setMsg(null), duration)
   }
 
   return (

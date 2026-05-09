@@ -1,3 +1,5 @@
+import { createPortal } from 'react-dom'
+
 interface ConfirmDialogProps {
   open: boolean
   title: string
@@ -9,14 +11,16 @@ interface ConfirmDialogProps {
 }
 
 export default function ConfirmDialog({
-  open, title, message, confirmLabel = 'Confirmar', cancelLabel = 'Cancelar', onConfirm, onCancel,
+  open, title, message,
+  confirmLabel = 'Confirmar', cancelLabel = 'Cancelar',
+  onConfirm, onCancel,
 }: ConfirmDialogProps) {
   if (!open) return null
 
-  return (
+  return createPortal(
     <div
       style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
+        position: 'fixed', inset: 0, zIndex: 9000,
         background: 'rgba(0,0,0,0.55)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: 24,
@@ -65,14 +69,11 @@ export default function ConfirmDialog({
         </p>
 
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button className="btn" onClick={onCancel}>
-            {cancelLabel}
-          </button>
-          <button className="btn btn-primary" onClick={onConfirm}>
-            {confirmLabel}
-          </button>
+          <button className="btn" onClick={onCancel}>{cancelLabel}</button>
+          <button className="btn btn-primary" onClick={onConfirm}>{confirmLabel}</button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
