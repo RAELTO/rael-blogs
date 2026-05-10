@@ -5,6 +5,7 @@ import { useCreateBox } from '../../features/boxes/useBoxes'
 import { uploadCoverImage } from '../../lib/storage'
 import { getVideoEmbedUrl } from '../../lib/videoEmbed'
 import { useToast } from '../ui/Toast'
+import { sanitizeUrl } from '../../lib/sanitize'
 import type { BoxType, MoodPayload } from '../../types/database'
 
 // ─── Type config ───────────────────────────────────────────────────────────────
@@ -105,10 +106,11 @@ export default function DropModal({ initialType = 'quick', onClose }: DropModalP
         payload = { items }
       }
       if (type === 'link') {
-        if (!linkUrl.trim()) { toast('Pega una URL válida.'); return }
-        try { const u = new URL(linkUrl); payload = { url: linkUrl, host: u.hostname } }
+        const safeUrl = sanitizeUrl(linkUrl)
+        if (!safeUrl) { toast('URL no válida. Solo se permiten URLs http/https.'); return }
+        try { const u = new URL(safeUrl); payload = { url: safeUrl, host: u.hostname } }
         catch { toast('URL no válida.'); return }
-        if (!content) content = linkUrl
+        if (!content) content = safeUrl
       }
       await createBox.mutateAsync({ author_id: user.id, type, content, payload, tags: parsedTags })
       toast('¡DROP PUBLICADO! ✦')

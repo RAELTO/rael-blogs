@@ -8,19 +8,39 @@ export interface CommentWithAuthor {
   content: string
   created_at: string
   author: { id: string; username: string; display_name: string; avatar_url: string | null }
+  engagement_count: number  // votes (like+dislike) + reactions total
 }
 
 export function useComments(boxId: string) {
   return useQuery({
     queryKey: ['comments', boxId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // 1. Fetch comments with author
+      const { data: comments, error } = await supabase
         .from('box_comments')
         .select('*, author:profiles!box_comments_author_id_fkey(id, username, display_name, avatar_url)')
         .eq('box_id', boxId)
         .order('created_at', { ascending: true })
       if (error) throw error
-      return (data ?? []) as CommentWithAuthor[]
+      if (!comments?.length) return []
+
+      const ids = comments.map(c => c.id)
+
+      // 2. Fetch all votes + reactions for these comments in parallel
+      const [votesRes, reactionsRes] = await Promise.all([
+        supabase.from('comment_votes').select('comment_id').in('comment_id', ids),
+        supabase.from('comment_reactions').select('comment_id').in('comment_id', ids),
+      ])
+
+      // 3. Build engagement map (votes + reactions count together)
+      const engagement: Record<string, number> = {}
+      for (const v of votesRes.data ?? [])     engagement[v.comment_id] = (engagement[v.comment_id] ?? 0) + 1
+      for (const r of reactionsRes.data ?? []) engagement[r.comment_id] = (engagement[r.comment_id] ?? 0) + 1
+
+      return comments.map(c => ({
+        ...c,
+        engagement_count: engagement[c.id] ?? 0,
+      })) as CommentWithAuthor[]
     },
     staleTime: 30_000,
   })

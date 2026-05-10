@@ -32,6 +32,8 @@ export function validateImage(file: File, kind: ImageKind): UploadError | null {
 }
 
 export async function uploadCoverImage(file: File, userId: string): Promise<string> {
+  const err = validateImage(file, 'cover')
+  if (err) throw new Error(err.message)
   const path = `${userId}/posts/${Date.now()}.${ext(file)}`
   const { error } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: false })
   if (error) throw new Error('Error al subir la imagen.')
@@ -40,12 +42,12 @@ export async function uploadCoverImage(file: File, userId: string): Promise<stri
 }
 
 export async function uploadAvatarImage(file: File, userId: string): Promise<string> {
-  // upsert: true para reemplazar el avatar anterior sin acumular archivos
+  const err = validateImage(file, 'avatar')
+  if (err) throw new Error(err.message)
   const path = `${userId}/avatar/avatar.${ext(file)}`
   const { error } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: true })
   if (error) throw new Error('Error al subir el avatar.')
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path)
-  // Cache-bust para que el navegador recargue la imagen
   return `${data.publicUrl}?t=${Date.now()}`
 }
 

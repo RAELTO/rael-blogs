@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { ArrowLeft, RefreshCw } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useToast } from '../../components/ui/Toast'
 
@@ -15,7 +16,7 @@ export default function CheckEmailPage() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
         toast('Bienvenido — cuenta confirmada')
-        navigate('/dashboard')
+        navigate('/')
       }
     })
     return () => subscription.unsubscribe()
@@ -40,9 +41,8 @@ export default function CheckEmailPage() {
       </div>
 
       <div className="auth-card" style={{ textAlign: 'center' }}>
-        <div className="auth-title">
-          <span className="mark">RAEL'S</span>{' '}
-          <span>blogs</span>
+        <div className="auth-title" style={{ justifyContent: 'center' }}>
+          NBOX
         </div>
 
         <div style={{
@@ -100,7 +100,7 @@ export default function CheckEmailPage() {
               disabled={resending || !email}
               style={{ width: '100%', justifyContent: 'center' }}
             >
-              {resending ? '▒ enviando...' : '↺ Reenviar correo'}
+              {resending ? '▒ enviando...' : <><RefreshCw size={14} strokeWidth={2.5} /> Reenviar correo</>}
             </button>
           )}
 
@@ -109,12 +109,12 @@ export default function CheckEmailPage() {
             onClick={() => navigate('/login')}
             style={{ width: '100%', justifyContent: 'center', fontSize: 13 }}
           >
-            ← Volver al inicio de sesión
+            <ArrowLeft size={14} strokeWidth={2.5} /> Volver al inicio de sesión
           </button>
         </div>
 
         <div className="text-xs text-mute mt-4" style={{ letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-          ▒ rael's blogs · ed.001
+          ▒ NBOX · Neo Brutal Box
         </div>
       </div>
     </div>

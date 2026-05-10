@@ -73,7 +73,7 @@ export default function ProfilePage() {
         <>
           {/* Profile header */}
           <div className="profile-cover mb-4" />
-          <div className="row gap-4 items-center mb-5" style={{ marginTop: -40, padding: '0 20px', position: 'relative', zIndex: 1 }}>
+          <div className="profile-header-row">
             <Avatar
               name={profile?.display_name ?? user?.email ?? 'U'}
               src={profile?.avatar_url}

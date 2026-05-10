@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { ThumbsUp, ThumbsDown, MessageCircle, Share2 } from 'lucide-react'
+import { ThumbsUp, ThumbsDown, MessageCircle, Share2, MoreVertical } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useToast } from '../ui/Toast'
 import { useToggleReaction, useMyReaction, useReactionCounts } from '../../features/reactions/useReactions'
@@ -30,6 +30,13 @@ const MOOD_BG: Record<MoodPayload['color'], string> = {
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────────
+function safeHref(url: string): string {
+  try {
+    const u = new URL(url)
+    return ['http:', 'https:'].includes(u.protocol) ? url : '#'
+  } catch { return '#' }
+}
+
 function timeAgo(iso: string | null): string {
   if (!iso) return ''
   const diff = Date.now() - new Date(iso).getTime()
@@ -62,7 +69,7 @@ function BoxContent({ box }: { box: BoxWithAuthor }) {
     }
     return (
       <div style={{ borderTop: '3px solid var(--ink)', borderBottom: '3px solid var(--ink)', lineHeight: 0 }}>
-        <img src={p.url} alt={p.caption ?? ''} style={{ width: '100%', display: 'block', maxHeight: 480, objectFit: 'cover' }} />
+        <img src={p.url} alt={p.caption ?? ''} style={{ width: '100%', height: 'auto', display: 'block', maxHeight: '72vh', objectFit: 'contain' }} />
       </div>
     )
   }
@@ -127,7 +134,7 @@ function BoxContent({ box }: { box: BoxWithAuthor }) {
         )}
         <div className="link-info">
           {p.host && <div className="link-host">{p.host}</div>}
-          <a href={p.url} target="_blank" rel="noopener noreferrer" className="link-title">
+          <a href={safeHref(p.url)} target="_blank" rel="noopener noreferrer" className="link-title">
             {p.title ?? p.url}
           </a>
           {p.description && (
@@ -227,10 +234,10 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
           {isOwner && (
             <div style={{ position: 'relative' }}>
               <button
-                style={{ background: 'none', border: 'none', fontSize: 18, fontWeight: 900, cursor: 'pointer', padding: '0 4px', lineHeight: 1 }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', lineHeight: 1, display: 'flex' }}
                 onClick={() => setMenuOpen(o => !o)}
               >
-                ⋮
+                <MoreVertical size={18} strokeWidth={2.5} />
               </button>
               {menuOpen && (
                 <div className="panel" style={{ position: 'absolute', right: 0, top: '100%', zIndex: 20, minWidth: 120, padding: 0 }}>

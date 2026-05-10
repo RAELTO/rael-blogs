@@ -1,10 +1,15 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { UserPlus, X } from 'lucide-react'
+import { UserPlus, UserCheck, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../features/auth/AuthContext'
+import { useContacts } from '../../features/contacts/useContacts'
+import { useSuggestedContacts } from '../../features/contacts/useSuggestedContacts'
+import { useSendContactRequest } from '../../features/contacts/useContactMutations'
+import { useGetOrCreateConversation } from '../../features/chat/useGetOrCreateConversation'
+import { usePresenceMap } from '../../features/presence/usePresence'
+import { useFloatingChat } from '../../features/chat/FloatingChatContext'
 
-type Profile = { id: string; username: string; display_name: string; avatar_url: string | null }
 
 function useTrendingTags() {
   return useQuery({
@@ -27,19 +32,6 @@ function useTrendingTags() {
   })
 }
 
-function useSuggestedUsers() {
-  return useQuery({
-    queryKey: ['suggested-users'],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('id, username, display_name, avatar_url')
-        .limit(6)
-      return (data ?? []) as Profile[]
-    },
-    staleTime: 120_000,
-  })
-}
 
 function NumFmt(n: number) {
   if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'K'
@@ -57,13 +49,27 @@ function avatarColor(index: number) {
 
 export default function RightSidebar() {
   const { user } = useAuth()
-  const { data: tags } = useTrendingTags()
-  const { data: allUsers } = useSuggestedUsers()
-  const [dismissed, setDismissed] = useState<Set<string>>(new Set())
-  const [followed, setFollowed]   = useState<Set<string>>(new Set())
+  const { data: tags }           = useTrendingTags()
+  const { data: suggestions = [] } = useSuggestedContacts(user?.id)
+  const { data: realContacts = [] } = useContacts(user?.id)
+  const presenceMap    = usePresenceMap(realContacts.map(c => c.other.id))
+  const sendRequest    = useSendContactRequest(user?.id ?? '')
+  const getOrCreate  = useGetOrCreateConversation(user?.id ?? '')
+  const { openChat } = useFloatingChat()
 
-  const suggestions = (allUsers ?? []).filter(u => !dismissed.has(u.id)).slice(0, 4)
-  const contacts    = (allUsers ?? []).slice(0, 5)
+  async function handleOpenChat(otherId: string, otherName: string, otherAvatar: string | null) {
+    const convId = await getOrCreate.mutateAsync(otherId)
+    openChat({ conversationId: convId, otherId, otherName, otherAvatar })
+  }
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set())
+  const [sent, setSent]           = useState<Set<string>>(new Set())
+
+  const visibleSuggestions = suggestions.filter(u => !dismissed.has(u.id))
+
+  async function handleAddContact(id: string) {
+    setSent(s => new Set([...s, id]))
+    await sendRequest.mutateAsync(id)
+  }
 
   return (
     <>
@@ -86,83 +92,114 @@ export default function RightSidebar() {
       </div>
 
       {/* Sugerencias y Contactos solo para usuarios logueados */}
-      {user && suggestions.length > 0 && (
+      {user && visibleSuggestions.length > 0 && (
         <div className="panel mb-4" style={{ padding: 14 }}>
           <div className="uppercase mb-3" style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
             Sugerencias
           </div>
-          {suggestions.map((u, i) => (
-            <div key={u.id} className="row gap-3 mb-3 items-center">
-              {/* Avatar */}
-              <div
-                className="avatar sm"
-                style={{ background: avatarColor(i), flexShrink: 0 }}
-              >
-                {u.display_name?.charAt(0).toUpperCase() ?? 'U'}
-              </div>
+          <div style={{ maxHeight: 180, overflowY: 'auto', marginRight: -6, paddingRight: 6 }}>
+            {visibleSuggestions.map((u, i) => {
+              const isSent = sent.has(u.id)
+              return (
+                <div key={u.id} className="row gap-3 mb-3 items-center">
+                  <div className="avatar sm" style={{ background: avatarColor(i), flexShrink: 0 }}>
+                    {u.display_name?.charAt(0).toUpperCase() ?? 'U'}
+                  </div>
 
-              {/* Info */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 800, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {u.display_name}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 800, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {u.display_name}
+                    </div>
+                    <div className="text-xs text-mute" style={{ fontFamily: 'var(--font-mono)' }}>
+                      @{u.username}
+                    </div>
+                  </div>
+
+                  {/* Agregar contacto — distinto de seguir */}
+                  <button
+                    className="btn btn-icon btn-small"
+                    title={isSent ? 'Solicitud enviada' : 'Agregar contacto'}
+                    onClick={() => !isSent && handleAddContact(u.id)}
+                    style={{
+                      background: isSent ? 'var(--accent-4)' : 'var(--accent-1)',
+                      flexShrink: 0, width: 30, height: 30,
+                      cursor: isSent ? 'default' : 'pointer',
+                    }}
+                  >
+                    {isSent
+                      ? <UserCheck size={13} strokeWidth={2.5} />
+                      : <UserPlus  size={13} strokeWidth={2.5} />
+                    }
+                  </button>
+
+                  <button
+                    className="btn btn-icon btn-small"
+                    title="Descartar"
+                    onClick={() => setDismissed(s => new Set([...s, u.id]))}
+                    style={{ background: 'var(--bg-panel)', color: 'var(--accent-1)', flexShrink: 0, width: 30, height: 30 }}
+                  >
+                    <X size={13} strokeWidth={2.5} />
+                  </button>
                 </div>
-                <div className="text-xs text-mute" style={{ fontFamily: 'var(--font-mono)' }}>
-                  @{u.username}
-                </div>
-              </div>
-
-              {/* Follow button */}
-              <button
-                className="btn btn-icon btn-small"
-                title="Seguir"
-                onClick={() => setFollowed(s => new Set([...s, u.id]))}
-                style={{
-                  background: followed.has(u.id) ? 'var(--bg-alt)' : 'var(--accent-1)',
-                  flexShrink: 0,
-                  width: 30, height: 30,
-                }}
-              >
-                <UserPlus size={13} strokeWidth={2.5} />
-              </button>
-
-              {/* Dismiss button — white bg, icon color follows palette */}
-              <button
-                className="btn btn-icon btn-small"
-                title="Descartar"
-                onClick={() => setDismissed(s => new Set([...s, u.id]))}
-                style={{
-                  background: 'var(--bg-panel)',
-                  color: 'var(--accent-1)',
-                  flexShrink: 0,
-                  width: 30, height: 30,
-                }}
-              >
-                <X size={13} strokeWidth={2.5} />
-              </button>
-            </div>
-          ))}
+              )
+            })}
+          </div>
         </div>
       )}
 
-      {/* Contacts — solo logueados */}
-      {user && contacts.length > 0 && (
+      {/* Contacts — datos reales, solo logueados */}
+      {user && realContacts.length > 0 && (
         <div className="panel" style={{ padding: 14 }}>
           <div className="uppercase mb-3" style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
             Contactos
           </div>
-          {contacts.map((u, i) => (
-            <div key={u.id} className="row gap-3 mb-3" style={{ cursor: 'pointer' }}>
+          <div style={{ maxHeight: 168, overflowY: 'auto', marginRight: -6, paddingRight: 6 }}>
+            {realContacts.map((c, i) => (
               <div
-                className="avatar sm"
-                style={{ background: avatarColor(i), flexShrink: 0 }}
+                key={c.user_a + c.user_b}
+                className="row gap-3 mb-3"
+                style={{ cursor: 'pointer', padding: '4px 6px', borderRadius: 0, transition: 'background .1s, transform .1s, box-shadow .1s' }}
+                onClick={() => handleOpenChat(c.other.id, c.other.display_name, c.other.avatar_url)}
+                onMouseEnter={e => {
+                  const el = e.currentTarget as HTMLDivElement
+                  el.style.background = 'var(--accent-2)'
+                  el.style.transform = 'translate(-1px, -1px)'
+                  el.style.boxShadow = '3px 3px 0 var(--ink)'
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget as HTMLDivElement
+                  el.style.background = ''
+                  el.style.transform = ''
+                  el.style.boxShadow = ''
+                }}
               >
-                {u.display_name?.charAt(0).toUpperCase() ?? 'U'}
+                <div style={{ position: 'relative', flexShrink: 0 }}>
+                  <div className="avatar sm" style={{ background: avatarColor(i) }}>
+                    {c.other.display_name?.charAt(0).toUpperCase() ?? 'U'}
+                  </div>
+                  {/* Dot solo cuando hay dato real y no es offline */}
+                  {presenceMap[c.other.id] && (
+                    <div style={{
+                      position: 'absolute', bottom: -2, right: -2,
+                      width: 9, height: 9,
+                      background: presenceMap[c.other.id].dotColor,
+                      border: '2px solid #111111',
+                    }} />
+                  )}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {c.other.display_name}
+                  </div>
+                  {presenceMap[c.other.id]?.label && (
+                    <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: presenceMap[c.other.id].color, letterSpacing: '.03em' }}>
+                      {presenceMap[c.other.id].label}
+                    </div>
+                  )}
+                </div>
               </div>
-              <div style={{ fontWeight: 700, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {u.display_name}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
     </>

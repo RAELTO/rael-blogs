@@ -7,9 +7,12 @@ import CheckEmailPage from '../pages/public/CheckEmailPage'
 
 const TagPage           = lazy(() => import('../pages/public/TagPage'))
 const ProfilePage       = lazy(() => import('../pages/dashboard/ProfilePage'))
+const ContactsPage      = lazy(() => import('../pages/dashboard/ContactsPage'))
+const InboxPage         = lazy(() => import('../pages/dashboard/InboxPage'))
 const BoxPage           = lazy(() => import('../pages/public/BoxPage'))
 const NotificationsPage = lazy(() => import('../pages/public/NotificationsPage'))
-const NotFoundPage      = lazy(() => import('../pages/NotFoundPage'))
+const NotFoundPage        = lazy(() => import('../pages/NotFoundPage'))
+const ResetPasswordPage   = lazy(() => import('../pages/public/ResetPasswordPage'))
 
 function Fallback() {
   return (
@@ -24,8 +27,9 @@ export default function AppRouter() {
     <BrowserRouter>
       <Routes>
         {/* ── Públicas (sin auth) ─────────────────────────── */}
-        <Route path="/login"       element={<LoginPage />} />
-        <Route path="/check-email" element={<CheckEmailPage />} />
+        <Route path="/login"          element={<LoginPage />} />
+        <Route path="/check-email"    element={<CheckEmailPage />} />
+        <Route path="/reset-password" element={<Suspense fallback={<Fallback />}><ResetPasswordPage /></Suspense>} />
 
         {/* Box permalink — público para links compartidos */}
         <Route path="/box/:id" element={<Suspense fallback={<Fallback />}><BoxPage /></Suspense>} />
@@ -35,6 +39,8 @@ export default function AppRouter() {
           <Route path="/"              element={<HomePage />} />
           <Route path="/explore"       element={<HomePage />} />
           <Route path="/notifications" element={<Suspense fallback={<Fallback />}><NotificationsPage /></Suspense>} />
+          <Route path="/contacts"      element={<Suspense fallback={<Fallback />}><ContactsPage /></Suspense>} />
+          <Route path="/inbox"         element={<Suspense fallback={<Fallback />}><InboxPage /></Suspense>} />
           <Route path="/tag/:slug"     element={<Suspense fallback={<Fallback />}><TagPage /></Suspense>} />
           <Route path="/my-box"        element={<Suspense fallback={<Fallback />}><ProfilePage /></Suspense>} />
           <Route path="/saves"         element={<Suspense fallback={<Fallback />}><NotFoundPage /></Suspense>} />

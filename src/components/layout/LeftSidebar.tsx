@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { Home, Compass, Contact, UsersRound, Clock, Bookmark, Settings2, LogOut, LogIn } from 'lucide-react'
+import { Home, Compass, Contact, Inbox, UsersRound, Clock, Bookmark, Settings2, LogOut, LogIn } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useProfile } from '../../features/profile/useProfile'
+import { useIncomingRequests } from '../../features/contacts/useContactRequests'
 import { useToast } from '../ui/Toast'
 import AppearanceModal from '../ui/AppearanceModal'
 import ConfirmDialog from '../ui/ConfirmDialog'
@@ -11,6 +12,7 @@ import Avatar from '../ui/Avatar'
 export default function LeftSidebar() {
   const { user, signOut } = useAuth()
   const { data: profile } = useProfile(user?.id)
+  const { data: incoming = [] } = useIncomingRequests(user?.id)
   const navigate = useNavigate()
   const toast = useToast()
   const [appearanceOpen, setAppearanceOpen] = useState(false)
@@ -19,6 +21,7 @@ export default function LeftSidebar() {
 
   async function handleSignOut() {
     await signOut()
+    toast('Hasta pronto. Keep it loud ✦')
     navigate('/login')
     setConfirmSignOut(false)
   }
@@ -63,9 +66,18 @@ export default function LeftSidebar() {
         </NavLink>
 
         {user && (
-          <button className="side-link" onClick={() => toast('Amigos próximamente')}>
-            <Contact size={20} strokeWidth={2.5} /> Amigos
-          </button>
+          <NavLink to="/inbox" className={({ isActive }) => `side-link${isActive ? ' active' : ''}`}>
+            <Inbox size={20} strokeWidth={2.5} /> NBOX
+          </NavLink>
+        )}
+
+        {user && (
+          <NavLink to="/contacts" className={({ isActive }) => `side-link${isActive ? ' active' : ''}`}>
+            <Contact size={20} strokeWidth={2.5} /> Contactos
+            {incoming.length > 0 && (
+              <span className="badge" style={{ marginLeft: 'auto' }}>{incoming.length}</span>
+            )}
+          </NavLink>
         )}
 
         {user && (

@@ -1,73 +1,75 @@
-# Rael's Blogs
+# NBOX — Neo Brutal Box
 
-CMS de blogs estilo neobrutalism construido con React + TypeScript + Supabase. Permite publicar, categorizar y gestionar artículos desde un dashboard privado, con soporte de comentarios, likes y favoritos.
+Red social de formato corto con estética **neobrutalist**: bordes gruesos, sombras duras, sin gradientes, sin radios. Los usuarios publican **drops** (posts) en 6 formatos distintos, interactúan con votos, reacciones emoji, comentarios y compartidos, y siguen a otros usuarios.
+
+**Demo:** [n-box-dev.vercel.app](https://n-box-dev.vercel.app)
 
 ---
 
 ## Stack
 
 | Capa | Tecnología |
-|------|-----------|
-| Frontend | React 18, TypeScript, Vite |
-| Estilos | CSS custom properties — sistema neobrutalist propio |
-| Routing | React Router v6 |
+|------|------------|
+| Frontend | React 19, TypeScript, Vite 8 |
+| Estilos | Tailwind CSS 4 + sistema de design tokens neobrutalist propio |
+| Routing | React Router v7 |
 | Estado servidor | TanStack Query v5 |
-| Backend / Auth | Supabase (Postgres + Auth + Storage + RLS) |
-| Markdown | react-markdown + remark-gfm |
+| Backend / Auth / Storage | Supabase (Postgres 15, Auth, Storage, RLS) |
 | Deploy | Vercel |
 
 ---
 
 ## Funcionalidades
 
-**Público (sin cuenta)**
-- Feed paginado con scroll infinito
-- Búsqueda full-text en DB (título, extracto, autor, categorías, tags)
-- Posts destacados (≥ 100 likes) en sección Destacadas
-- Filtro por categoría con chips de colores deterministas
-- Detalle de post con renderizado Markdown
-- Perfil público de autor
-- Contador de likes visible
-- Comentarios públicos con filtro por nombre de autor
+### Público (sin cuenta)
+- Feed público con boxes de todos los tipos
+- Permalink de box compartible — accesible sin login
+- Vista de perfil de usuario
+- Búsqueda full-text de boxes
 
-**Autenticado**
-- Registro con confirmación de correo y validación de contraseña (8 chars, mayúscula, carácter especial)
-- Inicio / cierre de sesión con dialog de confirmación neobrutalist
-- Crear, editar y eliminar posts propios
-- Estados: borrador / publicado
-- Cover image por post con gestión de conflictos (imagen vs placeholder generativo)
-- Editar perfil (nombre, usuario, bio, avatar)
-- Dar like a posts y guardar en favoritos
-- Comentar en posts y borrar comentarios propios
+### Autenticado
+- Registro con confirmación de correo (8 chars, mayúscula, carácter especial)
+- **Drops** en 6 tipos:
+  - **Quick** — texto corto
+  - **Media** — imagen o video (YouTube/Vimeo)
+  - **Poll** — encuesta con hasta 4 opciones
+  - **Mood** — texto grande sobre fondo de color
+  - **Link** — tarjeta de enlace externo
+  - **Thread** — lista numerada de puntos
+- **Votos** — like / dislike independientes por box
+- **Reacciones emoji** — 5 tipos (❤️ 😆 😮 😢 😠) independientes del voto
+- **Comentarios** con filtros: cronológico / recientes / relevantes (por engagement)
+- **Votos y reacciones en comentarios**
+- **Compartir** — feed interno, WhatsApp, copiar enlace
+- **Seguir** usuarios
+- **Tags** compartidos entre usuarios (muchos-a-muchos)
+- Editar perfil (nombre, username, bio, avatar)
+- Eliminar drops propios
 
-**Admin**
-- Editar o eliminar cualquier post
-- Eliminar cualquier comentario
-- Gestión de usuarios (ban / rol) desde panel de admin
-- Bypass de RLS en categorías y tags de posts ajenos
+### Interfaz
+- Responsive: mobile-first con bottom navigation bar en móvil
+- 5 paletas de color + modo oscuro (TweakPanel)
+- Notificaciones (dropdown + página completa)
+- Modales via `ReactDOM.createPortal` para aislamiento de z-index
 
 ---
 
 ## Requisitos previos
 
-- Node.js 18+
-- Una cuenta y proyecto en [Supabase](https://supabase.com) (plan Free es suficiente)
+- Node.js 20+
+- Cuenta y proyecto en [Supabase](https://supabase.com)
+- (Opcional) [Supabase CLI](https://supabase.com/docs/guides/cli) para gestión de migraciones local
 
 ---
 
 ## Instalación
 
 ```bash
-# 1. Clonar el repositorio
 git clone <url-del-repositorio>
 cd rael-blogs
-
-# 2. Instalar dependencias
 npm install
-
-# 3. Configurar variables de entorno
-cp example.env .env
-# Editar .env con tus credenciales de Supabase
+cp .env.example .env
+# Editar .env con tus credenciales
 ```
 
 ### Variables de entorno
@@ -77,67 +79,126 @@ VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
 VITE_SUPABASE_ANON_KEY=tu_anon_key_aqui
 ```
 
-Encuéntralas en Supabase → Project Settings → API.
+Encuéntralas en **Supabase → Project Settings → API**.
 
 ---
 
-## Configuración de Supabase
+## Base de datos
 
-### 1. Base de datos
-
-El esquema completo está versionado en `supabase/migrations/`. Si el proyecto Supabase es eliminado por inactividad, se puede recrear la estructura vacía con:
+El esquema completo está versionado en `supabase/migrations/`. Aplicar en orden:
 
 ```bash
 supabase db push
 ```
 
-> Esto restaura tablas, RLS y funciones — no los datos ni las imágenes del Storage.
+> Reconstruye tablas, RLS, funciones e índices — no los datos ni las imágenes de Storage.
 
-Migraciones en orden:
+### Migraciones
 
-| Versión | Migración | Contenido |
-|---------|-----------|-----------|
-| 20260418042702 | `initial_schema` | Tablas core: profiles, posts, categories, tags, post_categories, post_tags |
-| 20260418042719 | `rls_policies` | Políticas RLS base en todas las tablas |
-| 20260418042734 | `storage_policies` | Bucket `post-images` público + políticas por carpeta de usuario |
-| 20260418052011 | `seed_categories` | 6 categorías iniciales |
-| 20260418054543 | `comments_likes_bookmarks` | Tablas: comments, post_likes, post_bookmarks |
-| 20260418191106 | `add_role_and_ban_to_profiles` | Columnas `role` e `is_banned` en profiles |
-| 20260418191627 | `admin_delete_any_comment` | Política admin para eliminar cualquier comentario |
-| 20260418191926 | `protect_role_and_ban_columns` | Bloquea auto-elevación de rol + política admin ban |
-| 20260418212544 | `add_cover_type_to_posts` | Columna `cover_type` (gif/video/image/code) |
-| 20260418230725 | `tags_insert_policy` | Usuarios autenticados pueden crear tags |
-| 20260419032936 | `search_posts_fulltext` | Función RPC `search_posts` con DISTINCT JOIN |
-| 20260419035240 | `admin_bypass_post_categories_tags` | Admin puede modificar categorías/tags de posts ajenos |
+| Timestamp | Archivo | Contenido |
+|-----------|---------|-----------|
+| 20260418042702 | `initial_schema` | Tablas core: profiles, tags |
+| 20260418042719 | `rls_policies` | Políticas RLS base |
+| 20260418042734 | `storage_policies` | Bucket `post-images` + políticas por carpeta |
+| 20260418052011 | `seed_categories` | Categorías iniciales (legado) |
+| 20260418054543 | `comments_likes_bookmarks` | Tablas de blog (legado, eliminadas en phase1) |
+| 20260418191106 | `add_role_and_ban_to_profiles` | `role`, `is_banned` en profiles |
+| 20260418191627 | `admin_delete_any_comment` | Política admin comentarios |
+| 20260418191926 | `protect_role_and_ban_columns` | Bloquea auto-elevación de rol |
+| 20260418212544 | `add_cover_type_to_posts` | Columna cover_type (legado) |
+| 20260418230725 | `tags_insert_policy` | Usuarios autenticados crean tags |
+| 20260419032936 | `search_posts_fulltext` | RPC search_posts (legado) |
+| 20260419035240 | `admin_bypass_post_categories_tags` | Admin bypass tags (legado) |
+| 20260507000000 | `admin_post_bypass` | Admin bypass posts (legado) |
+| 20260507000001 | `fix_search_posts_security` | search_path en funciones |
+| 20260507000002 | `enforce_ban_on_writes` | Ban en todas las writes |
+| 20260507100000 | `nbox_phase1_schema` | **NBOX core**: boxes, box_tags, box_reactions, box_saves, box_comments, follows, is_banned(), search_boxes() |
+| 20260508100000 | `nbox_social_tables` | **NBOX phase 2**: box_votes, box_shares, comment_votes, comment_reactions + RLS |
+| 20260508100001 | `nbox_security_hardening` | Índices en FKs, storage listing fix, revoke search_boxes a anon |
 
-### 2. Storage
+### Storage
 
-- Bucket: `post-images` (público)
-- Rutas: `{user_id}/posts/{timestamp}.{ext}` para portadas · `{user_id}/avatar/avatar.{ext}` para avatares
-
-### 3. Autenticación
-
-En Supabase → Authentication → URL Configuration:
-- **Site URL**: `http://localhost:5173` en desarrollo, o tu dominio en producción
-- La confirmación de correo está **activada** — el usuario recibe un email al registrarse
+- **Bucket:** `post-images` (público)
+- **Rutas:**
+  - Portadas: `{user_id}/posts/{timestamp}.{ext}`
+  - Avatares: `{user_id}/avatar/avatar.{ext}`
 
 ---
 
 ## Ejecución local
 
 ```bash
-npm run dev
+npm run dev        # http://localhost:5173
+npm run build      # Build de producción
+npm run preview    # Preview del build
 ```
 
-Abre `http://localhost:5173`.
+---
+
+## Análisis de rendimiento
+
+### Scripts disponibles
+
+| Script | Qué hace |
+|--------|----------|
+| `npm run analyze` | Build + abre `dist/bundle-report.html` con el treemap interactivo del bundle |
+| `npm run perf` | Build + auditoría Lighthouse CI sobre el preview local |
+
+### Bundle analysis (`rollup-plugin-visualizer`)
 
 ```bash
-# Build de producción
-npm run build
-
-# Preview del build
-npm run preview
+npm run analyze
 ```
+
+Genera `dist/bundle-report.html` y lo abre automáticamente en el navegador. Muestra un treemap interactivo con:
+- Tamaño real, gzip y brotli de cada módulo
+- Qué dependencias pesan más dentro de cada chunk
+- Qué páginas lazy-loaded contienen qué código
+
+Útil para detectar dependencias inesperadamente grandes, código duplicado entre chunks o módulos que deberían ser lazy pero no lo son.
+
+### Lighthouse CI (`@lhci/cli`)
+
+```bash
+npm run perf
+```
+
+Levanta el servidor de preview, corre 2 rondas de Lighthouse sobre `/` y `/login`, y reporta:
+
+| Métrica | Umbral (warn) |
+|---------|---------------|
+| LCP (Largest Contentful Paint) | < 4 000 ms |
+| TBT (Total Blocking Time) | < 400 ms |
+| CLS (Cumulative Layout Shift) | < 0.15 |
+| FCP (First Contentful Paint) | < 3 000 ms |
+| Performance score | ≥ 75 |
+| Accessibility score | ≥ 85 |
+| Best Practices score | ≥ 90 |
+| SEO score | ≥ 80 |
+
+Los umbrales están en modo `warn` — el comando no falla aunque no se cumplan. Ajustar a `error` en `lighthouserc.cjs` cuando haya una baseline estable.
+
+Los resultados se suben automáticamente a [LHCI temporary storage](https://googlechrome.github.io/lighthouse-ci/docs/configuration.html#target) (gratis, disponibles 7 días) y el CLI imprime el enlace al finalizar.
+
+### React DevTools Profiler
+
+Sin instalación. Usar la extensión de navegador [React DevTools](https://react.dev/learn/react-developer-tools):
+
+1. Abrir DevTools → pestaña **Profiler**
+2. Grabar mientras se interactúa con el feed, modales o comentarios
+3. Identificar componentes que renderizan más de lo necesario o tardan más de ~16 ms
+
+Especialmente útil para detectar re-renders innecesarios en `BoxCard`, `CommentsModal` y `CommentItem` cuando el feed crece.
+
+### `web-vitals` (pendiente)
+
+No instalado aún. Agregar cuando haya un destino real para los datos (Plausible, PostHog, tabla en Supabase):
+
+```bash
+npm i --save-exact web-vitals
+```
+
+Mide LCP, CLS, INP, FCP y TTFB de usuarios reales en producción.
 
 ---
 
@@ -146,60 +207,82 @@ npm run preview
 ```
 src/
 ├── app/
-│   └── router.tsx               # Rutas públicas y protegidas (lazy loading en dashboard)
+│   └── router.tsx                  # Rutas públicas + RequireAuth wrapper
+├── assets/
+│   └── icons/                      # SVGs (NboxLogo, etc.)
 ├── components/
-│   ├── auth/                    # ProtectedRoute
-│   ├── layout/                  # Header (con nav móvil), Footer, AppLayout
-│   ├── posts/                   # PostCard, PostEditor, CommentSection, LikeButton, BookmarkButton
-│   └── ui/                      # Avatar, Chip, Icon (SVG outline), ImageUpload, Toast, TweakPanel
+│   ├── auth/
+│   │   └── RequireAuth.tsx          # Layout guard — redirige a /login con ?next=
+│   ├── feed/
+│   │   ├── BoxCard.tsx              # Card principal con votos, reacciones, comentarios, compartir
+│   │   ├── CommentsModal.tsx        # Modal de comentarios (portal)
+│   │   ├── CommentItem.tsx          # Comentario individual con votos y reacciones
+│   │   ├── DropModal.tsx            # Modal creación de drop (6 tipos)
+│   │   ├── ReactionsDetailModal.tsx # Detalle de quién reaccionó/votó
+│   │   └── ShareModal.tsx           # Compartir: feed / WhatsApp / link
+│   ├── layout/
+│   │   ├── AppShell.tsx             # Grid 3 columnas
+│   │   ├── Header.tsx               # Topbar con notificaciones
+│   │   ├── LeftSidebar.tsx          # Nav + perfil
+│   │   ├── NotificationsDropdown.tsx# Dropdown de notificaciones (portal)
+│   │   └── RightSidebar.tsx         # Trending tags + sugerencias + contactos
+│   └── ui/
+│       ├── Avatar.tsx
+│       ├── ImageUpload.tsx
+│       ├── Toast.tsx                # Toast con duración configurable
+│       └── TweakPanel.tsx           # Panel de paleta / sombras / modo oscuro
+├── data/
+│   └── notifications.ts            # Mock de notificaciones
 ├── features/
-│   ├── auth/                    # AuthContext, useSignIn, useSignUp
-│   ├── categories/              # useCategories
-│   ├── interactions/            # useComments, useLikes, useBookmarks
-│   ├── posts/                   # usePosts, usePost, useMyPosts, usePostMutations, usePostsByAuthor...
-│   └── profile/                 # useProfile, useUpdateProfile
+│   ├── auth/                        # AuthContext, useSignIn, useSignUp
+│   ├── boxes/                       # useBoxes, useBox, useCreateBox, useDeleteBox
+│   ├── comments/                    # useComments, useCommentVotes, useCommentReactions
+│   ├── follows/                     # useFollows
+│   ├── profile/                     # useProfile, useUpdateProfile
+│   ├── reactions/                   # useReactions (emoji en boxes)
+│   ├── shares/                      # useShares
+│   └── votes/                       # useVotes (like/dislike en boxes)
 ├── lib/
-│   ├── sanitize.ts              # sanitizeText, parseTagNames
-│   ├── storage.ts               # uploadCoverImage, uploadAvatarImage, validateImage
-│   ├── supabase.ts              # Cliente Supabase tipado
-│   └── utils.ts                 # slugify, formatDate, readTime, getInitials
+│   ├── sanitize.ts                  # sanitizeText, sanitizeUrl, sanitizeTagName
+│   ├── storage.ts                   # uploadCoverImage, uploadAvatarImage (con validación)
+│   ├── supabase.ts                  # Cliente Supabase tipado
+│   └── videoEmbed.ts                # YouTube/Vimeo URL → embed URL
 ├── pages/
-│   ├── dashboard/               # DashboardPage, NewPostPage, EditPostPage, ProfilePage, BookmarksPage
-│   └── public/                  # HomePage, PostPage, LoginPage, CategoriesPage, CategoryPage, TagPage, AuthorPage
+│   ├── dashboard/
+│   │   └── ProfilePage.tsx          # Editar perfil
+│   └── public/
+│       ├── BoxPage.tsx              # Permalink de box compartida
+│       ├── ExplorePage.tsx
+│       ├── LoginPage.tsx            # Login + registro + redirect ?next=
+│       ├── NotificationsPage.tsx
+│       └── TagPage.tsx
 ├── styles/
-│   └── globals.css              # Sistema de diseño neobrutalism completo (5 paletas + modo oscuro)
+│   └── globals.css                  # Design system neobrutalist completo
 └── types/
-    └── database.ts              # Tipos generados desde Supabase
+    └── database.ts                  # Tipos Supabase + interfaces de payload
 ```
 
 ---
 
 ## Seguridad
 
-- **RLS** en todas las tablas: los usuarios solo pueden modificar su propio contenido
-- **Sanitización** de todos los inputs antes de persistir (`sanitize.ts`)
-- **Zod** valida formularios en el frontend antes de llamar a Supabase
-- **react-markdown** bloquea elementos peligrosos (`script`, `iframe`, `form`, etc.)
-- Supabase JS usa queries parametrizadas — sin riesgo de SQL injection
-- La `anon key` es pública por diseño; la seguridad real está en las políticas RLS
-- Errores de autenticación son genéricos para evitar enumeración de usuarios
-- Imágenes validadas por tipo (JPG/PNG/WebP/GIF) y tamaño antes de subirse
+- **RLS** habilitado en todas las tablas: los usuarios solo modifican su propio contenido
+- **is_banned()** verificada en cada policy de escritura (boxes, comments, reactions, votes, follows)
+- **`(select auth.uid())`** en policies para evitar re-evaluación por fila (auth_rls_initplan)
+- **Sanitización de URLs**: `sanitizeUrl()` rechaza cualquier protocolo que no sea `http/https` — bloquea `javascript:` y similares
+- **Validación de imágenes** en servidor y cliente: tipo MIME + tamaño máximo, ejecutada dentro de las funciones de subida
+- **Storage listing** restringido: el SELECT en `storage.objects` solo permite al dueño ver sus propios archivos; las URLs públicas funcionan independientemente
+- **Supabase JS** usa queries parametrizadas — sin riesgo de SQL injection
+- La `anon key` es pública por diseño; la seguridad real está en RLS
+- Errores de autenticación genéricos para evitar enumeración de usuarios
 
 ---
 
-## TweakPanel
+## Roadmap
 
-Panel flotante (esquina inferior derecha) para ajustar el diseño en tiempo real:
-
-- **5 paletas de color**: Magenta (default), Miami, Toxic, Sunset, Dark
-- **Tipografía**: cambia la fuente de display entre opciones
-- **Sombras**: ajusta el offset de las sombras neobrutalist
-- **Grid**: activa/desactiva el grid de fondo del hero
-
-Los cambios se aplican vía CSS custom properties sin recargar la página.
-
----
-
-## Licencia
-
-Proyecto universitario — uso académico.
+- [ ] Notificaciones reales (Supabase Realtime)
+- [ ] Sistema de menciones (@usuario)
+- [ ] Follows funcionales + feed personalizado por following
+- [ ] Rate limiting en writes (función Postgres pre-request o Edge Function)
+- [ ] Separar `role` e `is_banned` del select público de profiles
+- [ ] Chat / mensajes directos (Supabase Realtime en fase inicial)

@@ -1,4 +1,17 @@
 /**
+ * Valida que una URL use protocolo http/https.
+ * Devuelve la URL normalizada o cadena vacía si es inválida/insegura.
+ */
+export function sanitizeUrl(value: string): string {
+  try {
+    const u = new URL(value.trim())
+    return ['http:', 'https:'].includes(u.protocol) ? u.href : ''
+  } catch {
+    return ''
+  }
+}
+
+/**
  * Elimina caracteres de control y recorta espacios.
  * Usado en todos los campos de texto antes de persistir.
  */

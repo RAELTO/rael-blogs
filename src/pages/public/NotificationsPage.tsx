@@ -1,77 +1,104 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { UserCheck, UserX } from 'lucide-react'
+import { useAuth } from '../../features/auth/AuthContext'
+import {
+  useNotifications, useMarkAllRead, getNotifText,
+  type NotifKind, type NotificationRow,
+} from '../../features/notifications/useNotifications'
+import { useRespondContactRequest } from '../../features/contacts/useContactMutations'
+import { useToast } from '../../components/ui/Toast'
+import Avatar from '../../components/ui/Avatar'
 import AppShell from '../../components/layout/AppShell'
 import LeftSidebar from '../../components/layout/LeftSidebar'
 import RightSidebar from '../../components/layout/RightSidebar'
-import { MOCK_NOTIFS, type MockNotif, type NotifKind } from '../../data/notifications'
 
 // ─── Filter config ────────────────────────────────────────────────────────────
 type FilterKey = 'all' | 'unread' | NotifKind
 
 const FILTERS: { key: FilterKey; label: string }[] = [
-  { key: 'all',     label: 'Todas'       },
-  { key: 'unread',  label: 'No Leídas'   },
-  { key: 'react',   label: 'Reacciones'  },
-  { key: 'comment', label: 'Comentarios' },
-  { key: 'follow',  label: 'Followers'   },
-  { key: 'mention', label: 'Menciones'   },
+  { key: 'all',             label: 'Todas'       },
+  { key: 'unread',          label: 'No Leídas'   },
+  { key: 'contact_request', label: 'Contactos'   },
+  { key: 'reaction',        label: 'Reacciones'  },
+  { key: 'vote',            label: 'Votos'        },
+  { key: 'comment',         label: 'Comentarios' },
+  { key: 'follow',          label: 'Followers'   },
+  { key: 'share',           label: 'Compartidos' },
 ]
 
-// ─── Notif Avatar ─────────────────────────────────────────────────────────────
-function NotifAvatar({ actor }: { actor?: MockNotif['actor'] }) {
-  return (
-    <div style={{
-      width: 42, height: 42, flexShrink: 0,
-      background: actor?.color ?? 'var(--accent-2)',
-      border: '3px solid var(--ink)',
-      boxShadow: '3px 3px 0 var(--ink)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontWeight: 900, fontSize: 16, color: 'var(--ink)',
-    }}>
-      {actor?.initial ?? '★'}
-    </div>
-  )
+function timeAgo(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime()
+  const min = Math.floor(diff / 60000)
+  if (min < 1) return 'ahora'
+  if (min < 60) return `${min}m`
+  const h = Math.floor(min / 60)
+  if (h < 24) return `${h}h`
+  return `${Math.floor(h / 24)}d`
 }
 
 // ─── Notif Item ───────────────────────────────────────────────────────────────
-function NotifItem({ n }: { n: MockNotif }) {
-  return (
-    <div
-      style={{
-        display: 'flex', alignItems: 'flex-start', gap: 12,
-        padding: '12px 16px', borderBottom: '2px solid var(--ink)',
-        background: n.unread ? 'var(--accent-2)' : 'var(--bg-panel)',
-        cursor: 'pointer', transition: 'background .1s',
-      }}
-      onMouseEnter={e => {
-        if (!n.unread) (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-alt)'
-      }}
-      onMouseLeave={e => {
-        (e.currentTarget as HTMLDivElement).style.background = n.unread ? 'var(--accent-2)' : 'var(--bg-panel)'
-      }}
-    >
-      <NotifAvatar actor={n.actor} />
+function NotifItem({ n, onAccept, onDecline }: {
+  n: NotificationRow
+  onAccept?: (n: NotificationRow) => void
+  onDecline?: (n: NotificationRow) => void
+}) {
+  const isContactReq = n.kind === 'contact_request'
+  const isContactAcc = n.kind === 'contact_accepted'
 
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'flex-start', gap: 12,
+      padding: '12px 16px', borderBottom: '2px solid var(--ink)',
+      background: !n.read_at ? 'var(--accent-2)' : 'var(--bg-panel)',
+      transition: 'background .1s',
+    }}>
+      {/* Avatar */}
+      {n.actor
+        ? <Avatar name={n.actor.display_name} src={n.actor.avatar_url} size="md" />
+        : <div style={{ width: 40, height: 40, background: 'var(--bg-alt)', border: '3px solid var(--ink)', boxShadow: '3px 3px 0 var(--ink)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>★</div>
+      }
+
+      {/* Content */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 14, lineHeight: 1.45 }}>
-          {n.actor && <strong style={{ fontWeight: 800 }}>{n.actor.name} </strong>}
-          {n.text}
+          {n.actor && <strong style={{ fontWeight: 800 }}>{n.actor.display_name} </strong>}
+          {getNotifText(n)}
         </div>
-        <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', marginTop: 5, fontWeight: 700 }}>
-          {n.time}
+        <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', marginTop: 4, fontWeight: 700 }}>
+          {timeAgo(n.created_at)}
         </div>
       </div>
 
-      {n.unread && (
+      {/* Action buttons for contact requests */}
+      {isContactReq && onAccept && onDecline && (
+        <div style={{ display: 'flex', gap: 6, flexShrink: 0, alignSelf: 'center' }}>
+          <button className="contact-btn contact-btn-accept" style={{ width: 'auto', padding: '0 10px', gap: 5 }} onClick={() => onAccept(n)}>
+            <UserCheck size={13} strokeWidth={3} /> Aceptar
+          </button>
+          <button className="contact-btn contact-btn-decline" style={{ width: 'auto', padding: '0 10px', gap: 5 }} onClick={() => onDecline(n)}>
+            <UserX size={13} strokeWidth={3} /> Rechazar
+          </button>
+        </div>
+      )}
+
+      {/* Badge for accepted contact */}
+      {isContactAcc && (
         <div style={{
-          padding: '2px 8px', border: '2px solid var(--ink)',
-          background: 'var(--accent-1)', color: 'var(--ink)',
-          fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 900,
-          letterSpacing: '.1em', textTransform: 'uppercase',
-          alignSelf: 'center', flexShrink: 0,
+          padding: '2px 8px', border: '2px solid var(--ink)', flexShrink: 0, alignSelf: 'center',
+          background: 'var(--accent-4)', fontSize: 10, fontFamily: 'var(--font-mono)',
+          fontWeight: 900, letterSpacing: '.08em', textTransform: 'uppercase',
           boxShadow: '2px 2px 0 var(--ink)',
         }}>
-          NEW
+          NUEVO CONTACTO
         </div>
+      )}
+
+      {/* Unread indicator */}
+      {!n.read_at && !isContactReq && (
+        <div style={{
+          width: 8, height: 8, borderRadius: '50%',
+          background: 'var(--accent-1)', flexShrink: 0, marginTop: 6,
+        }} />
       )}
     </div>
   )
@@ -79,13 +106,39 @@ function NotifItem({ n }: { n: MockNotif }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function NotificationsPage() {
+  const { user } = useAuth()
+  const toast = useToast()
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all')
 
-  const filtered = MOCK_NOTIFS.filter(n => {
+  const { data: notifications = [] } = useNotifications(user?.id)
+  const markAllRead = useMarkAllRead(user?.id)
+  const respond = useRespondContactRequest(user?.id ?? '')
+
+  // Marcar todo como leído al entrar
+  useEffect(() => {
+    markAllRead.mutate()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function handleAccept(n: NotificationRow) {
+    if (!n.contact_request_id || !n.actor_id) return
+    await respond.mutateAsync({ requestId: n.contact_request_id, requesterId: n.actor_id, accept: true })
+    toast(`✓ ${n.actor?.display_name} es ahora tu contacto`)
+  }
+  async function handleDecline(n: NotificationRow) {
+    if (!n.contact_request_id || !n.actor_id) return
+    await respond.mutateAsync({ requestId: n.contact_request_id, requesterId: n.actor_id, accept: false })
+    toast(`Solicitud de ${n.actor?.display_name} rechazada`)
+  }
+
+  const filtered = notifications.filter(n => {
     if (activeFilter === 'all')    return true
-    if (activeFilter === 'unread') return n.unread
+    if (activeFilter === 'unread') return !n.read_at
+    if (activeFilter === 'contact_request') return n.kind === 'contact_request' || n.kind === 'contact_accepted'
     return n.kind === activeFilter
   })
+
+  const unreadCount = notifications.filter(n => !n.read_at).length
 
   return (
     <AppShell left={<LeftSidebar />} right={<RightSidebar />}>
@@ -94,8 +147,18 @@ export default function NotificationsPage() {
         fontFamily: 'var(--font-display)', fontSize: 28,
         letterSpacing: '-0.02em', marginBottom: 16,
         borderBottom: '3px solid var(--ink)', paddingBottom: 12,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         NBOX · NOTIFS
+        {unreadCount > 0 && (
+          <span style={{
+            fontSize: 12, fontFamily: 'var(--font-mono)', fontWeight: 800,
+            background: 'var(--accent-1)', border: '2px solid var(--ink)',
+            padding: '2px 10px', boxShadow: '2px 2px 0 var(--ink)',
+          }}>
+            {unreadCount} sin leer
+          </span>
+        )}
       </div>
 
       {/* Filter chips */}
@@ -130,7 +193,10 @@ export default function NotificationsPage() {
           </div>
         )}
         {filtered.map(n => (
-          <NotifItem key={n.id} n={n} />
+          <NotifItem key={n.id} n={n}
+            onAccept={n.kind === 'contact_request' ? handleAccept : undefined}
+            onDecline={n.kind === 'contact_request' ? handleDecline : undefined}
+          />
         ))}
       </div>
     </AppShell>
