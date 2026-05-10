@@ -458,6 +458,12 @@ a.btn, a.btn:hover { color: var(--ink); text-decoration: none; }
   background: var(--accent-2);
   white-space: nowrap;
   text-transform: uppercase;
+  box-shadow: 2px 2px 0 var(--ink);
+  transition: transform .1s, box-shadow .1s;
+}
+.chip:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--ink);
 }
 .chip.chip-pink   { background: var(--accent-1); color: var(--ink); }
 .chip.chip-yellow { background: var(--accent-2); color: var(--ink); }
@@ -561,12 +567,17 @@ a.btn, a.btn:hover { color: var(--ink); text-decoration: none; }
 }
 
 .header-right { display: flex; align-items: center; gap: 8px; }
+/* Botones extra del header — solo visibles en móvil */
+.header-palette-btn,
+.header-mobile-btn { display: none; }
 
 @media (max-width: 760px) {
   .header-search { display: none; }
   .header-tabs { gap: 0; }
   .header-tab { width: 48px; }
   .brand-logo .brand-name { display: none; }
+  .header-palette-btn,
+  .header-mobile-btn { display: flex; }
 }
 
 /* ---- 3-COLUMN APP GRID ---- */
@@ -624,6 +635,7 @@ a.btn, a.btn:hover { color: var(--ink); text-decoration: none; }
 }
 .mb-item:hover { color: var(--ink); }
 .mb-item.active { color: var(--ink); background: var(--accent-2); border-color: var(--ink); }
+.mb-item-drop { background: var(--accent-1); color: var(--ink); font-weight: 900; border: 2px solid var(--ink); }
 @media (max-width: 760px) {
   .mobile-bar { display: flex; }
   body { padding-bottom: 70px; }
@@ -737,6 +749,19 @@ a.btn, a.btn:hover { color: var(--ink); text-decoration: none; }
 .box-body { padding: 4px 16px 14px; }
 .box-text { font-size: 15px; line-height: 1.55; white-space: pre-wrap; }
 .box-tags-row { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 16px 0; }
+
+/* Loud This Week — trending tag rows */
+.trending-tag-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 8px; margin-bottom: 4px;
+  text-decoration: none; color: var(--ink);
+  transition: background .1s, transform .1s, box-shadow .1s;
+}
+.trending-tag-item:hover {
+  background: var(--accent-2);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
 .box-stats {
   display: flex; gap: 14px; padding: 10px 16px;
   font-size: 12px; color: var(--ink-dim); font-weight: 700;
@@ -1797,19 +1822,10 @@ button.box-action { background: none; border: none; font: inherit; }
 }
 
 @media (max-width: 760px) {
-  /* Chat flotante — elevar sobre la mobile bar (70px) */
-  .float-chat {
-    bottom: 70px;
-    left: 10px;
-    right: 10px !important;
-    width: auto;
-    height: 380px;
-  }
+  /* Chat flotante — oculto en móvil (el usuario usa /inbox directamente) */
+  .float-chat,
   .float-chat-min {
-    bottom: 84px; /* 70px bar + 14px gap */
-    left: 10px;
-    right: 10px !important;
-    max-width: none;
+    display: none !important;
   }
 }
 

@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import type { Profile } from '../../types/database'
@@ -54,27 +53,8 @@ export function getNotifText(n: NotificationRow): string {
 }
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
+// La suscripción Realtime vive en NotifNotifier (App.tsx) — nunca aquí.
 export function useNotifications(userId: string | undefined, kind?: NotifKind | NotifKind[]) {
-  const qc = useQueryClient()
-
-  // Realtime: invalida queries al llegar nuevas notificaciones
-  useEffect(() => {
-    if (!userId) return
-    const channel = supabase
-      .channel(`notifs:${userId}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'notifications',
-        filter: `recipient_id=eq.${userId}`,
-      }, () => {
-        qc.invalidateQueries({ queryKey: ['notifications', userId] })
-        qc.invalidateQueries({ queryKey: ['notif-count', userId] })
-      })
-      .subscribe()
-    return () => { supabase.removeChannel(channel) }
-  }, [userId, qc])
-
   return useQuery({
     queryKey: ['notifications', userId, kind],
     queryFn: async () => {

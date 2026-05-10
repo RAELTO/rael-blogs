@@ -1,0 +1,20 @@
+import { useNavigate } from 'react-router-dom'
+import { useFloatingChat, type FloatingChatEntry } from './FloatingChatContext'
+
+/**
+ * En desktop abre el panel flotante.
+ * En móvil (≤760px) navega a /inbox en su lugar.
+ * Usar este hook en todos los call sites de openChat del usuario.
+ */
+export function useOpenChat() {
+  const { openChat } = useFloatingChat()
+  const navigate = useNavigate()
+
+  return function open(entry: Omit<FloatingChatEntry, 'minimized'>) {
+    if (window.innerWidth <= 760) {
+      navigate('/inbox')
+    } else {
+      openChat(entry)
+    }
+  }
+}

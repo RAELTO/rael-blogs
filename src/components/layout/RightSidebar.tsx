@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { NavLink } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { UserPlus, UserCheck, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
@@ -8,7 +9,7 @@ import { useSuggestedContacts } from '../../features/contacts/useSuggestedContac
 import { useSendContactRequest } from '../../features/contacts/useContactMutations'
 import { useGetOrCreateConversation } from '../../features/chat/useGetOrCreateConversation'
 import { usePresenceMap } from '../../features/presence/usePresence'
-import { useFloatingChat } from '../../features/chat/FloatingChatContext'
+import { useOpenChat } from '../../features/chat/useOpenChat'
 
 
 function useTrendingTags() {
@@ -53,9 +54,9 @@ export default function RightSidebar() {
   const { data: suggestions = [] } = useSuggestedContacts(user?.id)
   const { data: realContacts = [] } = useContacts(user?.id)
   const presenceMap    = usePresenceMap(realContacts.map(c => c.other.id))
-  const sendRequest    = useSendContactRequest(user?.id ?? '')
+  const sendRequest  = useSendContactRequest(user?.id ?? '')
   const getOrCreate  = useGetOrCreateConversation(user?.id ?? '')
-  const { openChat } = useFloatingChat()
+  const openChat     = useOpenChat()
 
   async function handleOpenChat(otherId: string, otherName: string, otherAvatar: string | null) {
     const convId = await getOrCreate.mutateAsync(otherId)
@@ -79,12 +80,12 @@ export default function RightSidebar() {
           🔥 Loud This Week
         </div>
         {(tags ?? []).map(t => (
-          <div key={t.id} className="row between mb-2" style={{ cursor: 'pointer' }}>
+          <NavLink key={t.id} to={`/tag/${t.slug}`} className="trending-tag-item">
             <span style={{ fontFamily: 'var(--font-display)', fontSize: 14 }}>#{t.name}</span>
-            <span className="text-xs text-mute" style={{ fontFamily: 'var(--font-mono)' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'var(--ink-mute)' }}>
               {NumFmt(t.count)}
             </span>
-          </div>
+          </NavLink>
         ))}
         {(tags ?? []).length === 0 && (
           <div className="text-xs text-mute">Sin tags aún</div>

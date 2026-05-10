@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../features/auth/AuthContext'
-import { useBoxFeed, useDeleteBox, type FeedMode } from '../../features/boxes/useBoxes'
+import { useBoxFeed, useDeleteBox, useSearchBoxes, type FeedMode } from '../../features/boxes/useBoxes'
 import AppShell from '../../components/layout/AppShell'
 import LeftSidebar from '../../components/layout/LeftSidebar'
 import RightSidebar from '../../components/layout/RightSidebar'
@@ -30,11 +31,18 @@ function EmptyFeed({ mode }: { mode: FeedMode }) {
 
 export default function HomePage() {
   const { user } = useAuth()
+  const [searchParams] = useSearchParams()
   const [mode, setMode] = useState<FeedMode>('foryou')
   const [dropOpen, setDropOpen] = useState<BoxType | null>(null)
   const toast = useToast()
+  const searchQuery = (searchParams.get('q') ?? '').trim()
+  const hasSearch = searchQuery.length >= 2
 
-  const { data: boxes, isLoading, isError } = useBoxFeed(mode, user?.id)
+  const feedQuery = useBoxFeed(mode, user?.id)
+  const searchBoxesQuery = useSearchBoxes(searchQuery)
+  const boxes = hasSearch ? searchBoxesQuery.data : feedQuery.data
+  const isLoading = hasSearch ? searchBoxesQuery.isLoading : feedQuery.isLoading
+  const isError = hasSearch ? searchBoxesQuery.isError : feedQuery.isError
   const deleteBox = useDeleteBox()
 
   function openDrop(type: BoxType = 'quick') {

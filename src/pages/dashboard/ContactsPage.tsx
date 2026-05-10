@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { UserPlus, UserCheck, UserX, X, MessageCircle } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useGetOrCreateConversation } from '../../features/chat/useGetOrCreateConversation'
-import { useFloatingChat } from '../../features/chat/FloatingChatContext'
+import { useOpenChat } from '../../features/chat/useOpenChat'
 import { usePresenceMap } from '../../features/presence/usePresence'
 import { useIncomingRequests, useOutgoingRequests } from '../../features/contacts/useContactRequests'
 import { useContacts } from '../../features/contacts/useContacts'
@@ -173,8 +173,8 @@ function ContactCard({ profile, index, userId, presence, onRemove }: {
   presence: { label: string; color: string } | undefined
   onRemove: (id: string) => void
 }) {
-  const getOrCreate  = useGetOrCreateConversation(userId)
-  const { openChat } = useFloatingChat()
+  const getOrCreate = useGetOrCreateConversation(userId)
+  const openChat    = useOpenChat()
 
   async function handleMessage() {
     const convId = await getOrCreate.mutateAsync(profile.id)

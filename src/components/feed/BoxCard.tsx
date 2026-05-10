@@ -349,15 +349,15 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
                   onClick={() => { if (user) handleVote('like'); setReactPopOpen(false) }}
                   style={{ background: hasLike ? 'var(--accent-4)' : 'var(--bg-panel)' }}
                 >
-                  <ThumbsUp size={18} strokeWidth={2.5} style={{ color: 'var(--accent-4)' }} />
+                  <ThumbsUp size={18} strokeWidth={2.5} style={{ color: hasLike ? 'var(--ink)' : 'var(--accent-4)' }} />
                 </button>
                 <button
                   className={`react-btn${hasDislike ? ' active' : ''}`}
                   title="Dislike"
                   onClick={() => { if (user) handleVote('dislike'); setReactPopOpen(false) }}
-                  style={{ background: 'var(--bg-panel)', borderColor: hasDislike ? 'var(--accent-1)' : 'var(--ink)' }}
+                  style={{ background: hasDislike ? 'var(--accent-1)' : 'var(--bg-panel)', borderColor: hasDislike ? 'var(--accent-1)' : 'var(--ink)' }}
                 >
-                  <ThumbsDown size={18} strokeWidth={2.5} style={{ color: 'var(--accent-1)' }} />
+                  <ThumbsDown size={18} strokeWidth={2.5} style={{ color: hasDislike ? 'var(--bg-panel)' : 'var(--accent-1)' }} />
                 </button>
               </div>
             )}

@@ -15,10 +15,20 @@ export default function AppearanceModal({ onClose, anchorRef }: AppearanceModalP
 
   useLayoutEffect(() => {
     const rect = anchorRef?.current?.getBoundingClientRect()
-    setPosition({
-      top: rect ? rect.bottom + 6 : 0,
-      left: rect ? rect.left : 0,
-    })
+    const W = 280
+    const PAD = 8
+    if (rect) {
+      // Priorizar alineación a la derecha del anchor; si se sale, alinear a la izquierda
+      let left = rect.right - W
+      if (left < PAD) left = rect.left
+      left = Math.max(PAD, Math.min(left, window.innerWidth - W - PAD))
+      setPosition({ top: rect.bottom + 6, left })
+    } else {
+      setPosition({
+        top: Math.max(80, (window.innerHeight - 320) / 2),
+        left: Math.max(PAD, (window.innerWidth - W) / 2),
+      })
+    }
   }, [anchorRef])
 
   // Apply changes immediately as user interacts
