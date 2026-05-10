@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { Home, Compass, Bell, Inbox, Plus, LogIn } from 'lucide-react'
+import { Home, Contact, Bell, Inbox, Plus, LogIn } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import Header from './Header'
 import Avatar from '../ui/Avatar'
@@ -13,10 +13,10 @@ interface AppShellProps {
 }
 
 const MOB_TABS = [
-  { to: '/',              Icon: Home,    label: 'Home',   end: true  },
-  { to: '/explore',       Icon: Compass, label: 'Explore', end: false },
-  { to: '/notifications', Icon: Bell,    label: 'Notifs',  end: false },
-  { to: '/inbox',         Icon: Inbox,   label: 'Inbox',   end: false },
+  { to: '/',              Icon: Home,    label: 'Home',     end: true  },
+  { to: '/contacts',      Icon: Contact, label: 'Contactos', end: false },
+  { to: '/notifications', Icon: Bell,    label: 'Notifs',   end: false },
+  { to: '/inbox',         Icon: Inbox,   label: 'Inbox',    end: false },
 ] as const
 
 export default function AppShell({ children, left, right, onDropClick }: AppShellProps) {
@@ -46,14 +46,13 @@ export default function AppShell({ children, left, right, onDropClick }: AppShel
             {label}
           </NavLink>
         ))}
-        <NavLink
-          to="/"
-          className="mb-item"
-          onClick={e => { e.preventDefault(); onDropClick?.() }}
+        <button
+          className="mb-item mb-item-drop"
+          onClick={onDropClick}
         >
           <Plus size={22} strokeWidth={2.5} />
           Drop
-        </NavLink>
+        </button>
         {user ? (
           <NavLink to="/my-box" className={({ isActive }) => `mb-item${isActive ? ' active' : ''}`}>
             <Avatar

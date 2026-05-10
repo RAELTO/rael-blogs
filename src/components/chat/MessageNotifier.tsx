@@ -55,15 +55,18 @@ export default function MessageNotifier() {
         : conv.last_message_at !== prevConv.last_message_at && conv.has_unread
 
       if (isNewMessage) {
-        const alreadyOpen = chats.some(c => c.conversationId === conv.id)
-        if (!alreadyOpen) {
-          openChat({
-            conversationId: conv.id,
-            otherId:        conv.other.id,
-            otherName:      conv.other.display_name,
-            otherAvatar:    conv.other.avatar_url,
-          })
-          toast(`💬 Nuevo mensaje de ${conv.other.display_name}`, 4000)
+        toast(`💬 Nuevo mensaje de ${conv.other.display_name}`, 4000)
+        // En móvil solo mostramos el toast — el panel flotante no está disponible
+        if (window.innerWidth > 760) {
+          const alreadyOpen = chats.some(c => c.conversationId === conv.id)
+          if (!alreadyOpen) {
+            openChat({
+              conversationId: conv.id,
+              otherId:        conv.other.id,
+              otherName:      conv.other.display_name,
+              otherAvatar:    conv.other.avatar_url,
+            })
+          }
         }
       }
     }

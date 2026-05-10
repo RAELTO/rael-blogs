@@ -5,6 +5,7 @@ import { useHeartbeat } from './features/presence/useHeartbeat'
 import { FloatingChatProvider } from './features/chat/FloatingChatContext'
 import FloatingChats from './components/chat/FloatingChatPanel'
 import MessageNotifier from './components/chat/MessageNotifier'
+import NotifNotifier from './components/notifications/NotifNotifier'
 import AppRouter from './app/router'
 
 function Heartbeat() {
@@ -20,6 +21,7 @@ export default function App() {
         <FloatingChatProvider>
           <Heartbeat />
           <MessageNotifier />
+          <NotifNotifier />
           <AppRouter />
           <TweakPanel />
           <FloatingChats />

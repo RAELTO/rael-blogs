@@ -1,11 +1,12 @@
 import { useState, useRef } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { Home, Inbox, Bell, Search, Plus } from 'lucide-react'
+import { Home, Inbox, Bell, Search, Plus, Palette, Compass } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useProfile } from '../../features/profile/useProfile'
 import Avatar from '../ui/Avatar'
 import NboxLogo from '../../assets/icons/NboxLogo'
 import NotificationsDropdown from './NotificationsDropdown'
+import AppearanceModal from '../ui/AppearanceModal'
 import { useUnreadCount } from '../../features/notifications/useNotifications'
 
 interface Tab {
@@ -33,7 +34,9 @@ export default function Header({ onDropClick }: HeaderProps) {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [notifOpen, setNotifOpen] = useState(false)
+  const [paletteOpen, setPaletteOpen] = useState(false)
   const bellRef = useRef<HTMLButtonElement>(null)
+  const paletteRef = useRef<HTMLButtonElement>(null)
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -109,6 +112,23 @@ export default function Header({ onDropClick }: HeaderProps) {
         <div className="header-right">
           {user ? (
             <>
+              {/* Explore/Search — solo visible en móvil (reemplazó el tab de Explore) */}
+              <NavLink
+                to="/explore"
+                className={({ isActive }) => `btn btn-icon header-mobile-btn${isActive ? ' active' : ''}`}
+                title="Explorar"
+              >
+                <Compass size={18} strokeWidth={2.5} />
+              </NavLink>
+              {/* Apariencia — solo visible en móvil (desktop usa el sidebar) */}
+              <button
+                ref={paletteRef}
+                className="btn btn-icon header-palette-btn"
+                title="Apariencia"
+                onClick={() => setPaletteOpen(o => !o)}
+              >
+                <Palette size={18} strokeWidth={2.5} />
+              </button>
               <button className="btn btn-icon btn-primary" title="Drop" onClick={onDropClick}>
                 <Plus size={20} strokeWidth={2.5} />
               </button>
@@ -127,6 +147,13 @@ export default function Header({ onDropClick }: HeaderProps) {
           )}
         </div>
       </div>
+
+      {paletteOpen && (
+        <AppearanceModal
+          anchorRef={paletteRef}
+          onClose={() => setPaletteOpen(false)}
+        />
+      )}
     </header>
   )
 }
