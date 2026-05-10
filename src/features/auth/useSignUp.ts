@@ -56,5 +56,6 @@ export function useSignUp() {
     return !error
   }
 
-  return { signUp, loading, error }
+  const reset = () => setError(null)
+  return { signUp, loading, error, reset }
 }

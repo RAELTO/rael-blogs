@@ -21,6 +21,7 @@ export type Database = {
           avatar_url: string | null
           role: string
           is_banned: boolean
+          last_seen_at: string | null
           created_at: string
           updated_at: string
         }
@@ -32,6 +33,7 @@ export type Database = {
           avatar_url?: string | null
           role?: string
           is_banned?: boolean
+          last_seen_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -43,6 +45,7 @@ export type Database = {
           avatar_url?: string | null
           role?: string
           is_banned?: boolean
+          last_seen_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -226,6 +229,93 @@ export type Database = {
           }
         ]
       }
+      notifications: {
+        Row: {
+          id: string
+          recipient_id: string
+          actor_id: string | null
+          kind: 'reaction' | 'vote' | 'comment' | 'follow' | 'contact_request' | 'contact_accepted' | 'share'
+          source_table: string
+          source_id: string | null
+          box_id: string | null
+          comment_id: string | null
+          contact_request_id: string | null
+          metadata: Json
+          dedup_key: string | null
+          read_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: never
+        Update: { read_at?: string | null }
+        Relationships: [
+          { foreignKeyName: 'notifications_recipient_id_fkey'; columns: ['recipient_id']; referencedRelation: 'profiles'; referencedColumns: ['id'] },
+          { foreignKeyName: 'notifications_actor_id_fkey'; columns: ['actor_id']; referencedRelation: 'profiles'; referencedColumns: ['id'] }
+        ]
+      }
+      conversations: {
+        Row: { id: string; type: 'direct'; user_a: string; user_b: string; last_message_at: string | null; last_message_text: string | null; created_at: string }
+        Insert: { id?: string; type?: 'direct'; user_a: string; user_b: string; last_message_at?: string | null; last_message_text?: string | null; created_at?: string }
+        Update: { last_message_at?: string | null; last_message_text?: string | null }
+        Relationships: [
+          { foreignKeyName: 'conversations_user_a_fkey'; columns: ['user_a']; referencedRelation: 'profiles'; referencedColumns: ['id'] },
+          { foreignKeyName: 'conversations_user_b_fkey'; columns: ['user_b']; referencedRelation: 'profiles'; referencedColumns: ['id'] }
+        ]
+      }
+      conversation_participants: {
+        Row: { conversation_id: string; user_id: string; last_read_at: string | null; archived_at: string | null; deleted_at: string | null }
+        Insert: { conversation_id: string; user_id: string; last_read_at?: string | null; archived_at?: string | null; deleted_at?: string | null }
+        Update: { last_read_at?: string | null; archived_at?: string | null; deleted_at?: string | null }
+        Relationships: []
+      }
+      messages: {
+        Row: { id: string; conversation_id: string; sender_id: string; body: string; kind: 'text' | 'image' | 'system'; created_at: string; edited_at: string | null; deleted_at: string | null }
+        Insert: { id?: string; conversation_id: string; sender_id: string; body: string; kind?: 'text' | 'image' | 'system'; created_at?: string; edited_at?: string | null; deleted_at?: string | null }
+        Update: { body?: string; edited_at?: string | null; deleted_at?: string | null }
+        Relationships: [
+          { foreignKeyName: 'messages_sender_id_fkey'; columns: ['sender_id']; referencedRelation: 'profiles'; referencedColumns: ['id'] },
+          { foreignKeyName: 'messages_conversation_id_fkey'; columns: ['conversation_id']; referencedRelation: 'conversations'; referencedColumns: ['id'] }
+        ]
+      }
+      contact_requests: {
+        Row: {
+          id: string
+          requester_id: string
+          addressee_id: string
+          status: 'pending' | 'accepted' | 'declined' | 'canceled'
+          created_at: string
+          responded_at: string | null
+        }
+        Insert: {
+          id?: string
+          requester_id: string
+          addressee_id: string
+          status?: 'pending' | 'accepted' | 'declined' | 'canceled'
+          created_at?: string
+          responded_at?: string | null
+        }
+        Update: {
+          id?: string
+          requester_id?: string
+          addressee_id?: string
+          status?: 'pending' | 'accepted' | 'declined' | 'canceled'
+          created_at?: string
+          responded_at?: string | null
+        }
+        Relationships: [
+          { foreignKeyName: 'contact_requests_requester_id_fkey'; columns: ['requester_id']; referencedRelation: 'profiles'; referencedColumns: ['id'] },
+          { foreignKeyName: 'contact_requests_addressee_id_fkey'; columns: ['addressee_id']; referencedRelation: 'profiles'; referencedColumns: ['id'] }
+        ]
+      }
+      contacts: {
+        Row: { user_a: string; user_b: string; created_at: string }
+        Insert: { user_a: string; user_b: string; created_at?: string }
+        Update: { user_a?: string; user_b?: string; created_at?: string }
+        Relationships: [
+          { foreignKeyName: 'contacts_user_a_fkey'; columns: ['user_a']; referencedRelation: 'profiles'; referencedColumns: ['id'] },
+          { foreignKeyName: 'contacts_user_b_fkey'; columns: ['user_b']; referencedRelation: 'profiles'; referencedColumns: ['id'] }
+        ]
+      }
       box_saves: {
         Row: {
           box_id: string
@@ -339,6 +429,10 @@ export type Database = {
         Args: { q: string; lim?: number }
         Returns: Database['public']['Tables']['boxes']['Row'][]
       }
+      accept_contact_request: {
+        Args: { p_request_id: string }
+        Returns: void
+      }
     }
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>
@@ -354,6 +448,23 @@ export type BoxReaction  = Database['public']['Tables']['box_reactions']['Row']
 export type BoxSave      = Database['public']['Tables']['box_saves']['Row']
 export type BoxComment   = Database['public']['Tables']['box_comments']['Row']
 export type Follow       = Database['public']['Tables']['follows']['Row']
+
+export type ContactRequest = {
+  id: string
+  requester_id: string
+  addressee_id: string
+  status: 'pending' | 'accepted' | 'declined' | 'canceled'
+  created_at: string
+  responded_at: string | null
+}
+
+export type Contact = {
+  user_a: string
+  user_b: string
+  created_at: string
+}
+
+export type RequestStatus = ContactRequest['status']
 
 export type ReactionType = BoxReaction['reaction_type']
 export type VoteType     = 'like' | 'dislike'

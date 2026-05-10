@@ -73,7 +73,10 @@ export default function CommentItem({ comment, onDelete, onOpenActivity }: Props
     clearTimeout(closeTimer.current)
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect()
-      setPopPos({ top: rect.top - 56, left: rect.left })
+      // popup: 2 votes(36px) + divider + 5 emojis(36px) + gaps + padding ≈ 312px
+      const POPUP_W = 312
+      const left = Math.max(8, Math.min(rect.left, window.innerWidth - POPUP_W - 8))
+      setPopPos({ top: rect.top - 60, left })
     }
   }
 

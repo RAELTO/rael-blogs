@@ -6,7 +6,7 @@ import { useProfile } from '../../features/profile/useProfile'
 import Avatar from '../ui/Avatar'
 import NboxLogo from '../../assets/icons/NboxLogo'
 import NotificationsDropdown from './NotificationsDropdown'
-import { UNREAD_COUNT } from '../../data/notifications'
+import { useUnreadCount } from '../../features/notifications/useNotifications'
 
 interface Tab {
   to: string
@@ -29,6 +29,7 @@ interface HeaderProps {
 export default function Header({ onDropClick }: HeaderProps) {
   const { user } = useAuth()
   const { data: profile } = useProfile(user?.id)
+  const { data: unreadCount = 0 } = useUnreadCount(user?.id)
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [notifOpen, setNotifOpen] = useState(false)
@@ -78,7 +79,7 @@ export default function Header({ onDropClick }: HeaderProps) {
                   style={{ position: 'relative' }}
                 >
                   <Bell size={22} strokeWidth={2.5} />
-                  {UNREAD_COUNT > 0 && <span className="badge">{UNREAD_COUNT}</span>}
+                  {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
                 </button>
               )
             }

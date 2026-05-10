@@ -41,5 +41,6 @@ export function useSignIn() {
     return true
   }
 
-  return { signIn, loading, error }
+  const reset = () => setError(null)
+  return { signIn, loading, error, reset }
 }

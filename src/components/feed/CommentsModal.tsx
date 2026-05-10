@@ -113,7 +113,7 @@ export default function CommentsModal({ boxId, onClose }: Props) {
   const sortedComments = (() => {
     const arr = [...comments]
     if (sort === 'recent')   return arr.reverse()
-    if (sort === 'relevant') return arr.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    if (sort === 'relevant') return arr.sort((a, b) => (b.engagement_count ?? 0) - (a.engagement_count ?? 0))
     return arr
   })()
 
@@ -140,10 +140,12 @@ export default function CommentsModal({ boxId, onClose }: Props) {
   return createPortal(
     <>
       <div
-        style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+        className="comments-modal-overlay"
+        style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         onClick={onClose}
       >
         <div
+          className="comments-modal-panel"
           style={{ background: 'var(--bg-panel)', border: '3px solid var(--ink)', boxShadow: '6px 6px 0 var(--ink)', width: '100%', maxWidth: 600, height: '82vh', display: 'flex', flexDirection: 'column' }}
           onClick={e => e.stopPropagation()}
         >
@@ -159,7 +161,7 @@ export default function CommentsModal({ boxId, onClose }: Props) {
 
           {/* Filter bar — only when there are comments */}
           {comments.length > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 16px', borderBottom: '2px solid var(--ink)', flexShrink: 0, background: 'var(--bg-alt)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, rowGap: 4, padding: '7px 12px', borderBottom: '2px solid var(--ink)', flexShrink: 0, background: 'var(--bg-alt)', flexWrap: 'wrap' }}>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.1em', color: 'var(--ink-mute)', textTransform: 'uppercase', marginRight: 2 }}>
                 Ordenar:
               </span>

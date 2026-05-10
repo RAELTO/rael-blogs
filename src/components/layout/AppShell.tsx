@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { Home, Compass, Bell, Plus, LogIn } from 'lucide-react'
+import { Home, Compass, Bell, Inbox, Plus, LogIn } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import Header from './Header'
 import Avatar from '../ui/Avatar'
@@ -16,6 +16,7 @@ const MOB_TABS = [
   { to: '/',              Icon: Home,    label: 'Home',   end: true  },
   { to: '/explore',       Icon: Compass, label: 'Explore', end: false },
   { to: '/notifications', Icon: Bell,    label: 'Notifs',  end: false },
+  { to: '/inbox',         Icon: Inbox,   label: 'Inbox',   end: false },
 ] as const
 
 export default function AppShell({ children, left, right, onDropClick }: AppShellProps) {

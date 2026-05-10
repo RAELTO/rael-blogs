@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams, NavLink } from 'react-router-dom'
-import { LogIn, UserPlus } from 'lucide-react'
+import { LogIn, UserPlus, Mail, ArrowLeft } from 'lucide-react'
 import NboxLogo from '../../assets/icons/NboxLogo'
 import { useSignIn } from '../../features/auth/useSignIn'
 import { useSignUp } from '../../features/auth/useSignUp'
+import { useSendRecovery } from '../../features/auth/usePasswordRecovery'
 import { useToast } from '../../components/ui/Toast'
 
-type Mode = 'login' | 'register'
+type Mode = 'login' | 'register' | 'forgot'
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams()
@@ -17,12 +18,13 @@ export default function LoginPage() {
   const [username, setUsername] = useState('')
   const [validationError, setValidationError] = useState('')
 
-  const { signIn, loading: loadingIn, error: errorIn } = useSignIn()
-  const { signUp, loading: loadingUp, error: errorUp } = useSignUp()
+  const { signIn, loading: loadingIn, error: errorIn, reset: resetIn } = useSignIn()
+  const { signUp, loading: loadingUp, error: errorUp, reset: resetUp } = useSignUp()
+  const { send: sendRecovery, loading: loadingRecovery, sent: recoverySent, reset: resetRecovery } = useSendRecovery()
   const toast = useToast()
   const navigate = useNavigate()
 
-  const loading = loadingIn || loadingUp
+  const loading = loadingIn || loadingUp || loadingRecovery
   const error = validationError || errorIn || errorUp
 
   const pwRules = {
@@ -67,6 +69,20 @@ export default function LoginPage() {
   const handleModeChange = (next: Mode) => {
     setMode(next)
     setValidationError('')
+    setEmail('')
+    setPassword('')
+    setDisplayName('')
+    setUsername('')
+    resetIn()
+    resetUp()
+    resetRecovery()
+  }
+
+  const handleForgot = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email.trim()) { setValidationError('Introduce tu correo.'); return }
+    setValidationError('')
+    await sendRecovery(email)
   }
 
   return (
@@ -87,24 +103,88 @@ export default function LoginPage() {
         </div>
         <div className="auth-subtitle">▸ Neo Brutal Box · Post bold. Drop loud.</div>
 
-        <div className="auth-tabs">
-          <button
-            type="button"
-            className={`auth-tab ${mode === 'login' ? 'active' : ''}`}
-            onClick={() => handleModeChange('login')}
-          >
-            Iniciar sesión
-          </button>
-          <button
-            type="button"
-            className={`auth-tab ${mode === 'register' ? 'active' : ''}`}
-            onClick={() => handleModeChange('register')}
-          >
-            Crear cuenta
-          </button>
-        </div>
+        {/* Tabs — ocultas en modo forgot */}
+        {mode !== 'forgot' && (
+          <div className="auth-tabs">
+            <button
+              type="button"
+              className={`auth-tab ${mode === 'login' ? 'active' : ''}`}
+              onClick={() => handleModeChange('login')}
+            >
+              Iniciar sesión
+            </button>
+            <button
+              type="button"
+              className={`auth-tab ${mode === 'register' ? 'active' : ''}`}
+              onClick={() => handleModeChange('register')}
+            >
+              Crear cuenta
+            </button>
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit}>
+        {/* ── Modo forgot ── */}
+        {mode === 'forgot' && (
+          recoverySent ? (
+            <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>✉</div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, marginBottom: 10 }}>
+                Revisa tu correo
+              </div>
+              <p style={{ fontSize: 13, color: 'var(--ink-dim)', lineHeight: 1.6, marginBottom: 20 }}>
+                Si existe una cuenta con ese correo, te enviaremos un enlace para restablecer tu contraseña.
+              </p>
+              <button
+                type="button"
+                className="btn"
+                style={{ width: '100%', justifyContent: 'center' }}
+                onClick={() => handleModeChange('login')}
+              >
+                <ArrowLeft size={14} strokeWidth={2.5} /> Volver al inicio de sesión
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleForgot}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, marginBottom: 16, letterSpacing: '-0.01em' }}>
+                Recuperar contraseña
+              </div>
+              <div className="field-group">
+                <label className="field-label">Correo</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="tu@correo.com"
+                  autoFocus
+                />
+              </div>
+              {validationError && (
+                <div style={{ color: 'var(--accent-1)', fontSize: 12, marginBottom: 14, fontWeight: 700 }}>
+                  ⚠ {validationError}
+                </div>
+              )}
+              <button
+                type="submit"
+                className="btn btn-primary"
+                style={{ width: '100%', justifyContent: 'center', marginBottom: 12 }}
+                disabled={loading}
+              >
+                {loading ? '...' : <><Mail size={15} strokeWidth={2.5} /> Enviar enlace</>}
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                style={{ width: '100%', justifyContent: 'center', fontSize: 13 }}
+                onClick={() => handleModeChange('login')}
+              >
+                <ArrowLeft size={14} strokeWidth={2.5} /> Volver al inicio de sesión
+              </button>
+            </form>
+          )
+        )}
+
+        {/* ── Modo login / register ── */}
+        <form onSubmit={handleSubmit} style={{ display: mode === 'forgot' ? 'none' : undefined }}>
           {mode === 'register' && (
             <>
               <div className="field-group">
@@ -137,7 +217,18 @@ export default function LoginPage() {
           </div>
 
           <div className="field-group">
-            <label className="field-label">Contraseña</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+              <label className="field-label" style={{ margin: 0 }}>Contraseña</label>
+              {mode === 'login' && (
+                <button
+                  type="button"
+                  onClick={() => handleModeChange('forgot')}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', textDecoration: 'underline', padding: 0 }}
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              )}
+            </div>
             <input
               type="password"
               value={password}

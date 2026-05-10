@@ -1,0 +1,3 @@
+-- This file is a placeholder. The social interaction tables were applied to the
+-- remote DB across migrations 20260508223046 through 20260509012656.
+-- See those files for the full DDL.
