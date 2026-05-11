@@ -7,7 +7,7 @@ export interface CommentWithAuthor {
   author_id: string
   content: string
   created_at: string
-  author: { id: string; username: string; display_name: string; avatar_url: string | null }
+  author: { id: string; username: string; display_name: string; avatar_url: string | null; role?: string }
   engagement_count: number  // votes (like+dislike) + reactions total
 }
 
@@ -18,7 +18,7 @@ export function useComments(boxId: string) {
       // 1. Fetch comments with author
       const { data: comments, error } = await supabase
         .from('box_comments')
-        .select('*, author:profiles!box_comments_author_id_fkey(id, username, display_name, avatar_url)')
+        .select('*, author:profiles!box_comments_author_id_fkey(id, username, display_name, avatar_url, role)')
         .eq('box_id', boxId)
         .order('created_at', { ascending: true })
       if (error) throw error

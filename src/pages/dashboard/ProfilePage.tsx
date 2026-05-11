@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Settings2 } from 'lucide-react'
+import AdminBadge from '../../components/ui/AdminBadge'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useProfile, useUpdateProfile } from '../../features/profile/useProfile'
 import { uploadAvatarImage } from '../../lib/storage'
@@ -84,8 +85,9 @@ export default function ProfilePage() {
               size="lg"
             />
             <div>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, letterSpacing: '-0.02em', lineHeight: 1 }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, letterSpacing: '-0.02em', lineHeight: 1, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
                 {profile?.display_name}
+                {profile?.role === 'admin' && <AdminBadge />}
               </div>
               <div className="text-mute" style={{ fontFamily: 'var(--font-mono)', fontSize: 13 }}>
                 @{profile?.username}

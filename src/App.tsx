@@ -2,6 +2,7 @@ import { AuthProvider, useAuth } from './features/auth/AuthContext'
 import { ToastProvider } from './components/ui/Toast'
 import { TweakPanel } from './components/ui/TweakPanel'
 import { useHeartbeat } from './features/presence/useHeartbeat'
+import { RealtimePresenceProvider } from './features/presence/RealtimePresenceProvider'
 import { FloatingChatProvider } from './features/chat/FloatingChatContext'
 import FloatingChats from './components/chat/FloatingChatPanel'
 import MessageNotifier from './components/chat/MessageNotifier'
@@ -17,16 +18,18 @@ function Heartbeat() {
 export default function App() {
   return (
     <AuthProvider>
-      <ToastProvider>
-        <FloatingChatProvider>
-          <Heartbeat />
-          <MessageNotifier />
-          <NotifNotifier />
-          <AppRouter />
-          <TweakPanel />
-          <FloatingChats />
-        </FloatingChatProvider>
-      </ToastProvider>
+      <RealtimePresenceProvider>
+        <ToastProvider>
+          <FloatingChatProvider>
+            <Heartbeat />
+            <MessageNotifier />
+            <NotifNotifier />
+            <AppRouter />
+            <TweakPanel />
+            <FloatingChats />
+          </FloatingChatProvider>
+        </ToastProvider>
+      </RealtimePresenceProvider>
     </AuthProvider>
   )
 }

@@ -480,7 +480,7 @@ export interface ThreadPayload { items: string[] }
 
 // Box with author joined (used in feed queries)
 export interface BoxWithAuthor extends Box {
-  author: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>
+  author: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url' | 'role'>
   tags?: Tag[]
   reaction_count?: number
   comment_count?: number

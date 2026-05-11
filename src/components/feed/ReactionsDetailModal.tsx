@@ -4,6 +4,7 @@ import { X, ThumbsUp, ThumbsDown } from 'lucide-react'
 import { useReactionDetails } from '../../features/reactions/useReactions'
 import { useVoteDetails } from '../../features/votes/useVotes'
 import Avatar from '../ui/Avatar'
+import AdminBadge from '../ui/AdminBadge'
 import type { ReactionType, VoteType } from '../../types/database'
 
 const REACTION_META: Record<ReactionType, { emoji: string; label: string }> = {
@@ -22,6 +23,7 @@ interface MergedRow {
   displayName: string
   username: string
   avatarUrl: string | null
+  role?: string
   vote?: VoteType
   reaction?: ReactionType
 }
@@ -51,6 +53,7 @@ export default function ReactionsDetailModal({ boxId, onClose }: Props) {
       displayName: v.profiles.display_name,
       username: v.profiles.username,
       avatarUrl: v.profiles.avatar_url,
+      role: (v.profiles as { role?: string }).role,
       vote: v.vote,
     })
   }
@@ -64,6 +67,7 @@ export default function ReactionsDetailModal({ boxId, onClose }: Props) {
         displayName: r.profiles.display_name,
         username: r.profiles.username,
         avatarUrl: r.profiles.avatar_url,
+        role: (r.profiles as { role?: string }).role,
         reaction: r.reaction_type,
       })
     }
@@ -73,11 +77,13 @@ export default function ReactionsDetailModal({ boxId, onClose }: Props) {
   const likeRows  = votes.map(v => ({
     userId: v.user_id, displayName: v.profiles.display_name,
     username: v.profiles.username, avatarUrl: v.profiles.avatar_url,
+    role: (v.profiles as { role?: string }).role,
     vote: v.vote, reaction: undefined as ReactionType | undefined,
   }))
   const reactionRows = reactions.map(r => ({
     userId: r.user_id, displayName: r.profiles.display_name,
     username: r.profiles.username, avatarUrl: r.profiles.avatar_url,
+    role: (r.profiles as { role?: string }).role,
     vote: undefined as VoteType | undefined, reaction: r.reaction_type,
   }))
 
@@ -182,7 +188,10 @@ export default function ReactionsDetailModal({ boxId, onClose }: Props) {
             }}>
               <Avatar name={row.displayName} src={row.avatarUrl} size="sm" />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 800, fontSize: 14 }}>{row.displayName}</div>
+                <div style={{ fontWeight: 800, fontSize: 14 }}>
+                  {row.displayName}
+                  {row.role === 'admin' && <AdminBadge />}
+                </div>
                 <div style={{ fontSize: 11, color: 'var(--ink-mute)', fontFamily: 'var(--font-mono)' }}>
                   @{row.username}
                 </div>

@@ -53,7 +53,7 @@ export function useVoteDetails(boxId: string, enabled = false) {
     queryFn: async () => {
       const { data } = await supabase
         .from('box_votes')
-        .select('vote, user_id, profiles(id, username, display_name, avatar_url)')
+        .select('vote, user_id, profiles(id, username, display_name, avatar_url, role)')
         .eq('box_id', boxId)
         .order('created_at', { ascending: false })
       return (data ?? []) as VoteDetailRow[]
