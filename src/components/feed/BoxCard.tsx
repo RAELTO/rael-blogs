@@ -6,6 +6,7 @@ import { useToast } from '../ui/Toast'
 import { useToggleReaction, useMyReaction, useReactionCounts } from '../../features/reactions/useReactions'
 import { useToggleVote, useMyVote, useVoteCounts } from '../../features/votes/useVotes'
 import Avatar from '../ui/Avatar'
+import AdminBadge from '../ui/AdminBadge'
 import ReactionsDetailModal from './ReactionsDetailModal'
 import CommentsModal from './CommentsModal'
 import ShareModal from './ShareModal'
@@ -228,7 +229,10 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
             <Avatar name={box.author.display_name} src={box.author.avatar_url} size="md" />
           </Link>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div className="box-head-name">{box.author.display_name}</div>
+            <div className="box-head-name">
+              {box.author.display_name}
+              {box.author.role === 'admin' && <AdminBadge />}
+            </div>
             <div className="box-head-meta">@{box.author.username} · {timeAgo(box.published_at)}</div>
           </div>
           {isOwner && (
@@ -286,30 +290,30 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
 
         {/* Stats */}
         <div className="box-stats">
-          {/* Custom reactions emoji stack + count */}
+          {/* Engagement summary: reactions + votes */}
           <button
+            type="button"
             className="box-stats-btn"
             onClick={() => setReactionDetailOpen(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: 3 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 10 }}
+            title="Ver reacciones"
           >
-            {topCustom.slice(0, 3).map(r => (
-              <span key={r.type} style={{ fontSize: 15, lineHeight: 1 }}>{r.emoji}</span>
-            ))}
-            {topCustom.length > 3 && <span style={{ fontSize: 12 }}>...</span>}
-            <span style={{ marginLeft: 2 }}>{totalCustom}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+              {topCustom.slice(0, 3).map(r => (
+                <span key={r.type} style={{ fontSize: 15, lineHeight: 1 }}>{r.emoji}</span>
+              ))}
+              {topCustom.length > 3 && <span style={{ fontSize: 12 }}>...</span>}
+              <span style={{ marginLeft: 2 }}>{totalCustom}</span>
+            </span>
+            <span className="box-stat-vote">
+              <ThumbsUp size={12} strokeWidth={2.5} style={{ color: 'var(--accent-4)', fill: 'none' }} />
+              <span>{likeCount}</span>
+            </span>
+            <span className="box-stat-vote">
+              <ThumbsDown size={12} strokeWidth={2.5} style={{ color: 'var(--accent-1)', fill: 'none' }} />
+              <span>{dislikeCount}</span>
+            </span>
           </button>
-
-          {/* Like count */}
-          <span className="box-stat-vote">
-            <ThumbsUp size={12} strokeWidth={2.5} style={{ color: 'var(--accent-4)', fill: 'none' }} />
-            <span>{likeCount}</span>
-          </span>
-
-          {/* Dislike count */}
-          <span className="box-stat-vote">
-            <ThumbsDown size={12} strokeWidth={2.5} style={{ color: 'var(--accent-1)', fill: 'none' }} />
-            <span>{dislikeCount}</span>
-          </span>
 
           <button
             className="box-stats-btn"

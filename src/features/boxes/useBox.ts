@@ -10,7 +10,7 @@ export function useBox(boxId: string) {
         .from('boxes')
         .select(`
           *,
-          author:profiles!boxes_author_id_fkey(id, username, display_name, avatar_url),
+          author:profiles!boxes_author_id_fkey(id, username, display_name, avatar_url, role),
           tags:box_tags(tag:tags(id, name, slug)),
           reaction_count:box_reactions(count),
           comment_count:box_comments(count)

@@ -40,7 +40,7 @@ export default function AppRouter() {
           <Route path="/explore"       element={<HomePage />} />
           <Route path="/notifications" element={<Suspense fallback={<Fallback />}><NotificationsPage /></Suspense>} />
           <Route path="/contacts"      element={<Suspense fallback={<Fallback />}><ContactsPage /></Suspense>} />
-          <Route path="/inbox"         element={<Suspense fallback={<Fallback />}><InboxPage /></Suspense>} />
+          <Route path="/nbox"          element={<Suspense fallback={<Fallback />}><InboxPage /></Suspense>} />
           <Route path="/tag/:slug"     element={<Suspense fallback={<Fallback />}><TagPage /></Suspense>} />
           <Route path="/my-box"        element={<Suspense fallback={<Fallback />}><ProfilePage /></Suspense>} />
           <Route path="/saves"         element={<Suspense fallback={<Fallback />}><NotFoundPage /></Suspense>} />
@@ -48,6 +48,7 @@ export default function AppRouter() {
         </Route>
 
         {/* ── Legacy redirects ────────────────────────────── */}
+        <Route path="/inbox"          element={<Navigate to="/nbox" replace />} />
         <Route path="/categories"     element={<Navigate to="/explore" replace />} />
         <Route path="/category/:slug" element={<Navigate to="/explore" replace />} />
         <Route path="/post/:slug"     element={<Navigate to="/" replace />} />

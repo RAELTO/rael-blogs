@@ -5,6 +5,7 @@ import { useAuth } from '../../features/auth/AuthContext'
 import { useMyCommentVote, useCommentVoteCounts, useToggleCommentVote } from '../../features/comments/useCommentVotes'
 import { useMyCommentReaction, useCommentReactionCounts, useToggleCommentReaction } from '../../features/comments/useCommentReactions'
 import Avatar from '../ui/Avatar'
+import AdminBadge from '../ui/AdminBadge'
 import type { CommentWithAuthor } from '../../features/comments/useComments'
 import type { ReactionType, VoteType } from '../../types/database'
 
@@ -102,7 +103,10 @@ export default function CommentItem({ comment, onDelete, onOpenActivity }: Props
             marginBottom: 6,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
-              <span style={{ fontWeight: 800, fontSize: 13 }}>{comment.author.display_name}</span>
+              <span style={{ fontWeight: 800, fontSize: 13 }}>
+                {comment.author.display_name}
+                {comment.author.role === 'admin' && <AdminBadge />}
+              </span>
               {isOwner && onDelete && (
                 <button
                   onClick={() => onDelete(comment.id)}

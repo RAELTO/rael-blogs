@@ -12,7 +12,7 @@ export function useOpenChat() {
 
   return function open(entry: Omit<FloatingChatEntry, 'minimized'>) {
     if (window.innerWidth <= 760) {
-      navigate('/inbox')
+      navigate('/nbox')
     } else {
       openChat(entry)
     }

@@ -16,7 +16,7 @@ const MOB_TABS = [
   { to: '/',              Icon: Home,    label: 'Home',     end: true  },
   { to: '/contacts',      Icon: Contact, label: 'Contactos', end: false },
   { to: '/notifications', Icon: Bell,    label: 'Notifs',   end: false },
-  { to: '/inbox',         Icon: Inbox,   label: 'Inbox',    end: false },
+  { to: '/nbox',          Icon: Inbox,   label: 'Inbox',    end: false },
 ] as const
 
 export default function AppShell({ children, left, right, onDropClick }: AppShellProps) {
