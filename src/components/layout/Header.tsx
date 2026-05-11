@@ -136,7 +136,7 @@ export default function Header({ onDropClick }: HeaderProps) {
               <button className="btn btn-icon btn-primary" title="Drop" onClick={onDropClick}>
                 <Plus size={20} strokeWidth={2.5} />
               </button>
-              <NavLink to="/my-box" style={{ display: 'flex' }} title="Mi Perfil">
+              <NavLink to="/my-box" className="header-avatar" title="Mi Perfil">
                 <Avatar
                   name={profile?.display_name ?? user.email ?? 'U'}
                   size="sm"

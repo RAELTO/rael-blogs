@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { Home, Contact, Bell, Inbox, Plus, LogIn } from 'lucide-react'
+import { Home, Contact, Bell, Inbox, LogIn } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import Header from './Header'
 import Avatar from '../ui/Avatar'
@@ -46,13 +46,6 @@ export default function AppShell({ children, left, right, onDropClick }: AppShel
             {label}
           </NavLink>
         ))}
-        <button
-          className="mb-item mb-item-drop"
-          onClick={onDropClick}
-        >
-          <Plus size={22} strokeWidth={2.5} />
-          Drop
-        </button>
         {user ? (
           <NavLink to="/my-box" className={({ isActive }) => `mb-item${isActive ? ' active' : ''}`}>
             <Avatar
