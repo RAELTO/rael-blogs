@@ -10,6 +10,7 @@ import ComposerCard from '../../components/feed/ComposerCard'
 import ModeSelector from '../../components/feed/ModeSelector'
 import BoxCard from '../../components/feed/BoxCard'
 import DropModal from '../../components/feed/DropModal'
+import SearchPeopleResults from '../../components/search/SearchPeopleResults'
 import { useToast } from '../../components/ui/Toast'
 import type { BoxType } from '../../types/database'
 
@@ -64,9 +65,26 @@ export default function HomePage() {
         right={<RightSidebar />}
         onDropClick={() => openDrop('quick')}
       >
-        <StoriesRail onCreateStory={() => toast('Stories próximamente')} />
-        <ComposerCard onOpenModal={openDrop} />
-        <ModeSelector value={mode} onChange={setMode} />
+        {!hasSearch && (
+          <>
+            <StoriesRail onCreateStory={() => toast('Stories próximamente')} />
+            <ComposerCard onOpenModal={openDrop} />
+            <ModeSelector value={mode} onChange={setMode} />
+          </>
+        )}
+
+        {hasSearch && user?.id && (
+          <>
+            <div className="search-results-title panel">
+              <div>
+                <div className="search-results-label">Search results</div>
+                <h1>{searchQuery}</h1>
+              </div>
+            </div>
+            <SearchPeopleResults query={searchQuery} userId={user.id} />
+            <h2 className="search-posts-title">Posts</h2>
+          </>
+        )}
 
         {isLoading && (
           <div className="spinner">
@@ -81,8 +99,17 @@ export default function HomePage() {
           </div>
         )}
 
-        {!isLoading && !isError && (boxes ?? []).length === 0 && (
+        {!isLoading && !isError && (boxes ?? []).length === 0 && !hasSearch && (
           <EmptyFeed mode={mode} />
+        )}
+
+        {!isLoading && !isError && (boxes ?? []).length === 0 && hasSearch && (
+          <div className="panel" style={{ padding: 28, textAlign: 'center' }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 20 }}>NO POSTS FOUND</div>
+            <div className="text-sm text-mute mt-2" style={{ fontFamily: 'var(--font-mono)' }}>
+              Try another name, username, tag, or keyword.
+            </div>
+          </div>
         )}
 
         {(boxes ?? []).map(box => (
