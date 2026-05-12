@@ -6,6 +6,7 @@ function invalidateContacts(qc: ReturnType<typeof useQueryClient>, userId: strin
   qc.invalidateQueries({ queryKey: ['contact-requests'] })
   qc.invalidateQueries({ queryKey: ['contact-status'] })
   qc.invalidateQueries({ queryKey: ['suggested-contacts'] })
+  qc.invalidateQueries({ queryKey: ['search-people'] })
 }
 
 // ── Enviar solicitud ──────────────────────────────────────────────────────────
