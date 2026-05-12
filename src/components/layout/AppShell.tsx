@@ -16,7 +16,7 @@ const MOB_TABS = [
   { to: '/',              Icon: Home,    label: 'Home',     end: true  },
   { to: '/contacts',      Icon: Contact, label: 'Contactos', end: false },
   { to: '/notifications', Icon: Bell,    label: 'Notifs',   end: false },
-  { to: '/nbox',          Icon: Inbox,   label: 'Inbox',    end: false },
+  { to: '/nbox',          Icon: Inbox,   label: 'NBOX',     end: false },
 ] as const
 
 export default function AppShell({ children, left, right, onDropClick }: AppShellProps) {
@@ -24,7 +24,7 @@ export default function AppShell({ children, left, right, onDropClick }: AppShel
   const { data: profile } = useProfile(user?.id)
 
   return (
-    <div style={{ minHeight: '100vh' }}>
+    <div className="app-shell">
       <Header onDropClick={onDropClick} />
 
       <div className="app-grid">

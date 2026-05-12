@@ -64,13 +64,17 @@ Red social de formato corto con estética **neobrutalist**: bordes gruesos, somb
 
 ## Instalación
 
+Este repo incluye una `.npmrc` versionada con `ignore-scripts=true`. Esto bloquea hooks de instalación de dependencias (`preinstall`, `postinstall`, `prepare`, etc.), que son el vector principal de ataques supply-chain como Mini Shai-Hulud.
+
 ```bash
 git clone <url-del-repositorio>
 cd rael-blogs
-npm install
+npm ci
 cp .env.example .env
 # Editar .env con tus credenciales
 ```
+
+Si una dependencia nueva necesita scripts de instalación, no habilites scripts globalmente. Primero revisa el cambio de `package.json` / `package-lock.json`, valida la fuente del paquete y ejecuta la instalación en una máquina o contenedor desechable.
 
 ### Variables de entorno
 
@@ -143,6 +147,9 @@ npm run preview    # Preview del build
 |--------|----------|
 | `npm run analyze` | Build + abre `dist/bundle-report.html` con el treemap interactivo del bundle |
 | `npm run perf` | Build + auditoría Lighthouse CI sobre el preview local |
+| `npm run doctor` | Escaneo completo de React Doctor con salida detallada |
+| `npm run doctor:score` | Score numérico de React Doctor |
+| `npm run doctor:diff` | Escanea cambios contra `main` |
 
 ### Bundle analysis (`rollup-plugin-visualizer`)
 
@@ -266,6 +273,8 @@ src/
 
 ## Seguridad
 
+- **Instalación endurecida**: `.npmrc` bloquea scripts de dependencias durante `npm ci` / `npm install`
+- **Lockfile obligatorio**: usar `npm ci` para instalar exactamente lo versionado en `package-lock.json`
 - **RLS** habilitado en todas las tablas: los usuarios solo modifican su propio contenido
 - **is_banned()** verificada en cada policy de escritura (boxes, comments, reactions, votes, follows)
 - **`(select auth.uid())`** en policies para evitar re-evaluación por fila (auth_rls_initplan)
