@@ -588,6 +588,9 @@ a.btn, a.btn:hover { color: var(--ink); text-decoration: none; }
   .header-avatar { display: none; }
 }
 
+/* ---- APP SHELL WRAPPER ---- */
+.app-shell { min-height: 100vh; }
+
 /* ---- 3-COLUMN APP GRID ---- */
 .app-grid {
   display: grid;
@@ -1894,17 +1897,67 @@ button.box-action { background: none; border: none; font: inherit; }
   .contacts-page-grid { gap: 12px; }
 }
 
-/* InboxPage — altura correcta en móvil (cuenta la mobile bar + safe area del sistema) */
+/* InboxPage mobile — position: fixed container immune to URL bar viewport shifts.
+   The URL bar on Android Chrome causes 100dvh to change dynamically, breaking
+   pixel-math height calculations. Locking the shell to position: fixed; inset: 0
+   anchors the layout to the actual visible viewport regardless of URL bar state. */
 @media (max-width: 760px) {
-  .chat-grid { height: calc(100dvh - 146px - env(safe-area-inset-bottom, 0px)); }
-
-  /* Evitar scroll en la página de chat — el chat-grid ya ocupa exactamente el espacio disponible */
+  html:has(.chat-grid),
   body:has(.chat-grid) {
     overflow: hidden;
+    height: 100%;
     padding-bottom: 0 !important;
   }
-  .app-grid:has(.chat-grid) {
+
+  .app-shell:has(.chat-grid) {
+    position: fixed;
+    inset: 0;
+    min-height: unset;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .app-shell:has(.chat-grid) .app-grid {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     padding: 0;
     gap: 0;
+    width: 100vw;
+    max-width: none;
+    background: var(--ink);
+    /* --mob-bar-h is set by InboxPage via JS (real measured height) */
+    padding-bottom: var(--mob-bar-h, 60px);
+  }
+
+  .app-shell:has(.chat-grid) .app-grid > main {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    width: 100%;
+    background: var(--ink);
+  }
+
+  .app-shell:has(.chat-grid) .chat-grid {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    border-left: 5px solid var(--ink);
+    border-right: 5px solid var(--ink);
+    border-top: 3px solid var(--ink);
+    border-bottom: 0;
+    box-shadow: none;
+  }
+
+  .app-shell:has(.chat-grid) .chat-list {
+    border-right: none;
+  }
+
+  .app-shell:has(.chat-grid) .mobile-bar {
+    border-left: 5px solid var(--ink);
+    border-right: 5px solid var(--ink);
+    border-top: 5px solid var(--ink);
   }
 }

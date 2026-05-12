@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useLayoutEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Paperclip, Send, Phone, Video, Smile, ArrowLeft, Mail } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
@@ -203,6 +203,13 @@ export default function InboxPage() {
   const [params, setParams] = useSearchParams()
   const [search, setSearch] = useState('')
   const toast = useToast()
+
+  useLayoutEffect(() => {
+    if (window.innerWidth > 760) return
+    const bar = document.querySelector<HTMLElement>('.mobile-bar')
+    if (bar) document.documentElement.style.setProperty('--mob-bar-h', `${bar.offsetHeight}px`)
+    return () => { document.documentElement.style.removeProperty('--mob-bar-h') }
+  }, [])
 
   const { data: convs = [], isLoading } = useConversations(user?.id)
   const otherIds    = convs.map(c => c.other.id)

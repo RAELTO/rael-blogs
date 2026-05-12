@@ -15,7 +15,20 @@ Red social neobrutalist. Stack: **React 19 · TypeScript · Vite 8 · Tailwind C
 
 ---
 
-## Reglas de código
+## Language
+
+All UI text — labels, buttons, placeholders, headings, error messages, loading states, tooltips, and any other user-facing string — must be written in **English**.
+
+This applies to all new code going forward. Existing Spanish strings are tracked in `TODO.md` for migration.
+
+**NBOX-style decorators** remain as-is regardless of language rule:
+- `▒ loading...` — texture on loading states
+- `▸ Section` — title/section marker
+- `✦` in special labels (`DROP ✦`)
+
+---
+
+## Reglas de código / Code Rules
 
 ### Iconos — usar Lucide React, nunca caracteres string
 
