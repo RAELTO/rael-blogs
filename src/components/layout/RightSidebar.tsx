@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { UserPlus, UserCheck, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
@@ -58,9 +58,9 @@ export default function RightSidebar() {
   const getOrCreate  = useGetOrCreateConversation(user?.id ?? '')
   const openChat     = useOpenChat()
 
-  async function handleOpenChat(otherId: string, otherName: string, otherAvatar: string | null) {
+  async function handleOpenChat(otherId: string, otherName: string, otherUsername: string, otherAvatar: string | null) {
     const convId = await getOrCreate.mutateAsync(otherId)
-    openChat({ conversationId: convId, otherId, otherName, otherAvatar })
+    openChat({ conversationId: convId, otherId, otherName, otherUsername, otherAvatar })
   }
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
   const [sent, setSent]           = useState<Set<string>>(new Set())
@@ -103,18 +103,27 @@ export default function RightSidebar() {
               const isSent = sent.has(u.id)
               return (
                 <div key={u.id} className="row gap-3 mb-3 items-center">
-                  <div className="avatar sm" style={{ background: avatarColor(i), flexShrink: 0 }}>
-                    {u.display_name?.charAt(0).toUpperCase() ?? 'U'}
-                  </div>
+                  <Link
+                    to={`/profile/${u.username}`}
+                    title={`Ver perfil de ${u.display_name}`}
+                    style={{ display: 'block', flexShrink: 0, textDecoration: 'none' }}
+                  >
+                    <div className="avatar sm" style={{ background: avatarColor(i) }}>
+                      {u.display_name?.charAt(0).toUpperCase() ?? 'U'}
+                    </div>
+                  </Link>
 
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <Link
+                    to={`/profile/${u.username}`}
+                    style={{ flex: 1, minWidth: 0, textDecoration: 'none', color: 'inherit' }}
+                  >
                     <div style={{ fontWeight: 800, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {u.display_name}
                     </div>
                     <div className="text-xs text-mute" style={{ fontFamily: 'var(--font-mono)' }}>
                       @{u.username}
                     </div>
-                  </div>
+                  </Link>
 
                   {/* Agregar contacto — distinto de seguir */}
                   <button
@@ -160,7 +169,7 @@ export default function RightSidebar() {
                 key={c.user_a + c.user_b}
                 className="row gap-3 mb-3"
                 style={{ cursor: 'pointer', padding: '4px 6px', borderRadius: 0, transition: 'background .1s, transform .1s, box-shadow .1s' }}
-                onClick={() => handleOpenChat(c.other.id, c.other.display_name, c.other.avatar_url)}
+                onClick={() => handleOpenChat(c.other.id, c.other.display_name, c.other.username, c.other.avatar_url)}
                 onMouseEnter={e => {
                   const el = e.currentTarget as HTMLDivElement
                   el.style.background = 'var(--accent-2)'
@@ -174,7 +183,12 @@ export default function RightSidebar() {
                   el.style.boxShadow = ''
                 }}
               >
-                <div style={{ position: 'relative', flexShrink: 0 }}>
+                <Link
+                  to={`/profile/${c.other.username}`}
+                  onClick={e => e.stopPropagation()}
+                  title={`Ver perfil de ${c.other.display_name}`}
+                  style={{ position: 'relative', flexShrink: 0, display: 'block', textDecoration: 'none' }}
+                >
                   <div className="avatar sm" style={{ background: avatarColor(i) }}>
                     {c.other.display_name?.charAt(0).toUpperCase() ?? 'U'}
                   </div>
@@ -187,7 +201,7 @@ export default function RightSidebar() {
                       border: '2px solid #111111',
                     }} />
                   )}
-                </div>
+                </Link>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 700, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {c.other.display_name}

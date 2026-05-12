@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { UserCheck, UserX } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import {
@@ -26,10 +26,11 @@ function timeAgo(iso: string) {
   return `${Math.floor(h / 24)}d`
 }
 
-function NotifItem({ n, onAccept, onDecline }: {
+function NotifItem({ n, onAccept, onDecline, onCloseDropdown }: {
   n: NotificationRow
   onAccept?: (n: NotificationRow) => void
   onDecline?: (n: NotificationRow) => void
+  onCloseDropdown: () => void
 }) {
   const isContactReq = n.kind === 'contact_request'
   return (
@@ -39,12 +40,25 @@ function NotifItem({ n, onAccept, onDecline }: {
       background: !n.read_at ? 'var(--accent-2)' : 'var(--bg-panel)',
     }}>
       {n.actor
-        ? <Avatar name={n.actor.display_name} src={n.actor.avatar_url} size="sm" />
+        ? (
+          <Link to={`/profile/${n.actor.username}`} onClick={onCloseDropdown} style={{ display: 'flex', textDecoration: 'none' }}>
+            <Avatar name={n.actor.display_name} src={n.actor.avatar_url} size="sm" />
+          </Link>
+        )
         : <div style={{ width: 32, height: 32, background: 'var(--bg-alt)', border: '2px solid var(--ink)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>★</div>
       }
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 13, lineHeight: 1.35 }}>
-          {n.actor && <strong style={{ fontWeight: 800 }}>{n.actor.display_name} </strong>}
+          {n.actor && (
+            <Link
+              to={`/profile/${n.actor.username}`}
+              onClick={onCloseDropdown}
+              style={{ fontWeight: 800, color: 'inherit', textDecoration: 'none' }}
+            >
+              {n.actor.display_name}
+            </Link>
+          )}
+          {n.actor && ' '}
           {getNotifText(n)}
         </div>
         <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', marginTop: 3, fontWeight: 700 }}>
@@ -159,6 +173,7 @@ export default function NotificationsDropdown({ anchorRef, onClose }: Props) {
         )}
         {preview.map(n => (
           <NotifItem key={n.id} n={n}
+            onCloseDropdown={onClose}
             onAccept={n.kind === 'contact_request' ? handleAccept : undefined}
             onDecline={n.kind === 'contact_request' ? handleDecline : undefined}
           />

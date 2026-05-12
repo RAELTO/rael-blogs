@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { UserPlus, UserCheck, UserX, X, MessageCircle } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useGetOrCreateConversation } from '../../features/chat/useGetOrCreateConversation'
@@ -51,8 +52,13 @@ function IncomingCard({ req, onAccept, onDecline }: {
       padding: '14px 16px', borderBottom: '2px solid var(--ink)',
       background: 'var(--accent-2)',
     }}>
-      <Avatar name={req.requester.display_name} src={req.requester.avatar_url} size="md" />
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <Link to={`/profile/${req.requester.username}`} style={{ display: 'flex', textDecoration: 'none' }}>
+        <Avatar name={req.requester.display_name} src={req.requester.avatar_url} size="md" />
+      </Link>
+      <Link
+        to={`/profile/${req.requester.username}`}
+        style={{ flex: 1, minWidth: 0, textDecoration: 'none', color: 'inherit' }}
+      >
         <div style={{ fontWeight: 800, fontSize: 14 }}>{req.requester.display_name}</div>
         <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-dim)' }}>
           @{req.requester.username} · {timeAgo(req.created_at)}
@@ -60,7 +66,7 @@ function IncomingCard({ req, onAccept, onDecline }: {
         <div style={{ fontSize: 12, marginTop: 2, color: 'var(--ink-dim)' }}>
           quiere agregarte como contacto
         </div>
-      </div>
+      </Link>
       <button
         className="contact-btn contact-btn-accept"
         style={{ width: 'auto', padding: '0 12px', gap: 5 }}
@@ -96,13 +102,18 @@ function OutgoingCard({ req, onCancel }: {
       display: 'flex', alignItems: 'center', gap: 12,
       padding: '14px 16px', borderBottom: '2px solid var(--ink)',
     }}>
-      <Avatar name={req.addressee.display_name} src={req.addressee.avatar_url} size="md" />
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <Link to={`/profile/${req.addressee.username}`} style={{ display: 'flex', textDecoration: 'none' }}>
+        <Avatar name={req.addressee.display_name} src={req.addressee.avatar_url} size="md" />
+      </Link>
+      <Link
+        to={`/profile/${req.addressee.username}`}
+        style={{ flex: 1, minWidth: 0, textDecoration: 'none', color: 'inherit' }}
+      >
         <div style={{ fontWeight: 800, fontSize: 14 }}>{req.addressee.display_name}</div>
         <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-dim)' }}>
           @{req.addressee.username} · {timeAgo(req.created_at)}
         </div>
-      </div>
+      </Link>
       <div style={{
         padding: '3px 10px', border: '2px solid var(--ink)',
         background: bg, fontSize: 11, fontFamily: 'var(--font-mono)',
@@ -133,22 +144,28 @@ function SuggestionCard({ profile, index, onAdd }: {
   const [sent, setSent] = useState(false)
   return (
     <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
-      <div style={{
-        height: 100,
-        background: avatarColor(index),
-        backgroundImage: 'repeating-linear-gradient(45deg, transparent 0 14px, rgba(0,0,0,0.07) 14px 16px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        borderBottom: '3px solid var(--ink)',
-      }}>
+      <Link
+        to={`/profile/${profile.username}`}
+        style={{
+          height: 100,
+          background: avatarColor(index),
+          backgroundImage: 'repeating-linear-gradient(45deg, transparent 0 14px, rgba(0,0,0,0.07) 14px 16px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          borderBottom: '3px solid var(--ink)',
+          textDecoration: 'none',
+        }}
+      >
         <Avatar name={profile.display_name} src={profile.avatar_url} size="lg" />
-      </div>
+      </Link>
       <div style={{ padding: '10px 12px' }}>
-        <div style={{ fontWeight: 800, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {profile.display_name}
-        </div>
-        <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', marginTop: 2 }}>
-          @{profile.username}
-        </div>
+        <Link to={`/profile/${profile.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div style={{ fontWeight: 800, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {profile.display_name}
+          </div>
+          <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', marginTop: 2 }}>
+            @{profile.username}
+          </div>
+        </Link>
         <button
           className={`btn btn-small ${sent ? '' : 'btn-primary'}`}
           style={{ width: '100%', justifyContent: 'center', marginTop: 10 }}
@@ -178,27 +195,33 @@ function ContactCard({ profile, index, userId, presence, onRemove }: {
 
   async function handleMessage() {
     const convId = await getOrCreate.mutateAsync(profile.id)
-    openChat({ conversationId: convId, otherId: profile.id, otherName: profile.display_name, otherAvatar: profile.avatar_url })
+    openChat({ conversationId: convId, otherId: profile.id, otherName: profile.display_name, otherUsername: profile.username, otherAvatar: profile.avatar_url })
   }
 
   return (
     <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
-      <div style={{
-        height: 80,
-        background: avatarColor(index),
-        backgroundImage: 'repeating-linear-gradient(45deg, transparent 0 14px, rgba(0,0,0,0.07) 14px 16px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        borderBottom: '3px solid var(--ink)',
-      }}>
+      <Link
+        to={`/profile/${profile.username}`}
+        style={{
+          height: 80,
+          background: avatarColor(index),
+          backgroundImage: 'repeating-linear-gradient(45deg, transparent 0 14px, rgba(0,0,0,0.07) 14px 16px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          borderBottom: '3px solid var(--ink)',
+          textDecoration: 'none',
+        }}
+      >
         <Avatar name={profile.display_name} src={profile.avatar_url} size="md" />
-      </div>
+      </Link>
       <div style={{ padding: '10px 12px' }}>
-        <div style={{ fontWeight: 800, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {profile.display_name}
-        </div>
-        <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', marginTop: 2 }}>
-          @{profile.username}
-        </div>
+        <Link to={`/profile/${profile.username}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+          <div style={{ fontWeight: 800, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {profile.display_name}
+          </div>
+          <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', marginTop: 2 }}>
+            @{profile.username}
+          </div>
+        </Link>
         {presence?.label && (
           <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: presence.color, marginTop: 3, letterSpacing: '.04em' }}>
             {presence.label}

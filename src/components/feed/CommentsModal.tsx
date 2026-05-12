@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import { Link } from 'react-router-dom'
 import { X, MessageCircle, Send } from 'lucide-react'
 import { ThumbsUp, ThumbsDown } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
@@ -72,11 +73,17 @@ function CommentActivityModal({ commentId, onClose }: { commentId: string; onClo
           {!vl && !rl && displayedRows.length === 0 && <div style={{ padding: 32, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink-mute)' }}>Sin actividad aún</div>}
           {displayedRows.map((row, i) => (
             <div key={`${row.userId}-${i}`} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderBottom: '2px solid var(--ink)' }}>
-              <Avatar name={row.displayName} src={row.avatarUrl} size="sm" />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 800, fontSize: 13 }}>{row.displayName}</div>
-                <div style={{ fontSize: 11, color: 'var(--ink-mute)', fontFamily: 'var(--font-mono)' }}>@{row.username}</div>
-              </div>
+              <Link
+                to={`/profile/${row.username}`}
+                onClick={onClose}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0, textDecoration: 'none', color: 'inherit' }}
+              >
+                <Avatar name={row.displayName} src={row.avatarUrl} size="sm" />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 800, fontSize: 13 }}>{row.displayName}</div>
+                  <div style={{ fontSize: 11, color: 'var(--ink-mute)', fontFamily: 'var(--font-mono)' }}>@{row.username}</div>
+                </div>
+              </Link>
               <div style={{ display: 'flex', gap: 3 }}>
                 {row.vote && <div style={{ width: 26, height: 26, border: '2px solid var(--ink)', background: row.vote === 'like' ? 'var(--accent-4)' : 'var(--accent-1)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '2px 2px 0 var(--ink)' }}>{row.vote === 'like' ? <ThumbsUp size={12} strokeWidth={2.5}/> : <ThumbsDown size={12} strokeWidth={2.5}/>}</div>}
                 {row.reaction && <div style={{ width: 26, height: 26, border: '2px solid var(--ink)', background: 'var(--bg-alt)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, boxShadow: '2px 2px 0 var(--ink)' }}>{REACTION_META[row.reaction]?.emoji}</div>}

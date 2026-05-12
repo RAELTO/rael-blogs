@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Check, MessageCircle, UserCheck, UserPlus } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import Avatar from '../ui/Avatar'
@@ -45,6 +46,7 @@ function SearchPersonRow({
       conversationId,
       otherId: profile.id,
       otherName: profile.display_name,
+      otherUsername: profile.username,
       otherAvatar: profile.avatar_url,
     })
   }
@@ -53,9 +55,15 @@ function SearchPersonRow({
 
   return (
     <div className="search-person-row">
-      <Avatar name={profile.display_name} src={profile.avatar_url} size="md" />
+      <Link to={`/profile/${profile.username}`} style={{ display: 'flex', textDecoration: 'none' }}>
+        <Avatar name={profile.display_name} src={profile.avatar_url} size="md" />
+      </Link>
 
-      <div className="search-person-copy">
+      <Link
+        to={`/profile/${profile.username}`}
+        className="search-person-copy"
+        style={{ textDecoration: 'none', color: 'inherit' }}
+      >
         <div className="search-person-name">{profile.display_name}</div>
         <div className="search-person-meta">@{profile.username}</div>
         {status === 'contact' && (
@@ -64,7 +72,7 @@ function SearchPersonRow({
         {status === 'pending_received' && (
           <div className="search-person-status">Sent you a contact request</div>
         )}
-      </div>
+      </Link>
 
       <div className="search-person-actions">
         {status === 'contact' && (

@@ -87,6 +87,27 @@ export function useBoxFeed(mode: FeedMode, userId?: string) {
   })
 }
 
+async function fetchBoxesByAuthor(authorId: string): Promise<BoxWithAuthor[]> {
+  const { data, error } = await supabase
+    .from('boxes')
+    .select(BOX_SELECT)
+    .eq('author_id', authorId)
+    .eq('status', 'published')
+    .order('published_at', { ascending: false })
+    .limit(40)
+  if (error) throw error
+  return normalizeBoxes(data)
+}
+
+export function useBoxesByAuthor(authorId?: string) {
+  return useQuery({
+    queryKey: ['boxes', 'author', authorId],
+    queryFn:  () => fetchBoxesByAuthor(authorId!),
+    enabled: !!authorId,
+    staleTime: 30_000,
+  })
+}
+
 export function useSearchBoxes(q: string) {
   const search = q.trim()
   return useQuery({

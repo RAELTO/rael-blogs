@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useLayoutEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Paperclip, Send, Phone, Video, Smile, ArrowLeft, Mail } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useConversations } from '../../features/chat/useConversations'
@@ -88,9 +88,9 @@ function ActionBtn({ children, title, onClick, disabled }: {
 }
 
 // ─── Thread panel ─────────────────────────────────────────────────────────────
-function ThreadPanel({ conversationId, userId, otherId, otherName, onBack }: {
+function ThreadPanel({ conversationId, userId, otherId, otherName, otherUsername, onBack }: {
   conversationId: string; userId: string; otherId: string
-  otherName: string; onBack: () => void
+  otherName: string; otherUsername: string; onBack: () => void
 }) {
   const { data: messages = [] } = useMessages(conversationId, userId)
   const send     = useSendMessage(conversationId, userId)
@@ -119,13 +119,18 @@ function ThreadPanel({ conversationId, userId, otherId, otherName, onBack }: {
           style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', padding: 4, marginRight: 2 }}>
           <ArrowLeft size={16} strokeWidth={2.5} />
         </button>
-        <SqAvatar name={otherName} size={40} />
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <Link to={`/profile/${otherUsername}`} style={{ display: 'flex', textDecoration: 'none' }}>
+          <SqAvatar name={otherName} size={40} />
+        </Link>
+        <Link
+          to={`/profile/${otherUsername}`}
+          style={{ flex: 1, minWidth: 0, textDecoration: 'none', color: 'inherit' }}
+        >
           <div style={{ fontWeight: 800, fontSize: 15, lineHeight: 1.1 }}>{otherName}</div>
           <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: presence.color, letterSpacing: '.04em', marginTop: 1 }}>
             {presence.label || (presence.status === 'offline' ? '● OFFLINE' : '● ACTIVO')}
           </div>
-        </div>
+        </Link>
         <div style={{ display: 'flex', gap: 6 }}>
           <ActionBtn title="Llamar" onClick={() => toast('Llamadas proximamente')}>
             <Phone size={15} strokeWidth={2.5} />
@@ -269,7 +274,12 @@ export default function InboxPage() {
                   className={`chat-item${c.id === activeId ? ' active' : ''}`}
                   onClick={() => setParams({ c: c.id })}
                 >
-                  <div style={{ position: 'relative', flexShrink: 0 }}>
+                  <Link
+                    to={`/profile/${c.other.username}`}
+                    onClick={e => e.stopPropagation()}
+                    title={`Ver perfil de ${c.other.display_name}`}
+                    style={{ position: 'relative', flexShrink: 0, display: 'block', textDecoration: 'none' }}
+                  >
                     <SqAvatar name={c.other.display_name} size={52} />
                     {p && (
                       <div style={{
@@ -279,7 +289,7 @@ export default function InboxPage() {
                         border: '2px solid #111111',
                       }} />
                     )}
-                  </div>
+                  </Link>
                   <div className="ci-body">
                     <div className="ci-name">
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
@@ -309,6 +319,7 @@ export default function InboxPage() {
             userId={user?.id ?? ''}
             otherId={activeConv.other.id}
             otherName={activeConv.other.display_name}
+            otherUsername={activeConv.other.username}
             onBack={() => setParams({})}
           />
         ) : (

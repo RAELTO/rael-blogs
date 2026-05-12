@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { Link } from 'react-router-dom'
 import { ThumbsUp, ThumbsDown, Trash2 } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useMyCommentVote, useCommentVoteCounts, useToggleCommentVote } from '../../features/comments/useCommentVotes'
@@ -91,7 +92,9 @@ export default function CommentItem({ comment, onDelete, onOpenActivity }: Props
     <>
       <div style={{ display: 'flex', gap: 10, padding: '12px 18px', borderBottom: '2px solid var(--ink)' }}>
         {/* Avatar */}
-        <Avatar name={comment.author.display_name} src={comment.author.avatar_url} size="sm" />
+        <Link to={`/profile/${comment.author.username}`} style={{ display: 'flex', textDecoration: 'none' }}>
+          <Avatar name={comment.author.display_name} src={comment.author.avatar_url} size="sm" />
+        </Link>
 
         {/* Bubble */}
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -103,10 +106,13 @@ export default function CommentItem({ comment, onDelete, onOpenActivity }: Props
             marginBottom: 6,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
-              <span style={{ fontWeight: 800, fontSize: 13 }}>
+              <Link
+                to={`/profile/${comment.author.username}`}
+                style={{ fontWeight: 800, fontSize: 13, color: 'inherit', textDecoration: 'none' }}
+              >
                 {comment.author.display_name}
                 {comment.author.role === 'admin' && <AdminBadge />}
-              </span>
+              </Link>
               {isOwner && onDelete && (
                 <button
                   onClick={() => onDelete(comment.id)}
