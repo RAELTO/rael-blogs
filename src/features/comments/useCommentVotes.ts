@@ -39,7 +39,7 @@ export function useCommentVoteCounts(commentId: string) {
 export interface CommentVoteDetailRow {
   vote: VoteType
   user_id: string
-  profiles: { id: string; username: string; display_name: string; avatar_url: string | null }
+  profiles: { id: string; username: string; display_name: string; avatar_url: string | null; role: string | null }
 }
 
 export function useCommentVoteDetails(commentId: string, enabled = false) {
@@ -48,7 +48,7 @@ export function useCommentVoteDetails(commentId: string, enabled = false) {
     queryFn: async () => {
       const { data } = await supabase
         .from('comment_votes')
-        .select('vote, user_id, profiles(id, username, display_name, avatar_url)')
+        .select('vote, user_id, profiles(id, username, display_name, avatar_url, role)')
         .eq('comment_id', commentId)
       return (data ?? []) as unknown as CommentVoteDetailRow[]
     },
@@ -73,6 +73,7 @@ export function useToggleCommentVote(commentId: string) {
       qc.invalidateQueries({ queryKey: ['c-vote', commentId, userId] })
       qc.invalidateQueries({ queryKey: ['c-vote-counts', commentId] })
       qc.invalidateQueries({ queryKey: ['c-vote-details', commentId] })
+      qc.invalidateQueries({ queryKey: ['c-activity-count', commentId] })
     },
   })
 }

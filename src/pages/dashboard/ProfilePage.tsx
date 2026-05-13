@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Settings2 } from 'lucide-react'
 import AdminBadge from '../../components/ui/AdminBadge'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useProfile, useUpdateProfile } from '../../features/profile/useProfile'
@@ -12,7 +11,6 @@ import LeftSidebar from '../../components/layout/LeftSidebar'
 import RightSidebar from '../../components/layout/RightSidebar'
 import ImageUpload from '../../components/ui/ImageUpload'
 import Avatar from '../../components/ui/Avatar'
-import AppearanceModal from '../../components/ui/AppearanceModal'
 import { useToast } from '../../components/ui/Toast'
 
 const schema = z.object({
@@ -33,8 +31,6 @@ export default function ProfilePage() {
   const updateProfile = useUpdateProfile()
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
-  const [appearanceOpen, setAppearanceOpen] = useState(false)
-  const appearanceBtnRef = useRef<HTMLButtonElement>(null)
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -95,26 +91,6 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Apariencia — visible siempre (especialmente útil en móvil donde el sidebar está oculto) */}
-          <div className="panel" style={{ padding: 16, marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--ink-mute)', marginBottom: 2 }}>
-                Apariencia
-              </div>
-              <div style={{ fontSize: 13, color: 'var(--ink-dim)' }}>
-                Paleta de color y sombras
-              </div>
-            </div>
-            <button
-              ref={appearanceBtnRef}
-              className="btn"
-              onClick={() => setAppearanceOpen(o => !o)}
-              style={{ gap: 6 }}
-            >
-              <Settings2 size={15} strokeWidth={2.5} /> Personalizar
-            </button>
-          </div>
-
           {/* Edit form */}
           <div className="panel" style={{ padding: 24, marginBottom: 16 }}>
             <h2 className="section-title" style={{ marginBottom: 20 }}>▸ My Box</h2>
@@ -173,12 +149,6 @@ export default function ProfilePage() {
         </>
       )}
 
-      {appearanceOpen && (
-        <AppearanceModal
-          anchorRef={appearanceBtnRef}
-          onClose={() => setAppearanceOpen(false)}
-        />
-      )}
     </AppShell>
   )
 }

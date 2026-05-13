@@ -6,13 +6,15 @@ interface ConfirmDialogProps {
   message: string
   confirmLabel?: string
   cancelLabel?: string
+  danger?: boolean
   onConfirm: () => void
   onCancel: () => void
 }
 
 export default function ConfirmDialog({
   open, title, message,
-  confirmLabel = 'Confirmar', cancelLabel = 'Cancelar',
+  confirmLabel = 'Confirm', cancelLabel = 'Cancel',
+  danger = false,
   onConfirm, onCancel,
 }: ConfirmDialogProps) {
   if (!open) return null
@@ -20,7 +22,7 @@ export default function ConfirmDialog({
   return createPortal(
     <div
       style={{
-        position: 'fixed', inset: 0, zIndex: 9000,
+        position: 'fixed', inset: 0, zIndex: 9999,
         background: 'rgba(0,0,0,0.55)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: 24,
@@ -46,7 +48,7 @@ export default function ConfirmDialog({
           color: 'var(--ink-mute)',
           marginBottom: 12,
         }}>
-          ▓ confirmación requerida
+          ▓ confirmation required
         </div>
 
         <h2 style={{
@@ -70,7 +72,13 @@ export default function ConfirmDialog({
 
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
           <button className="btn" onClick={onCancel}>{cancelLabel}</button>
-          <button className="btn btn-primary" onClick={onConfirm}>{confirmLabel}</button>
+          <button
+            className={`btn ${danger ? 'btn-primary' : 'btn-primary'}`}
+            style={danger ? { background: 'var(--accent-1)' } : undefined}
+            onClick={onConfirm}
+          >
+            {confirmLabel}
+          </button>
         </div>
       </div>
     </div>,

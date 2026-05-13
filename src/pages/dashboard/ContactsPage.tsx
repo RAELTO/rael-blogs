@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
-import { UserPlus, UserCheck, UserX, X, MessageCircle } from 'lucide-react'
+import { Ban, MessageCircle, MoreHorizontal, UserMinus, UserPlus, UserCheck, UserX, X } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useGetOrCreateConversation } from '../../features/chat/useGetOrCreateConversation'
 import { useOpenChat } from '../../features/chat/useOpenChat'
@@ -15,6 +16,7 @@ import {
   useRemoveContact,
 } from '../../features/contacts/useContactMutations'
 import { useToast } from '../../components/ui/Toast'
+import { useConfirm } from '../../components/ui/ConfirmContext'
 import Avatar from '../../components/ui/Avatar'
 import AppShell from '../../components/layout/AppShell'
 import LeftSidebar from '../../components/layout/LeftSidebar'
@@ -182,13 +184,53 @@ function SuggestionCard({ profile, index, onAdd }: {
   )
 }
 
+function MobileSuggestionRow({ profile, index, sent, onAdd, onDismiss }: {
+  profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>
+  index: number
+  sent: boolean
+  onAdd: (id: string) => void
+  onDismiss: (id: string) => void
+}) {
+  return (
+    <div className="contacts-mobile-suggestion-row">
+      <Link to={`/profile/${profile.username}`} className="contacts-mobile-avatar-link">
+        <Avatar name={profile.display_name} src={profile.avatar_url} size="lg" />
+      </Link>
+      <div className="contacts-mobile-suggestion-main">
+        <Link to={`/profile/${profile.username}`} className="contacts-mobile-name">
+          {profile.display_name}
+        </Link>
+        <div className="contacts-mobile-meta">@{profile.username}</div>
+        <div className="contacts-mobile-actions">
+          <button
+            className={`btn btn-small ${sent ? '' : 'btn-primary'}`}
+            type="button"
+            disabled={sent}
+            onClick={() => onAdd(profile.id)}
+          >
+            {sent ? <><UserCheck size={14} strokeWidth={2.5} /> Enviada</> : <><UserPlus size={14} strokeWidth={2.5} /> Añadir</>}
+          </button>
+          <button
+            className="btn btn-small"
+            type="button"
+            onClick={() => onDismiss(profile.id)}
+          >
+            Suprimir
+          </button>
+        </div>
+      </div>
+      <div className="contacts-mobile-color-chip" style={{ background: avatarColor(index) }} />
+    </div>
+  )
+}
+
 // ─── Contact card ─────────────────────────────────────────────────────────────
 function ContactCard({ profile, index, userId, presence, onRemove }: {
   profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>
   index: number
   userId: string
   presence: { label: string; color: string } | undefined
-  onRemove: (id: string) => void
+  onRemove: (id: string, name?: string) => void
 }) {
   const getOrCreate = useGetOrCreateConversation(userId)
   const openChat    = useOpenChat()
@@ -239,8 +281,8 @@ function ContactCard({ profile, index, userId, presence, onRemove }: {
           <button
             className="btn btn-small"
             style={{ padding: '4px 8px', color: 'var(--accent-1)' }}
-            title="Eliminar contacto"
-            onClick={() => onRemove(profile.id)}
+            title="Remove contact"
+            onClick={() => onRemove(profile.id, profile.display_name)}
           >
             <X size={13} strokeWidth={2.5} />
           </button>
@@ -250,11 +292,86 @@ function ContactCard({ profile, index, userId, presence, onRemove }: {
   )
 }
 
+function MobileContactRow({ profile, presence, onOpenMenu }: {
+  profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>
+  presence: { label: string; color: string } | undefined
+  onOpenMenu: () => void
+}) {
+  return (
+    <div className="contacts-mobile-friend-row">
+      <Link to={`/profile/${profile.username}`} className="contacts-mobile-avatar-link">
+        <Avatar name={profile.display_name} src={profile.avatar_url} size="lg" />
+      </Link>
+      <Link to={`/profile/${profile.username}`} className="contacts-mobile-friend-copy">
+        <span className="contacts-mobile-name">{profile.display_name}</span>
+        <span className="contacts-mobile-meta">
+          {presence?.label ? presence.label : `@${profile.username}`}
+        </span>
+      </Link>
+      <button className="contacts-mobile-menu-btn" type="button" onClick={onOpenMenu} title="Opciones">
+        <MoreHorizontal size={22} strokeWidth={3} />
+      </button>
+    </div>
+  )
+}
+
+function ContactActionSheet({ profile, onClose, onMessage, onFollow, onBlock, onRemove }: {
+  profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>
+  onClose: () => void
+  onMessage: () => void
+  onFollow: () => void
+  onBlock: () => void
+  onRemove: () => void
+}) {
+  return createPortal(
+    <div className="contacts-action-sheet-overlay" onClick={onClose}>
+      <div className="contacts-action-sheet" onClick={e => e.stopPropagation()}>
+        <div className="contacts-action-handle" />
+        <div className="contacts-action-head">
+          <Avatar name={profile.display_name} src={profile.avatar_url} size="md" />
+          <div>
+            <div className="contacts-action-name">{profile.display_name}</div>
+            <div className="contacts-action-meta">@{profile.username}</div>
+          </div>
+          <button className="contacts-action-close" type="button" onClick={onClose}>
+            <X size={18} strokeWidth={3} />
+          </button>
+        </div>
+
+        <button className="contacts-action-item" type="button" onClick={onMessage}>
+          <MessageCircle size={21} strokeWidth={2.5} />
+          <span>Enviar mensaje a {profile.display_name}</span>
+        </button>
+        <button className="contacts-action-item" type="button" onClick={onFollow}>
+          <UserPlus size={21} strokeWidth={2.5} />
+          <span>Seguir a {profile.display_name}</span>
+          <small>Mira sus publicaciones.</small>
+        </button>
+        <button className="contacts-action-item" type="button" onClick={onBlock}>
+          <Ban size={21} strokeWidth={2.5} />
+          <span>Bloquear el perfil de {profile.display_name}</span>
+          <small>No podrá ver ni ponerse en contacto contigo.</small>
+        </button>
+        <button className="contacts-action-item danger" type="button" onClick={onRemove}>
+          <UserMinus size={21} strokeWidth={2.5} />
+          <span>Eliminar a {profile.display_name} de tus contactos</span>
+          <small>Suprime a {profile.display_name} de tu lista.</small>
+        </button>
+      </div>
+    </div>,
+    document.body
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function ContactsPage() {
   const { user } = useAuth()
   const toast = useToast()
-  const [tab, setTab] = useState<Tab>('requests')
+  const confirm = useConfirm()
+  const [tab, setTab] = useState<Tab>('suggest')
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set())
+  const [sentSuggestions, setSentSuggestions] = useState<Set<string>>(new Set())
+  const [selectedContact, setSelectedContact] = useState<Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'> | null>(null)
 
   const { data: incoming = [] }    = useIncomingRequests(user?.id)
   const { data: outgoing = [] }    = useOutgoingRequests(user?.id)
@@ -266,8 +383,11 @@ export default function ContactsPage() {
   const respond       = useRespondContactRequest(user?.id ?? '')
   const removeContact = useRemoveContact(user?.id ?? '')
   const presenceMap   = usePresenceMap(contacts.map(c => c.other.id))
+  const mobileGetOrCreate = useGetOrCreateConversation(user?.id ?? '')
+  const openChat = useOpenChat()
 
   const pendingIncoming = incoming.length
+  const visibleSuggestions = suggestions.filter(p => !dismissed.has(p.id))
 
   const NAV: { id: Tab; label: string; badge?: number }[] = [
     { id: 'requests', label: 'Solicitudes', badge: pendingIncoming },
@@ -291,20 +411,40 @@ export default function ContactsPage() {
   }
 
   async function handleAdd(addresseeId: string) {
+    setSentSuggestions(s => new Set([...s, addresseeId]))
     await sendRequest.mutateAsync(addresseeId)
     toast('Solicitud enviada')
   }
 
-  async function handleRemove(otherId: string) {
+  async function handleRemove(otherId: string, name?: string) {
+    const ok = await confirm({
+      title: 'Remove contact?',
+      message: name ? `${name} will be removed from your contacts.` : 'This contact will be removed.',
+      confirmLabel: 'Remove',
+      danger: true,
+    })
+    if (!ok) return
     await removeContact.mutateAsync(otherId)
-    toast('Contacto eliminado')
+    toast('Contact removed')
+  }
+
+  async function handleMobileMessage(profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>) {
+    if (!user?.id) return
+    const convId = await mobileGetOrCreate.mutateAsync(profile.id)
+    openChat({ conversationId: convId, otherId: profile.id, otherName: profile.display_name, otherUsername: profile.username, otherAvatar: profile.avatar_url })
+    setSelectedContact(null)
+  }
+
+  async function handleMobileRemove(profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>) {
+    await handleRemove(profile.id, profile.display_name)
+    setSelectedContact(null)
   }
 
   return (
     <AppShell left={<LeftSidebar />} right={<RightSidebar />}>
       <div className="contacts-page-grid">
         {/* ── Nav lateral ── */}
-        <div className="panel" style={{ padding: '12px 8px' }}>
+        <div className="panel contacts-side-panel" style={{ padding: '12px 8px' }}>
           <div style={{
             fontFamily: 'var(--font-display)', fontSize: 20,
             letterSpacing: '-0.02em', padding: '4px 8px 12px',
@@ -329,6 +469,21 @@ export default function ContactsPage() {
 
         {/* ── Content ── */}
         <div>
+          <div className="contacts-mobile-home">
+            <div className="contacts-mobile-top">
+              <h1>Contactos</h1>
+            </div>
+            <div className="contacts-mobile-pills">
+              <button type="button" className={tab === 'requests' ? 'active' : ''} onClick={() => setTab('requests')}>
+                Solicitudes
+                {pendingIncoming > 0 && <span>{pendingIncoming}</span>}
+              </button>
+              <button type="button" className={tab === 'all' ? 'active' : ''} onClick={() => setTab('all')}>
+                Tus contactos
+              </button>
+            </div>
+          </div>
+
           {/* SOLICITUDES */}
           {tab === 'requests' && (
             <>
@@ -338,11 +493,15 @@ export default function ContactsPage() {
                   ▸ Recibidas
                 </h2>
                 {incoming.length === 0 ? (
-                  <div className="panel" style={{ padding: '32px 20px', textAlign: 'center' }}>
+                  <div className="panel contacts-empty-panel">
+                    <UserPlus size={58} strokeWidth={1.8} />
                     <div style={{ fontFamily: 'var(--font-display)', fontSize: 20 }}>SIN SOLICITUDES</div>
                     <div className="text-sm text-mute mt-2" style={{ fontFamily: 'var(--font-mono)' }}>
-                      Cuando alguien te pida ser contacto, aparecerá aquí
+                      Cuando alguien te pida ser contacto, aparecerá aquí.
                     </div>
+                    <button className="btn btn-small btn-primary" type="button" onClick={() => setTab('suggest')}>
+                      Ver sugerencias
+                    </button>
                   </div>
                 ) : (
                   <div className="panel" style={{ padding: 0 }}>
@@ -371,7 +530,7 @@ export default function ContactsPage() {
           {tab === 'suggest' && (
             <>
               <h2 className="section-title" style={{ marginBottom: 16 }}>▸ Sugerencias para ti</h2>
-              {suggestions.length === 0 ? (
+              {visibleSuggestions.length === 0 ? (
                 <div className="panel" style={{ padding: '32px 20px', textAlign: 'center' }}>
                   <div style={{ fontFamily: 'var(--font-display)', fontSize: 20 }}>NADA POR AHORA</div>
                   <div className="text-sm text-mute mt-2" style={{ fontFamily: 'var(--font-mono)' }}>
@@ -379,11 +538,25 @@ export default function ContactsPage() {
                   </div>
                 </div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 14 }}>
-                  {suggestions.map((p, i) => (
+                <>
+                <div className="contacts-desktop-card-grid">
+                  {visibleSuggestions.map((p, i) => (
                     <SuggestionCard key={p.id} profile={p} index={i} onAdd={handleAdd} />
                   ))}
                 </div>
+                <div className="contacts-mobile-list">
+                  {visibleSuggestions.map((p, i) => (
+                    <MobileSuggestionRow
+                      key={p.id}
+                      profile={p}
+                      index={i}
+                      sent={sentSuggestions.has(p.id)}
+                      onAdd={handleAdd}
+                      onDismiss={(id) => setDismissed(s => new Set([...s, id]))}
+                    />
+                  ))}
+                </div>
+                </>
               )}
             </>
           )}
@@ -393,23 +566,46 @@ export default function ContactsPage() {
             <>
               <h2 className="section-title" style={{ marginBottom: 16 }}>▸ Todos tus contactos</h2>
               {contacts.length === 0 ? (
-                <div className="panel" style={{ padding: '32px 20px', textAlign: 'center' }}>
+                <div className="panel contacts-empty-panel">
                   <div style={{ fontFamily: 'var(--font-display)', fontSize: 20 }}>AÚN SIN CONTACTOS</div>
                   <div className="text-sm text-mute mt-2" style={{ fontFamily: 'var(--font-mono)' }}>
                     Agrega contactos desde las sugerencias o desde el feed
                   </div>
                 </div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 14 }}>
+                <>
+                <div className="contacts-desktop-card-grid">
                   {contacts.map((c, i) => (
                     <ContactCard key={c.user_a + c.user_b} profile={c.other} index={i} userId={user!.id} presence={presenceMap[c.other.id]} onRemove={handleRemove} />
                   ))}
                 </div>
+                <div className="contacts-mobile-list">
+                  <div className="contacts-mobile-count">{contacts.length} contactos</div>
+                  {contacts.map((c) => (
+                    <MobileContactRow
+                      key={c.user_a + c.user_b}
+                      profile={c.other}
+                      presence={presenceMap[c.other.id]}
+                      onOpenMenu={() => setSelectedContact(c.other)}
+                    />
+                  ))}
+                </div>
+                </>
               )}
             </>
           )}
         </div>
       </div>
+      {selectedContact && (
+        <ContactActionSheet
+          profile={selectedContact}
+          onClose={() => setSelectedContact(null)}
+          onMessage={() => handleMobileMessage(selectedContact)}
+          onFollow={() => { toast('Seguir próximamente'); setSelectedContact(null) }}
+          onBlock={() => { toast('Bloquear perfil próximamente'); setSelectedContact(null) }}
+          onRemove={() => handleMobileRemove(selectedContact)}
+        />
+      )}
     </AppShell>
   )
 }

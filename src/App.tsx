@@ -1,10 +1,10 @@
 import { AuthProvider, useAuth } from './features/auth/AuthContext'
 import { ToastProvider } from './components/ui/Toast'
 import { TweakPanel } from './components/ui/TweakPanel'
+import { ConfirmProvider } from './components/ui/ConfirmProvider'
 import { useHeartbeat } from './features/presence/useHeartbeat'
 import { RealtimePresenceProvider } from './features/presence/RealtimePresenceProvider'
 import { FloatingChatProvider } from './features/chat/FloatingChatContext'
-import FloatingChats from './components/chat/FloatingChatPanel'
 import MessageNotifier from './components/chat/MessageNotifier'
 import NotifNotifier from './components/notifications/NotifNotifier'
 import AppRouter from './app/router'
@@ -20,14 +20,15 @@ export default function App() {
     <AuthProvider>
       <RealtimePresenceProvider>
         <ToastProvider>
+          <ConfirmProvider>
           <FloatingChatProvider>
             <Heartbeat />
             <MessageNotifier />
             <NotifNotifier />
             <AppRouter />
             <TweakPanel />
-            <FloatingChats />
           </FloatingChatProvider>
+          </ConfirmProvider>
         </ToastProvider>
       </RealtimePresenceProvider>
     </AuthProvider>

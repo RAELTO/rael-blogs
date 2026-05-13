@@ -128,7 +128,7 @@ export default function LeftSidebar() {
         </button>
 
         {user ? (
-          <button title="Salir" className="side-link" onClick={() => setConfirmSignOut(true)}>
+          <button title="Salir" className="side-link side-link-danger" onClick={() => setConfirmSignOut(true)}>
             <LogOut size={20} strokeWidth={2.5} /> Salir
           </button>
         ) : (

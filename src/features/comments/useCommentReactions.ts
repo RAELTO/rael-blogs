@@ -39,7 +39,7 @@ export function useCommentReactionCounts(commentId: string) {
 export interface CommentReactionDetailRow {
   reaction_type: ReactionType
   user_id: string
-  profiles: { id: string; username: string; display_name: string; avatar_url: string | null }
+  profiles: { id: string; username: string; display_name: string; avatar_url: string | null; role: string | null }
 }
 
 export function useCommentReactionDetails(commentId: string, enabled = false) {
@@ -48,7 +48,7 @@ export function useCommentReactionDetails(commentId: string, enabled = false) {
     queryFn: async () => {
       const { data } = await supabase
         .from('comment_reactions')
-        .select('reaction_type, user_id, profiles(id, username, display_name, avatar_url)')
+        .select('reaction_type, user_id, profiles(id, username, display_name, avatar_url, role)')
         .eq('comment_id', commentId)
       return (data ?? []) as unknown as CommentReactionDetailRow[]
     },
@@ -73,6 +73,7 @@ export function useToggleCommentReaction(commentId: string) {
       qc.invalidateQueries({ queryKey: ['c-reaction', commentId, userId] })
       qc.invalidateQueries({ queryKey: ['c-reaction-counts', commentId] })
       qc.invalidateQueries({ queryKey: ['c-reaction-details', commentId] })
+      qc.invalidateQueries({ queryKey: ['c-activity-count', commentId] })
     },
   })
 }

@@ -47,7 +47,7 @@ export default function AppShell({ children, left, right, onDropClick }: AppShel
           </NavLink>
         ))}
         {user ? (
-          <NavLink to="/my-box" className={({ isActive }) => `mb-item${isActive ? ' active' : ''}`}>
+          <NavLink to="/yo" className={({ isActive }) => `mb-item${isActive ? ' active' : ''}`}>
             <Avatar
               name={profile?.display_name ?? user.email ?? 'U'}
               src={profile?.avatar_url}

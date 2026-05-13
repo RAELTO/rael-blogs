@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import FloatingChats from '../components/chat/FloatingChatPanel'
 import RequireAuth from '../components/auth/RequireAuth'
 import HomePage from '../pages/public/HomePage'
 import LoginPage from '../pages/public/LoginPage'
@@ -10,6 +11,8 @@ const ProfilePage       = lazy(() => import('../pages/dashboard/ProfilePage'))
 const UserProfilePage   = lazy(() => import('../pages/public/UserProfilePage'))
 const ContactsPage      = lazy(() => import('../pages/dashboard/ContactsPage'))
 const InboxPage         = lazy(() => import('../pages/dashboard/InboxPage'))
+const SavedPage         = lazy(() => import('../pages/dashboard/SavedPage'))
+const MenuPage          = lazy(() => import('../pages/dashboard/MenuPage'))
 const BoxPage           = lazy(() => import('../pages/public/BoxPage'))
 const NotificationsPage = lazy(() => import('../pages/public/NotificationsPage'))
 const NotFoundPage        = lazy(() => import('../pages/NotFoundPage'))
@@ -26,6 +29,7 @@ function Fallback() {
 export default function AppRouter() {
   return (
     <BrowserRouter>
+      <FloatingChats />
       <Routes>
         {/* ── Públicas (sin auth) ─────────────────────────── */}
         <Route path="/login"          element={<LoginPage />} />
@@ -42,9 +46,10 @@ export default function AppRouter() {
           <Route path="/notifications" element={<Suspense fallback={<Fallback />}><NotificationsPage /></Suspense>} />
           <Route path="/contacts"      element={<Suspense fallback={<Fallback />}><ContactsPage /></Suspense>} />
           <Route path="/nbox"          element={<Suspense fallback={<Fallback />}><InboxPage /></Suspense>} />
+          <Route path="/yo"            element={<Suspense fallback={<Fallback />}><MenuPage /></Suspense>} />
           <Route path="/tag/:slug"     element={<Suspense fallback={<Fallback />}><TagPage /></Suspense>} />
           <Route path="/my-box"        element={<Suspense fallback={<Fallback />}><ProfilePage /></Suspense>} />
-          <Route path="/saves"         element={<Suspense fallback={<Fallback />}><NotFoundPage /></Suspense>} />
+          <Route path="/saves"         element={<Suspense fallback={<Fallback />}><SavedPage /></Suspense>} />
           <Route path="/profile/:username" element={<Suspense fallback={<Fallback />}><UserProfilePage /></Suspense>} />
         </Route>
 

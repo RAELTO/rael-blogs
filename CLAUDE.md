@@ -52,6 +52,16 @@ import { ArrowLeft, RefreshCw, MoreVertical } from 'lucide-react'
 - `▸ Sección` — marcador de título/sección
 - `✦` en labels especiales (`DROPEAR ✦`)
 
+### No duplicate components or logic
+
+Before creating a component, hook, or utility, check if an equivalent already exists in the codebase. When the same UI pattern or logic appears in two places, extract it immediately into a single shared source of truth:
+
+- **UI components**: extract to `src/components/ui/` or the relevant feature folder, add props for variation.
+- **Data fetching**: extract to a shared hook in `src/features/<feature>/`.
+- **Business logic**: extract to a utility function; never copy-paste.
+
+Never duplicate JSX blocks or hook logic between files. If a component is copy-pasted with minor changes, it must be refactored into one parameterized component. The only valid reason for near-identical code to exist in two files is when the domains are genuinely incompatible and no clean abstraction exists — and that case is rare.
+
 ### Portales para modales y popovers
 
 Todos los modales, dropdowns y popovers usan `ReactDOM.createPortal(…, document.body)` para aislamiento de z-index. No anidar overlays dentro de componentes con `overflow: hidden`.
