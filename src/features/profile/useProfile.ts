@@ -35,6 +35,22 @@ export function useProfile(userId?: string) {
   })
 }
 
+export function useProfileByUsername(username?: string) {
+  return useQuery({
+    queryKey: ['profile', 'by-username', username?.toLowerCase()],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, display_name, username, bio, avatar_url, role, is_banned')
+        .eq('username', username!.toLowerCase())
+        .maybeSingle()
+      if (error) throw error
+      return data as Profile | null
+    },
+    enabled: !!username && username.length >= 3,
+  })
+}
+
 export function useUpdateProfile() {
   const qc = useQueryClient()
   return useMutation({

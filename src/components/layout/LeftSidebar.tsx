@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { Home, Compass, Contact, Inbox, UsersRound, Clock, Bookmark, Settings2, LogOut, LogIn } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useProfile } from '../../features/profile/useProfile'
@@ -32,9 +32,9 @@ export default function LeftSidebar() {
   const [confirmSignOut, setConfirmSignOut] = useState(false)
   const appearanceBtnRef = useRef<HTMLButtonElement>(null)
 
-  async function handleContactChat(otherId: string, otherName: string, otherAvatar: string | null) {
+  async function handleContactChat(otherId: string, otherName: string, otherUsername: string, otherAvatar: string | null) {
     const convId = await getOrCreate.mutateAsync(otherId)
-    openChat({ conversationId: convId, otherId, otherName, otherAvatar })
+    openChat({ conversationId: convId, otherId, otherName, otherUsername, otherAvatar })
   }
 
   async function handleSignOut() {
@@ -151,7 +151,7 @@ export default function LeftSidebar() {
               className="row gap-3 mb-3"
               style={{ cursor: 'pointer', padding: '3px 4px', transition: 'background .1s, transform .1s, box-shadow .1s' }}
               title={c.other.display_name}
-              onClick={() => handleContactChat(c.other.id, c.other.display_name, c.other.avatar_url)}
+              onClick={() => handleContactChat(c.other.id, c.other.display_name, c.other.username, c.other.avatar_url)}
               onMouseEnter={e => {
                 const el = e.currentTarget as HTMLDivElement
                 el.style.background = 'var(--accent-2)'
@@ -165,7 +165,12 @@ export default function LeftSidebar() {
                 el.style.boxShadow = ''
               }}
             >
-              <div style={{ position: 'relative', flexShrink: 0 }}>
+              <Link
+                to={`/profile/${c.other.username}`}
+                onClick={e => e.stopPropagation()}
+                title={`Ver perfil de ${c.other.display_name}`}
+                style={{ position: 'relative', flexShrink: 0, display: 'block', textDecoration: 'none' }}
+              >
                 <div className="avatar sm" style={{ background: AVATAR_COLORS[i % AVATAR_COLORS.length] }}>
                   {c.other.display_name?.charAt(0).toUpperCase() ?? 'U'}
                 </div>
@@ -177,7 +182,7 @@ export default function LeftSidebar() {
                     border: '2px solid #111111',
                   }} />
                 )}
-              </div>
+              </Link>
               <div style={{ fontWeight: 700, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {c.other.display_name}
               </div>

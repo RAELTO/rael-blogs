@@ -7,6 +7,7 @@ import CheckEmailPage from '../pages/public/CheckEmailPage'
 
 const TagPage           = lazy(() => import('../pages/public/TagPage'))
 const ProfilePage       = lazy(() => import('../pages/dashboard/ProfilePage'))
+const UserProfilePage   = lazy(() => import('../pages/public/UserProfilePage'))
 const ContactsPage      = lazy(() => import('../pages/dashboard/ContactsPage'))
 const InboxPage         = lazy(() => import('../pages/dashboard/InboxPage'))
 const BoxPage           = lazy(() => import('../pages/public/BoxPage'))
@@ -44,7 +45,7 @@ export default function AppRouter() {
           <Route path="/tag/:slug"     element={<Suspense fallback={<Fallback />}><TagPage /></Suspense>} />
           <Route path="/my-box"        element={<Suspense fallback={<Fallback />}><ProfilePage /></Suspense>} />
           <Route path="/saves"         element={<Suspense fallback={<Fallback />}><NotFoundPage /></Suspense>} />
-          <Route path="/profile/:username" element={<Suspense fallback={<Fallback />}><NotFoundPage /></Suspense>} />
+          <Route path="/profile/:username" element={<Suspense fallback={<Fallback />}><UserProfilePage /></Suspense>} />
         </Route>
 
         {/* ── Legacy redirects ────────────────────────────── */}

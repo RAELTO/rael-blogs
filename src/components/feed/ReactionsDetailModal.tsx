@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
+import { Link } from 'react-router-dom'
 import { X, ThumbsUp, ThumbsDown } from 'lucide-react'
 import { useReactionDetails } from '../../features/reactions/useReactions'
 import { useVoteDetails } from '../../features/votes/useVotes'
@@ -186,16 +187,22 @@ export default function ReactionsDetailModal({ boxId, onClose }: Props) {
               display: 'flex', alignItems: 'center', gap: 12,
               padding: '11px 18px', borderBottom: '2px solid var(--ink)',
             }}>
-              <Avatar name={row.displayName} src={row.avatarUrl} size="sm" />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 800, fontSize: 14 }}>
-                  {row.displayName}
-                  {row.role === 'admin' && <AdminBadge />}
+              <Link
+                to={`/profile/${row.username}`}
+                onClick={onClose}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0, textDecoration: 'none', color: 'inherit' }}
+              >
+                <Avatar name={row.displayName} src={row.avatarUrl} size="sm" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 800, fontSize: 14 }}>
+                    {row.displayName}
+                    {row.role === 'admin' && <AdminBadge />}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--ink-mute)', fontFamily: 'var(--font-mono)' }}>
+                    @{row.username}
+                  </div>
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--ink-mute)', fontFamily: 'var(--font-mono)' }}>
-                  @{row.username}
-                </div>
-              </div>
+              </Link>
 
               {/* Badges: vote + reaction combined if both exist */}
               <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>

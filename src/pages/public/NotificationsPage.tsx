@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { UserCheck, UserX } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import {
@@ -54,14 +55,23 @@ function NotifItem({ n, onAccept, onDecline }: {
     }}>
       {/* Avatar */}
       {n.actor
-        ? <Avatar name={n.actor.display_name} src={n.actor.avatar_url} size="md" />
+        ? (
+          <Link to={`/profile/${n.actor.username}`} style={{ display: 'flex', textDecoration: 'none' }}>
+            <Avatar name={n.actor.display_name} src={n.actor.avatar_url} size="md" />
+          </Link>
+        )
         : <div style={{ width: 40, height: 40, background: 'var(--bg-alt)', border: '3px solid var(--ink)', boxShadow: '3px 3px 0 var(--ink)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>★</div>
       }
 
       {/* Content */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 14, lineHeight: 1.45 }}>
-          {n.actor && <strong style={{ fontWeight: 800 }}>{n.actor.display_name} </strong>}
+          {n.actor && (
+            <Link to={`/profile/${n.actor.username}`} style={{ fontWeight: 800, color: 'inherit', textDecoration: 'none' }}>
+              {n.actor.display_name}
+            </Link>
+          )}
+          {n.actor && ' '}
           {getNotifText(n)}
         </div>
         <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', marginTop: 4, fontWeight: 700 }}>

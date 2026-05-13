@@ -4,6 +4,7 @@ export interface FloatingChatEntry {
   conversationId: string
   otherId: string
   otherName: string
+  otherUsername: string
   otherAvatar: string | null
   minimized: boolean
 }

@@ -64,6 +64,7 @@ export default function MessageNotifier() {
               conversationId: conv.id,
               otherId:        conv.other.id,
               otherName:      conv.other.display_name,
+              otherUsername:  conv.other.username,
               otherAvatar:    conv.other.avatar_url,
             })
           }

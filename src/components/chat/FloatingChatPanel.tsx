@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom'
 import { useRef, useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { Minus, X, Send, Phone, Video, Paperclip } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useMessages, useSendMessage } from '../../features/chat/useMessages'
@@ -78,7 +79,11 @@ function FloatingWindow({ entry, index }: { entry: FloatingChatEntry; index: num
       {/* Header */}
       <div className="fc-head">
         {/* Avatar con indicador cuadrado */}
-        <div style={{ position: 'relative', flexShrink: 0 }}>
+        <Link
+          to={`/profile/${entry.otherUsername}`}
+          title={`Ver perfil de ${entry.otherName}`}
+          style={{ position: 'relative', flexShrink: 0, display: 'block', textDecoration: 'none' }}
+        >
           <Avatar name={entry.otherName} src={entry.otherAvatar} size="sm" />
           <div style={{
             position: 'absolute', bottom: -2, right: -2,
@@ -86,15 +91,18 @@ function FloatingWindow({ entry, index }: { entry: FloatingChatEntry; index: num
             background: presence.dotColor,
             border: '2px solid #111111',
           }} />
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        </Link>
+        <Link
+          to={`/profile/${entry.otherUsername}`}
+          style={{ flex: 1, minWidth: 0, textDecoration: 'none', color: 'inherit' }}
+        >
           <div style={{ fontWeight: 800, fontSize: 13, lineHeight: 1.1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {entry.otherName}
           </div>
           <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: presence.color, letterSpacing: '.04em' }}>
             {presence.label || (presence.status === 'offline' ? '● OFFLINE' : '● ACTIVO')}
           </div>
-        </div>
+        </Link>
         <button className="fc-icon fc-call" type="button" title="Llamar" onClick={() => toast('Llamadas proximamente')}>
           <Phone size={13} strokeWidth={2.5} />
         </button>
