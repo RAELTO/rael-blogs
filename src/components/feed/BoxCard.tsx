@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { ThumbsUp, ThumbsDown, MessageCircle, Share2, MoreVertical } from 'lucide-react'
+import { Bell, Bookmark, Trash2, ThumbsUp, ThumbsDown, MessageCircle, Share2, MoreHorizontal } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useToast } from '../ui/Toast'
+import { useConfirm } from '../ui/ConfirmContext'
 import { useToggleReaction, useMyReaction, useReactionCounts } from '../../features/reactions/useReactions'
 import { useToggleVote, useMyVote, useVoteCounts } from '../../features/votes/useVotes'
 import Avatar from '../ui/Avatar'
@@ -11,6 +12,7 @@ import ReactionsDetailModal from './ReactionsDetailModal'
 import CommentsModal from './CommentsModal'
 import ShareModal from './ShareModal'
 import { useShareCount } from '../../features/shares/useShares'
+import { useIsBoxSaved, useToggleBoxSave } from '../../features/saves/useBoxSaves'
 import type { BoxWithAuthor, ReactionType, VoteType, MediaPayload, PollPayload, MoodPayload, LinkPayload, ThreadPayload } from '../../types/database'
 
 // ─── Reaction config ────────────────────────────────────────────────────────────
@@ -160,6 +162,7 @@ interface BoxCardProps {
 export default function BoxCard({ box, onDelete }: BoxCardProps) {
   const { user } = useAuth()
   const toast = useToast()
+  const confirm = useConfirm()
   const [reactPopOpen, setReactPopOpen]     = useState(false) // Like/Dislike tooltip
   const [emojiPopOpen, setEmojiPopOpen]     = useState(false) // Reacción tooltip
   const [menuOpen, setMenuOpen]             = useState(false)
@@ -172,8 +175,10 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
 
   const { data: myReaction } = useMyReaction(box.id, user?.id)
   const { data: myVote }     = useMyVote(box.id, user?.id)
+  const { data: isSaved = false } = useIsBoxSaved(box.id, user?.id)
   const toggleReaction = useToggleReaction(box.id)
   const toggleVote     = useToggleVote(box.id)
+  const toggleSave     = useToggleBoxSave(box.id, user?.id)
   const { data: reactionCounts } = useReactionCounts(box.id)
   const { data: voteCounts }     = useVoteCounts(box.id)
 
@@ -199,6 +204,24 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
   function openShare() {
     if (!user) { toast(AUTH_TOAST, 5000); return }
     setShareOpen(true)
+  }
+
+  async function handleSaveAction() {
+    if (!user) { toast(AUTH_TOAST, 5000); setMenuOpen(false); return }
+    try {
+      const saved = await toggleSave.mutateAsync(isSaved)
+      toast(saved ? 'Post saved.' : 'Post removed from saved.')
+    } catch {
+      toast('Could not update saved post.')
+    } finally {
+      setMenuOpen(false)
+    }
+  }
+
+  function handlePostNotifications() {
+    if (!user) { toast(AUTH_TOAST, 5000); setMenuOpen(false); return }
+    toast('Post notifications coming soon.')
+    setMenuOpen(false)
   }
 
   const totalComments = box.comment_count ?? 0
@@ -235,34 +258,67 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
             </div>
             <div className="box-head-meta">@{box.author.username} · {timeAgo(box.published_at)}</div>
           </div>
-          {isOwner && (
-            <div style={{ position: 'relative' }}>
-              <button
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', lineHeight: 1, display: 'flex' }}
-                onClick={() => setMenuOpen(o => !o)}
-              >
-                <MoreVertical size={18} strokeWidth={2.5} />
-              </button>
-              {menuOpen && (
-                <div className="panel" style={{ position: 'absolute', right: 0, top: '100%', zIndex: 20, minWidth: 120, padding: 0 }}>
-                  {onDelete && (
-                    <button
-                      style={{ display: 'block', width: '100%', padding: '10px 14px', textAlign: 'left', background: 'none', border: 'none', borderBottom: '2px solid var(--ink)', cursor: 'pointer', fontWeight: 700, color: 'var(--accent-1)' }}
-                      onClick={() => { onDelete(box.id); setMenuOpen(false) }}
-                    >
-                      Eliminar
-                    </button>
-                  )}
+          <div className="box-options-wrap">
+            <button
+              className="box-options-trigger"
+              type="button"
+              aria-label="Post options"
+              onClick={() => setMenuOpen(o => !o)}
+            >
+              <MoreHorizontal size={18} strokeWidth={2.5} />
+            </button>
+            {menuOpen && (
+              <div className="box-options-menu panel">
+                <button
+                  type="button"
+                  className="box-options-item"
+                  onClick={handleSaveAction}
+                  disabled={toggleSave.isPending}
+                >
+                  <Bookmark size={17} strokeWidth={2.5} />
+                  <span>
+                    <strong>{isSaved ? 'Remove from saved' : 'Save post'}</strong>
+                    <small>{isSaved ? 'Remove this post from your saved drops.' : 'Add this post to your saved drops.'}</small>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="box-options-item"
+                  onClick={handlePostNotifications}
+                >
+                  <Bell size={17} strokeWidth={2.5} />
+                  <span>
+                    <strong>Turn on notifications</strong>
+                    <small>Get updates from this post.</small>
+                  </span>
+                </button>
+                {isOwner && onDelete && (
                   <button
-                    style={{ display: 'block', width: '100%', padding: '10px 14px', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 }}
-                    onClick={() => setMenuOpen(false)}
+                    type="button"
+                    className="box-options-item danger"
+                    onClick={async () => {
+                      setMenuOpen(false)
+                      const ok = await confirm({ title: 'Delete drop?', message: 'This action is permanent and cannot be undone.', confirmLabel: 'Delete', danger: true })
+                      if (ok) onDelete(box.id)
+                    }}
                   >
-                    Cancelar
+                    <Trash2 size={17} strokeWidth={2.5} />
+                    <span>
+                      <strong>Delete</strong>
+                      <small>This action cannot be undone.</small>
+                    </span>
                   </button>
-                </div>
-              )}
-            </div>
-          )}
+                )}
+                <button
+                  type="button"
+                  className="box-options-cancel"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Text body — shown for all types except mood (mood shows text inside block) */}
@@ -320,7 +376,10 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
             onClick={() => setCommentsOpen(true)}
             style={{ marginLeft: 'auto' }}
           >
-            {totalComments} comentarios · {shareCount} compartidos
+            <span className="box-comments-share">
+              <span>Comentarios {totalComments}</span>
+              <span>Compartidos {shareCount}</span>
+            </span>
           </button>
         </div>
 

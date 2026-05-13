@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { Link } from 'react-router-dom'
 import { X, MessageCircle, Send } from 'lucide-react'
-import { ThumbsUp, ThumbsDown } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useProfile } from '../../features/profile/useProfile'
 import { useComments, useCreateComment, useDeleteComment } from '../../features/comments/useComments'
@@ -10,90 +8,38 @@ import { useCommentVoteDetails } from '../../features/comments/useCommentVotes'
 import { useCommentReactionDetails } from '../../features/comments/useCommentReactions'
 import Avatar from '../ui/Avatar'
 import CommentItem from './CommentItem'
-
-// ─── Comment Activity Modal (who reacted to a specific comment) ──────────────────
-const REACTION_META: Record<string, { emoji: string; label: string }> = {
-  bold:  { emoji: '👍', label: 'Me gusta'   },
-  loud:  { emoji: '❤️', label: 'Me encanta' },
-  fire:  { emoji: '😆', label: 'Haha'       },
-  sharp: { emoji: '😮', label: 'Wow'        },
-  save:  { emoji: '😢', label: 'Sad'        },
-  angry: { emoji: '😠', label: 'Angry'      },
-}
+import ActivityModal, { type ActivityRow } from './ActivityModal'
+import type { ReactionType, VoteType } from '../../types/database'
 
 function CommentActivityModal({ commentId, onClose }: { commentId: string; onClose: () => void }) {
-  const [tab, setTab] = useState<'all' | 'likes' | 'reactions'>('all')
   const { data: votes     = [], isLoading: vl } = useCommentVoteDetails(commentId, true)
   const { data: reactions = [], isLoading: rl } = useCommentReactionDetails(commentId, true)
 
   const likeCount    = votes.filter(v => v.vote === 'like').length
   const dislikeCount = votes.filter(v => v.vote === 'dislike').length
 
-  type MRow = { userId: string; displayName: string; username: string; avatarUrl: string | null; vote?: string; reaction?: string }
-
-  // Merge by user_id for "Todos"
-  const mergedMap = new Map<string, MRow>()
-  for (const v of votes) mergedMap.set(v.user_id, { userId: v.user_id, displayName: v.profiles.display_name, username: v.profiles.username, avatarUrl: v.profiles.avatar_url, vote: v.vote })
+  const mergedMap = new Map<string, ActivityRow>()
+  for (const v of votes) mergedMap.set(v.user_id, { userId: v.user_id, displayName: v.profiles.display_name, username: v.profiles.username, avatarUrl: v.profiles.avatar_url, role: v.profiles.role, vote: v.vote as VoteType })
   for (const r of reactions) {
     const ex = mergedMap.get(r.user_id)
-    if (ex) ex.reaction = r.reaction_type
-    else mergedMap.set(r.user_id, { userId: r.user_id, displayName: r.profiles.display_name, username: r.profiles.username, avatarUrl: r.profiles.avatar_url, reaction: r.reaction_type })
+    if (ex) ex.reaction = r.reaction_type as ReactionType
+    else mergedMap.set(r.user_id, { userId: r.user_id, displayName: r.profiles.display_name, username: r.profiles.username, avatarUrl: r.profiles.avatar_url, role: r.profiles.role, reaction: r.reaction_type as ReactionType })
   }
 
-  const allRows: MRow[]      = Array.from(mergedMap.values())
-  const displayedRows: MRow[] = tab === 'all' ? allRows
-    : tab === 'likes' ? votes.map(v => ({ userId: v.user_id, displayName: v.profiles.display_name, username: v.profiles.username, avatarUrl: v.profiles.avatar_url, vote: v.vote }))
-    : reactions.map(r => ({ userId: r.user_id, displayName: r.profiles.display_name, username: r.profiles.username, avatarUrl: r.profiles.avatar_url, reaction: r.reaction_type }))
+  const allRows      = Array.from(mergedMap.values())
+  const likeRows     = votes.map(v => ({ userId: v.user_id, displayName: v.profiles.display_name, username: v.profiles.username, avatarUrl: v.profiles.avatar_url, role: v.profiles.role, vote: v.vote as VoteType }))
+  const reactionRows = reactions.map(r => ({ userId: r.user_id, displayName: r.profiles.display_name, username: r.profiles.username, avatarUrl: r.profiles.avatar_url, role: r.profiles.role, reaction: r.reaction_type as ReactionType }))
 
-  return createPortal(
-    <div style={{ position: 'fixed', inset: 0, zIndex: 9200, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }} onClick={onClose}>
-      <div style={{ background: 'var(--bg-panel)', border: '3px solid var(--ink)', boxShadow: '6px 6px 0 var(--ink)', width: '100%', maxWidth: 420, maxHeight: '70vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 16px', borderBottom: '3px solid var(--ink)' }}>
-          <div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.2em', textTransform: 'uppercase', fontWeight: 700 }}>▓ ACTIVIDAD · {allRows.length}</div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 3 }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, fontWeight: 700, color: 'var(--accent-4)', fontFamily: 'var(--font-mono)' }}><ThumbsUp size={11} strokeWidth={2.5}/> {likeCount}</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 11, fontWeight: 700, color: 'var(--accent-1)', fontFamily: 'var(--font-mono)' }}><ThumbsDown size={11} strokeWidth={2.5}/> {dislikeCount}</span>
-            </div>
-          </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', color: 'var(--ink)' }}><X size={16} strokeWidth={2.5} /></button>
-        </div>
-        <div style={{ display: 'flex', borderBottom: '3px solid var(--ink)' }}>
-          {(['all','likes','reactions'] as const).map((t, i) => (
-            <button key={t} onClick={() => setTab(t)} style={{ flex: 1, padding: '9px 4px', border: 'none', borderRight: i < 2 ? '2px solid var(--ink)' : 'none', background: tab === t ? 'var(--ink)' : 'none', color: tab === t ? 'var(--bg-panel)' : 'var(--ink)', cursor: 'pointer', fontWeight: 800, fontSize: 11, fontFamily: 'var(--font-mono)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
-              {t === 'all' ? 'Todos' : t === 'likes' ? 'Likes' : 'Reacciones'}
-              <span style={{ background: 'var(--bg-alt)', color: 'var(--ink)', padding: '1px 5px', fontSize: 10, fontWeight: 900, border: '1px solid var(--ink)' }}>
-                {t === 'all' ? allRows.length : t === 'likes' ? votes.length : reactions.length}
-              </span>
-            </button>
-          ))}
-        </div>
-        <div style={{ overflowY: 'auto', flex: 1 }}>
-          {(vl || rl) && <div style={{ padding: 32, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink-mute)' }}>▒ cargando...</div>}
-          {!vl && !rl && displayedRows.length === 0 && <div style={{ padding: 32, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink-mute)' }}>Sin actividad aún</div>}
-          {displayedRows.map((row, i) => (
-            <div key={`${row.userId}-${i}`} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderBottom: '2px solid var(--ink)' }}>
-              <Link
-                to={`/profile/${row.username}`}
-                onClick={onClose}
-                style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0, textDecoration: 'none', color: 'inherit' }}
-              >
-                <Avatar name={row.displayName} src={row.avatarUrl} size="sm" />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 800, fontSize: 13 }}>{row.displayName}</div>
-                  <div style={{ fontSize: 11, color: 'var(--ink-mute)', fontFamily: 'var(--font-mono)' }}>@{row.username}</div>
-                </div>
-              </Link>
-              <div style={{ display: 'flex', gap: 3 }}>
-                {row.vote && <div style={{ width: 26, height: 26, border: '2px solid var(--ink)', background: row.vote === 'like' ? 'var(--accent-4)' : 'var(--accent-1)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '2px 2px 0 var(--ink)' }}>{row.vote === 'like' ? <ThumbsUp size={12} strokeWidth={2.5}/> : <ThumbsDown size={12} strokeWidth={2.5}/>}</div>}
-                {row.reaction && <div style={{ width: 26, height: 26, border: '2px solid var(--ink)', background: 'var(--bg-alt)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, boxShadow: '2px 2px 0 var(--ink)' }}>{REACTION_META[row.reaction]?.emoji}</div>}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>,
-    document.body
+  return (
+    <ActivityModal
+      allRows={allRows}
+      likeRows={likeRows}
+      reactionRows={reactionRows}
+      likeCount={likeCount}
+      dislikeCount={dislikeCount}
+      isLoading={vl || rl}
+      onClose={onClose}
+    />
   )
 }
 

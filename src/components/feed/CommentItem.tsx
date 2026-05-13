@@ -5,8 +5,10 @@ import { ThumbsUp, ThumbsDown, Trash2 } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useMyCommentVote, useCommentVoteCounts, useToggleCommentVote } from '../../features/comments/useCommentVotes'
 import { useMyCommentReaction, useCommentReactionCounts, useToggleCommentReaction } from '../../features/comments/useCommentReactions'
+import { useCommentActivityUserCount } from '../../features/comments/useCommentActivity'
 import Avatar from '../ui/Avatar'
 import AdminBadge from '../ui/AdminBadge'
+import { useConfirm } from '../ui/ConfirmContext'
 import type { CommentWithAuthor } from '../../features/comments/useComments'
 import type { ReactionType, VoteType } from '../../types/database'
 
@@ -39,6 +41,7 @@ interface Props {
 // ─── Component ────────────────────────────────────────────────────────────────────
 export default function CommentItem({ comment, onDelete, onOpenActivity }: Props) {
   const { user } = useAuth()
+  const confirm = useConfirm()
   const [popPos, setPopPos]   = useState<{ top: number; left: number } | null>(null)
   const triggerRef            = useRef<HTMLDivElement>(null)
   const closeTimer            = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -47,6 +50,7 @@ export default function CommentItem({ comment, onDelete, onOpenActivity }: Props
   const { data: myReaction }  = useMyCommentReaction(comment.id, user?.id)
   const { data: voteCounts }  = useCommentVoteCounts(comment.id)
   const { data: reactCounts } = useCommentReactionCounts(comment.id)
+  const { data: activityUserCount } = useCommentActivityUserCount(comment.id)
   const toggleVote            = useToggleCommentVote(comment.id)
   const toggleReaction        = useToggleCommentReaction(comment.id)
 
@@ -57,6 +61,8 @@ export default function CommentItem({ comment, onDelete, onOpenActivity }: Props
     .filter(r => r.n > 0)
     .sort((a, b) => b.n - a.n)
   const totalReactions = topReactions.reduce((s, r) => s + r.n, 0)
+  const totalActivity = likeCount + dislikeCount + totalReactions
+  const activityCount = activityUserCount ?? totalActivity
 
   const hasActivity = likeCount > 0 || dislikeCount > 0 || totalReactions > 0
 
@@ -115,9 +121,12 @@ export default function CommentItem({ comment, onDelete, onOpenActivity }: Props
               </Link>
               {isOwner && onDelete && (
                 <button
-                  onClick={() => onDelete(comment.id)}
+                  onClick={async () => {
+                    const ok = await confirm({ title: 'Delete comment?', message: 'This action is permanent and cannot be undone.', confirmLabel: 'Delete', danger: true })
+                    if (ok) onDelete(comment.id)
+                  }}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--ink-mute)', display: 'flex' }}
-                  title="Eliminar"
+                  title="Delete comment"
                 >
                   <Trash2 size={12} strokeWidth={2} />
                 </button>
@@ -145,7 +154,7 @@ export default function CommentItem({ comment, onDelete, onOpenActivity }: Props
               }}
               title="Like"
             >
-              <ThumbsUp size={11} strokeWidth={2.5} style={{ color: 'var(--accent-4)' }} />
+              <ThumbsUp size={11} strokeWidth={2.5} style={{ color: myVote === 'like' ? 'var(--ink)' : 'var(--accent-4)' }} />
               {likeCount > 0 && likeCount}
             </button>
 
@@ -184,14 +193,11 @@ export default function CommentItem({ comment, onDelete, onOpenActivity }: Props
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: 3,
-                  fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-dim)',
+                  fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-dim)', fontWeight: 700,
                   marginLeft: 'auto', padding: 0,
                 }}
               >
-                {topReactions.slice(0, 2).map(r => (
-                  <span key={r.type} style={{ fontSize: 12 }}>{r.emoji}</span>
-                ))}
-                {(likeCount + dislikeCount + totalReactions)}
+                <span>Actividad · {activityCount}</span>
               </button>
             )}
           </div>
@@ -202,7 +208,7 @@ export default function CommentItem({ comment, onDelete, onOpenActivity }: Props
       {popPos && createPortal(
         <div
           style={{
-            position: 'fixed', top: popPos.top, left: popPos.left, zIndex: 9100,
+            position: 'fixed', top: popPos.top, left: popPos.left, zIndex: 10100,
             display: 'flex', gap: 4, padding: '6px 8px',
             background: 'var(--bg-panel)', border: '2px solid var(--ink)',
             boxShadow: '4px 4px 0 var(--ink)',
@@ -210,36 +216,7 @@ export default function CommentItem({ comment, onDelete, onOpenActivity }: Props
           onMouseEnter={() => clearTimeout(closeTimer.current)}
           onMouseLeave={scheduleClose}
         >
-          {/* Like/Dislike mini buttons */}
-          <button
-            onClick={() => handleVote('like')}
-            style={{
-              width: 36, height: 36, border: '2px solid var(--ink)',
-              background: myVote === 'like' ? 'var(--accent-4)' : 'var(--bg-panel)',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '2px 2px 0 var(--ink)', transition: 'transform .08s',
-            }}
-            title="Like"
-          >
-            <ThumbsUp size={15} strokeWidth={2.5} style={{ color: 'var(--accent-4)' }} />
-          </button>
-          <button
-            onClick={() => handleVote('dislike')}
-            style={{
-              width: 36, height: 36, border: '2px solid var(--ink)',
-              background: myVote === 'dislike' ? 'var(--accent-1)' : 'var(--bg-panel)',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '2px 2px 0 var(--ink)',
-            }}
-            title="Dislike"
-          >
-            <ThumbsDown size={15} strokeWidth={2.5} style={{ color: 'var(--accent-1)' }} />
-          </button>
-
-          {/* Divider */}
-          <div style={{ width: 2, background: 'var(--ink)', margin: '4px 2px' }} />
-
-          {/* Emoji reactions */}
+          {/* Emoji reactions — like/dislike already accessible inline in the action row */}
           {CUSTOM_REACTIONS.map(r => (
             <button
               key={r.type}
