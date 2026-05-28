@@ -1,4 +1,4 @@
-﻿import { useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { Home, Compass, Contact, Inbox, UsersRound, Clock, Bookmark, Settings2, LogOut, LogIn } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
@@ -46,7 +46,7 @@ export default function LeftSidebar() {
 
   return (
     <>
-      {/* Sidebar panel â€” white background so text doesn't blend with dot-grid */}
+      {/* Sidebar panel — white background so text doesn't blend with dot-grid */}
       <nav
         className="side-nav"
         style={{
@@ -117,7 +117,7 @@ export default function LeftSidebar() {
           </button>
         )}
 
-        {/* Appearance â€” opens modal */}
+        {/* Appearance — opens modal */}
         <button type="button"
           ref={appearanceBtnRef}
           title="Appearance"
@@ -139,7 +139,7 @@ export default function LeftSidebar() {
 
       </nav>
 
-      {/* Panel Contacts â€” solo visible en tablet (821-1100px) via CSS */}
+      {/* Panel Contacts — solo visible en tablet (821-1100px) via CSS */}
       {user && realContacts.length > 0 && (
         <div className="sidebar-tablet-contacts panel" style={{ padding: 14, marginTop: 16 }}>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 10 }}>
@@ -154,15 +154,19 @@ export default function LeftSidebar() {
               onClick={() => handleContactChat(c.other.id, c.other.display_name, c.other.username, c.other.avatar_url)}
               onMouseEnter={e => {
                 const el = e.currentTarget as HTMLDivElement
-                el.style.background = 'var(--accent-2)'
-                el.style.transform = 'translate(-1px, -1px)'
-                el.style.boxShadow = '3px 3px 0 var(--ink)'
+                Object.assign(el.style, {
+                  background: 'var(--accent-2)',
+                  transform: 'translate(-1px, -1px)',
+                  boxShadow: '3px 3px 0 var(--ink)',
+                })
               }}
               onMouseLeave={e => {
                 const el = e.currentTarget as HTMLDivElement
-                el.style.background = ''
-                el.style.transform = ''
-                el.style.boxShadow = ''
+                Object.assign(el.style, {
+                  background: '',
+                  transform: '',
+                  boxShadow: '',
+                })
               }}
             >
               <Link

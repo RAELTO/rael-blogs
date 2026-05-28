@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useProfile } from '../../features/profile/useProfile'
 import { useCreateBox } from '../../features/boxes/useBoxes'

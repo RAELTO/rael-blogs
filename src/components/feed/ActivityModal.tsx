@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { X, ThumbsUp, ThumbsDown } from 'lucide-react'
@@ -7,7 +7,7 @@ import AdminBadge from '../ui/AdminBadge'
 import type { ReactionType, VoteType } from '../../types/database'
 
 const REACTION_EMOJI: Record<string, string> = {
-  bold: 'ðŸ‘', loud: 'â¤ï¸', fire: 'ðŸ˜†', sharp: 'ðŸ˜®', save: 'ðŸ˜¢', angry: 'ðŸ˜ ',
+  bold: '👍', loud: '❤️', fire: '😆', sharp: '😮', save: '😢', angry: '😠',
 }
 
 export interface ActivityRow {
@@ -49,7 +49,7 @@ export default function ActivityModal({
         {/* Header */}
         <div className="activity-header">
           <div>
-            <div className="activity-title">â–“ ACTIVITY Â· {allRows.length}</div>
+            <div className="activity-title">▓ ACTIVITY · {allRows.length}</div>
             <div className="activity-stats">
               <span className="activity-stat like">
                 <ThumbsUp size={12} strokeWidth={2.5} /> {likeCount}
@@ -80,7 +80,7 @@ export default function ActivityModal({
 
         {/* User list */}
         <div className="activity-list">
-          {isLoading && <div className="activity-empty">â–’ loading...</div>}
+          {isLoading && <div className="activity-empty">▒ loading...</div>}
           {!isLoading && rows.length === 0 && (
             <div className="activity-empty">No activity yet</div>
           )}

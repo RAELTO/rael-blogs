@@ -1,4 +1,4 @@
-﻿import { useState, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { Home, Inbox, Bell, Search, Plus, Palette } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
@@ -70,8 +70,8 @@ export default function Header({ onDropClick }: HeaderProps) {
           />
         </form>
 
-        {/* Center nav tabs â€” Inbox y Bell solo visibles si estÃ¡ logueado */}
-        <nav className="header-tabs" aria-label="NavegaciÃ³n">
+        {/* Center nav tabs — Inbox y Bell solo visibles si está logueado */}
+        <nav className="header-tabs" aria-label="Navegación">
           {NAV_TABS.flatMap(({ to, Icon, label, end, badge }) => {
             if (!user && Icon !== Home) return []
             if (Icon === Bell) {
@@ -102,7 +102,7 @@ export default function Header({ onDropClick }: HeaderProps) {
               </NavLink>
             )]
           })}
-          {/* Search â€” solo en mÃ³vil, agrupado con los tabs de nav */}
+          {/* Search — solo en móvil, agrupado con los tabs de nav */}
           {user && (
             <button type="button"
               className="header-tab header-mobile-btn"
@@ -125,7 +125,7 @@ export default function Header({ onDropClick }: HeaderProps) {
         <div className="header-right">
           {user ? (
             <>
-              {/* Appearance â€” solo visible en mÃ³vil (desktop usa el sidebar) */}
+              {/* Appearance — solo visible en móvil (desktop usa el sidebar) */}
               <button type="button"
                 ref={paletteRef}
                 className="btn btn-icon header-palette-btn"

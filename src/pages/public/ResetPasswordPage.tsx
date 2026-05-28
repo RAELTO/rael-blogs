@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, NavLink } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useUpdatePassword } from '../../features/auth/usePasswordRecovery'
@@ -98,8 +98,9 @@ export default function ResetPasswordPage() {
             </div>
 
             <div className="field-group">
-              <label className="field-label">New password</label>
+              <label className="field-label" htmlFor="new-password">New password</label>
               <input
+                id="new-password"
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
@@ -133,8 +134,9 @@ export default function ResetPasswordPage() {
             </div>
 
             <div className="field-group">
-              <label className="field-label">Confirm password</label>
+              <label className="field-label" htmlFor="confirm-password">Confirm password</label>
               <input
+                id="confirm-password"
                 type="password"
                 value={confirm}
                 onChange={e => setConfirm(e.target.value)}

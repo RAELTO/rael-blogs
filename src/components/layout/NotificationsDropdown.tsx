@@ -1,4 +1,4 @@
-﻿import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import { UserCheck, UserX } from 'lucide-react'
@@ -41,7 +41,7 @@ function NotifItem({ n, onAccept, onDecline, onCloseDropdown }: {
             <Avatar name={n.actor.display_name} src={n.actor.avatar_url} size="sm" />
           </Link>
         )
-        : <div className="notif-item-avatar-placeholder">â˜…</div>
+        : <div className="notif-item-avatar-placeholder">★</div>
       }
       <div className="notif-item-body">
         <div className="notif-item-text">
@@ -108,7 +108,7 @@ export default function NotificationsDropdown({ anchorRef, onClose }: Props) {
   async function handleAccept(n: NotificationRow) {
     if (!n.contact_request_id || !n.actor_id) return
     await respond.mutateAsync({ requestId: n.contact_request_id, requesterId: n.actor_id, accept: true })
-    toast(`âœ“ ${n.actor?.display_name} es now tu contacto`)
+    toast(`✓ ${n.actor?.display_name} es now tu contacto`)
   }
   async function handleDecline(n: NotificationRow) {
     if (!n.contact_request_id || !n.actor_id) return

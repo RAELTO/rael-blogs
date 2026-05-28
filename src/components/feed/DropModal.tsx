@@ -1,4 +1,4 @@
-﻿import { useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Zap, Camera, AlignLeft, AlignJustify, Sparkles, Link2, X, Plus } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useCreateBox } from '../../features/boxes/useBoxes'

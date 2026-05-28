@@ -1,4 +1,4 @@
-﻿import { createPortal } from 'react-dom'
+import { createPortal } from 'react-dom'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -22,7 +22,7 @@ export default function ConfirmDialog({
   return createPortal(
     <div className="confirm-overlay" onClick={onCancel}>
       <div className="confirm-panel" onClick={e => e.stopPropagation()}>
-        <div className="confirm-eyebrow">â–“ confirmation required</div>
+        <div className="confirm-eyebrow">▓ confirmation required</div>
         <h2 className="confirm-title">{title}</h2>
         <p className="confirm-message">{message}</p>
         <div className="confirm-actions">

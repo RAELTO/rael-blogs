@@ -1,4 +1,4 @@
-﻿import { useRef, useState, useEffect, useLayoutEffect } from 'react'
+import { useRef, useState, useEffect, useLayoutEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Paperclip, Send, Phone, Video, Smile, ArrowLeft, Mail } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
@@ -10,7 +10,7 @@ import LeftSidebar from '../../components/layout/LeftSidebar'
 import RightSidebar from '../../components/layout/RightSidebar'
 import { useToast } from '../../components/ui/Toast'
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 const AVATAR_COLORS = [
   'var(--accent-1)', 'var(--accent-3)', 'var(--accent-4)',
   'var(--accent-5)', 'var(--accent-2)',
@@ -46,7 +46,7 @@ function dayLabel(iso: string) {
   return d.toLocaleDateString('en', { weekday: 'long', day: 'numeric', month: 'short' }).toUpperCase()
 }
 
-// â”€â”€â”€ Sq avatar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Sq avatar ────────────────────────────────────────────────────────────────
 function SqAvatar({ name, size = 44 }: { name: string; size?: number }) {
   return (
     <div
@@ -58,7 +58,7 @@ function SqAvatar({ name, size = 44 }: { name: string; size?: number }) {
   )
 }
 
-// â”€â”€â”€ Action button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Action button ─────────────────────────────────────────────────────────────
 function ActionBtn({ children, title, onClick, disabled }: {
   children: React.ReactNode
   title?: string
@@ -78,7 +78,7 @@ function ActionBtn({ children, title, onClick, disabled }: {
   )
 }
 
-// â”€â”€â”€ Thread panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Thread panel ─────────────────────────────────────────────────────────────
 function ThreadPanel({ conversationId, userId, otherId, otherName, otherUsername, onBack }: {
   conversationId: string; userId: string; otherId: string
   otherName: string; otherUsername: string; onBack: () => void
@@ -119,7 +119,7 @@ function ThreadPanel({ conversationId, userId, otherId, otherName, otherUsername
         >
           <div style={{ fontWeight: 800, fontSize: 15, lineHeight: 1.1 }}>{otherName}</div>
           <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: presence.color, letterSpacing: '.04em', marginTop: 1 }}>
-            {presence.label || (presence.status === 'offline' ? 'â— OFFLINE' : 'â— ACTIVE')}
+            {presence.label || (presence.status === 'offline' ? '● OFFLINE' : '● ACTIVE')}
           </div>
         </Link>
         <div style={{ display: 'flex', gap: 6 }}>
@@ -147,7 +147,7 @@ function ThreadPanel({ conversationId, userId, otherId, otherName, otherUsername
               {showSep && <div className="chat-day-sep">{day}</div>}
               <div className={`msg-bubble ${isMe ? 'me' : 'them'}`}>
                 <div style={{ fontSize: 14 }}>{m.body}</div>
-                <div className="msg-time">{msgTime(m.created_at)}{isMe && ' âœ“âœ“'}</div>
+                <div className="msg-time">{msgTime(m.created_at)}{isMe && ' ✓✓'}</div>
               </div>
             </div>
           )
@@ -184,7 +184,7 @@ function ThreadPanel({ conversationId, userId, otherId, otherName, otherUsername
   )
 }
 
-// â”€â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function InboxPage() {
   const { user } = useAuth()
   const [params, setParams] = useSearchParams()
@@ -213,7 +213,7 @@ export default function InboxPage() {
     <AppShell left={<LeftSidebar />} right={<RightSidebar />}>
       <div className={`chat-grid${activeId ? ' show-thread' : ''}`} style={{ height: undefined }}>
 
-        {/* â”€â”€ Lista de conversaciones â”€â”€ */}
+        {/* ── Lista de conversaciones ── */}
         <aside className="chat-list">
           {/* Header amarillo */}
           <div className="chat-list-head">
@@ -283,7 +283,7 @@ export default function InboxPage() {
           </div>
         </aside>
 
-        {/* â”€â”€ Thread / Empty state â”€â”€ */}
+        {/* ── Thread / Empty state ── */}
         {activeConv ? (
           <ThreadPanel
             conversationId={activeConv.id}

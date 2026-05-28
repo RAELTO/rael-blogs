@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
@@ -49,13 +49,13 @@ export default function BoxPage() {
         {isLoading && (
           <div className="spinner">
             <div className="spinner-ring" />
-            <span className="spinner-label">â–’ loading drop...</span>
+            <span className="spinner-label">▒ loading drop...</span>
           </div>
         )}
 
         {isError && (
           <div className="panel" style={{ padding: 40, textAlign: 'center', color: 'var(--accent-1)', fontWeight: 700 }}>
-            âš  Drop no encontrado.
+            ⚠ Drop no encontrado.
           </div>
         )}
 

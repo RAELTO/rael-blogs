@@ -1,4 +1,4 @@
-﻿import { useState, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { ThumbsUp, ThumbsDown, Trash2 } from 'lucide-react'
@@ -12,13 +12,13 @@ import { useConfirm } from '../ui/ConfirmContext'
 import type { CommentWithAuthor } from '../../features/comments/useComments'
 import type { ReactionType, VoteType } from '../../types/database'
 
-// â”€â”€â”€ Config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Config ──────────────────────────────────────────────────────────────────────
 const CUSTOM_REACTIONS: { type: ReactionType; emoji: string; label: string }[] = [
-  { type: 'loud',  emoji: 'â¤ï¸', label: 'Love it' },
-  { type: 'fire',  emoji: 'ðŸ˜†', label: 'Haha'       },
-  { type: 'sharp', emoji: 'ðŸ˜®', label: 'Wow'        },
-  { type: 'save',  emoji: 'ðŸ˜¢', label: 'Sad'        },
-  { type: 'angry', emoji: 'ðŸ˜ ', label: 'Angry'      },
+  { type: 'loud',  emoji: '❤️', label: 'Love it' },
+  { type: 'fire',  emoji: '😆', label: 'Haha'       },
+  { type: 'sharp', emoji: '😮', label: 'Wow'        },
+  { type: 'save',  emoji: '😢', label: 'Sad'        },
+  { type: 'angry', emoji: '😠', label: 'Angry'      },
 ]
 
 function timeAgo(iso: string): string {
@@ -31,14 +31,14 @@ function timeAgo(iso: string): string {
   return `${Math.floor(h / 24)}d`
 }
 
-// â”€â”€â”€ Props â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Props ────────────────────────────────────────────────────────────────────────
 interface Props {
   comment: CommentWithAuthor
   onDelete?: (id: string) => void
   onOpenActivity?: (commentId: string) => void
 }
 
-// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Component ────────────────────────────────────────────────────────────────────
 export default function CommentItem({ comment, onDelete, onOpenActivity }: Props) {
   const { user } = useAuth()
   const confirm = useConfirm()
@@ -83,7 +83,7 @@ export default function CommentItem({ comment, onDelete, onOpenActivity }: Props
     clearTimeout(closeTimer.current)
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect()
-      // popup: 2 votes(36px) + divider + 5 emojis(36px) + gaps + padding â‰ˆ 312px
+      // popup: 2 votes(36px) + divider + 5 emojis(36px) + gaps + padding ≈ 312px
       const POPUP_W = 312
       const left = Math.max(8, Math.min(rect.left, window.innerWidth - POPUP_W - 8))
       setPopPos({ top: rect.top - 60, left })
@@ -164,7 +164,7 @@ export default function CommentItem({ comment, onDelete, onOpenActivity }: Props
               className="comment-react-trigger"
             >
               {myReaction
-                ? <span style={{ fontSize: 13 }}>{CUSTOM_REACTIONS.find(r => r.type === myReaction)?.emoji ?? 'ðŸ˜€'}</span>
+                ? <span style={{ fontSize: 13 }}>{CUSTOM_REACTIONS.find(r => r.type === myReaction)?.emoji ?? '😀'}</span>
                 : <span className="comment-react-label">React</span>
               }
             </div>
@@ -172,14 +172,14 @@ export default function CommentItem({ comment, onDelete, onOpenActivity }: Props
             {/* Reaction summary (clickable) */}
             {hasActivity && (
               <button type="button" onClick={() => onOpenActivity?.(comment.id)} className="comment-activity-btn">
-                <span>Activity Â· {activityCount}</span>
+                <span>Activity · {activityCount}</span>
               </button>
             )}
           </div>
         </div>
       </div>
 
-      {/* Reaction popover â€” portal so it's never clipped by overflow */}
+      {/* Reaction popover — portal so it's never clipped by overflow */}
       {popPos && createPortal(
         <div
           className="comment-react-popover"

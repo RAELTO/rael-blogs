@@ -1,4 +1,4 @@
-﻿import { useState, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Bell, Bookmark, Trash2, ThumbsUp, ThumbsDown, MessageCircle, Share2, MoreHorizontal } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
@@ -15,13 +15,13 @@ import { useShareCount } from '../../features/shares/useShares'
 import { useIsBoxSaved, useToggleBoxSave } from '../../features/saves/useBoxSaves'
 import type { BoxWithAuthor, ReactionType, VoteType, MediaPayload, PollPayload, MoodPayload, LinkPayload, ThreadPayload } from '../../types/database'
 
-// â”€â”€â”€ Reaction config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Reaction config ────────────────────────────────────────────────────────────
 const CUSTOM_REACTIONS: { type: ReactionType; emoji: string; label: string }[] = [
-  { type: 'loud',  emoji: 'â¤ï¸', label: 'Love it' },
-  { type: 'fire',  emoji: 'ðŸ˜†', label: 'Haha'       },
-  { type: 'sharp', emoji: 'ðŸ˜®', label: 'Wow'        },
-  { type: 'save',  emoji: 'ðŸ˜¢', label: 'Sad'        },
-  { type: 'angry', emoji: 'ðŸ˜ ', label: 'Angry'      },
+  { type: 'loud',  emoji: '❤️', label: 'Love it' },
+  { type: 'fire',  emoji: '😆', label: 'Haha'       },
+  { type: 'sharp', emoji: '😮', label: 'Wow'        },
+  { type: 'save',  emoji: '😢', label: 'Sad'        },
+  { type: 'angry', emoji: '😠', label: 'Angry'      },
 ]
 
 const MOOD_BG: Record<MoodPayload['color'], string> = {
@@ -32,7 +32,7 @@ const MOOD_BG: Record<MoodPayload['color'], string> = {
   m5: '#ffd23f',
 }
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Helpers ────────────────────────────────────────────────────────────────────
 function safeHref(url: string): string {
   try {
     const u = new URL(url)
@@ -51,7 +51,7 @@ function timeAgo(iso: string | null): string {
   return `${Math.floor(h / 24)}d`
 }
 
-// â”€â”€â”€ Content renderers per box type â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Content renderers per box type ────────────────────────────────────────────
 function BoxContent({ box }: { box: BoxWithAuthor }) {
   const [voted, setVoted] = useState<string | null>(null)
 
@@ -153,7 +153,7 @@ function BoxContent({ box }: { box: BoxWithAuthor }) {
   return null
 }
 
-// â”€â”€â”€ Main component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Main component ─────────────────────────────────────────────────────────────
 interface BoxCardProps {
   box: BoxWithAuthor
   onDelete?: (id: string) => void
@@ -182,32 +182,32 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
   const { data: reactionCounts } = useReactionCounts(box.id)
   const { data: voteCounts }     = useVoteCounts(box.id)
 
-  const AUTH_TOAST = 'Sign in to interact with this drop.'
+  const INTERACTION_TOAST_MESSAGE = 'Sign in to interact with this drop.'
 
   function handleReact(type: ReactionType) {
-    if (!user) { toast(AUTH_TOAST, 5000); setReactPopOpen(false); setEmojiPopOpen(false); return }
+    if (!user) { toast(INTERACTION_TOAST_MESSAGE, 5000); setReactPopOpen(false); setEmojiPopOpen(false); return }
     toggleReaction.mutate({ userId: user.id, type, current: myReaction ?? null })
     setReactPopOpen(false)
     setEmojiPopOpen(false)
   }
 
   function handleVote(vote: VoteType) {
-    if (!user) { toast(AUTH_TOAST, 5000); setReactPopOpen(false); return }
+    if (!user) { toast(INTERACTION_TOAST_MESSAGE, 5000); setReactPopOpen(false); return }
     toggleVote.mutate({ userId: user.id, vote, current: myVote ?? null })
   }
 
   function openComments() {
-    if (!user) { toast(AUTH_TOAST, 5000); return }
+    if (!user) { toast(INTERACTION_TOAST_MESSAGE, 5000); return }
     setCommentsOpen(true)
   }
 
   function openShare() {
-    if (!user) { toast(AUTH_TOAST, 5000); return }
+    if (!user) { toast(INTERACTION_TOAST_MESSAGE, 5000); return }
     setShareOpen(true)
   }
 
   async function handleSaveAction() {
-    if (!user) { toast(AUTH_TOAST, 5000); setMenuOpen(false); return }
+    if (!user) { toast(INTERACTION_TOAST_MESSAGE, 5000); setMenuOpen(false); return }
     try {
       const saved = await toggleSave.mutateAsync(isSaved)
       toast(saved ? 'Post saved.' : 'Post removed from saved.')
@@ -219,7 +219,7 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
   }
 
   function handlePostNotifications() {
-    if (!user) { toast(AUTH_TOAST, 5000); setMenuOpen(false); return }
+    if (!user) { toast(INTERACTION_TOAST_MESSAGE, 5000); setMenuOpen(false); return }
     toast('Post notifications coming soon.')
     setMenuOpen(false)
   }
@@ -258,7 +258,7 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
               {box.author.display_name}
               {box.author.role === 'admin' && <AdminBadge />}
             </div>
-            <div className="box-head-meta">@{box.author.username} Â· {timeAgo(box.published_at)}</div>
+            <div className="box-head-meta">@{box.author.username} · {timeAgo(box.published_at)}</div>
           </div>
           <div className="box-options-wrap">
             <button type="button"
@@ -322,7 +322,7 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
           </div>
         </div>
 
-        {/* Text body â€” shown for all types except mood (mood shows text inside block) */}
+        {/* Text body — shown for all types except mood (mood shows text inside block) */}
         {box.type !== 'mood' && box.content && (
           <div className="box-body">
             <Link to={`/box/${box.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
@@ -358,7 +358,7 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
               {topCustom.slice(0, 3).map(r => (
                 <span key={r.type} className="box-stats-emoji">{r.emoji}</span>
               ))}
-              {topCustom.length > 3 && <span className="box-stats-more">â€¦</span>}
+              {topCustom.length > 3 && <span className="box-stats-more">…</span>}
               <span className="box-stats-count">{totalCustom}</span>
             </span>
             <span className="box-stat-vote">
@@ -428,7 +428,7 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
             onMouseLeave={() => { voteTimer.current = setTimeout(() => setEmojiPopOpen(false), 120) }}
           >
             <span style={{ fontSize: 15 }}>
-              {customReaction ? customReaction.emoji : 'ðŸ˜€'}
+              {customReaction ? customReaction.emoji : '😀'}
             </span>
             <span>{customReaction ? customReaction.label : 'Reaction'}</span>
 
@@ -451,13 +451,13 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
               </div>
             )}
           </div>
-          {/* â‘¢ Comment */}
+          {/* ③ Comment */}
           <button type="button" className="box-action" onClick={openComments}>
             <MessageCircle size={15} strokeWidth={2.5} />
             <span>Comment</span>
           </button>
 
-          {/* â‘£ Share â€” last */}
+          {/* ④ Share — last */}
           <button type="button" className="box-action" onClick={openShare}>
             <Share2 size={15} strokeWidth={2.5} />
             <span>Share</span>

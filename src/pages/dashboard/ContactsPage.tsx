@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { Ban, MessageCircle, MoreHorizontal, UserMinus, UserPlus, UserCheck, UserX, X } from 'lucide-react'
@@ -42,7 +42,7 @@ function timeAgo(iso: string) {
   return `${Math.floor(h / 24)}d`
 }
 
-// â”€â”€â”€ Incoming request card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Incoming request card ────────────────────────────────────────────────────
 function IncomingCard({ req, onAccept, onDecline }: {
   req: ContactRequestRow
   onAccept: (req: ContactRequestRow) => void
@@ -63,7 +63,7 @@ function IncomingCard({ req, onAccept, onDecline }: {
       >
         <div style={{ fontWeight: 800, fontSize: 14 }}>{req.requester.display_name}</div>
         <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-dim)' }}>
-          @{req.requester.username} Â· {timeAgo(req.created_at)}
+          @{req.requester.username} · {timeAgo(req.created_at)}
         </div>
         <div style={{ fontSize: 12, marginTop: 2, color: 'var(--ink-dim)' }}>
           wants to add you as a contact
@@ -87,13 +87,13 @@ function IncomingCard({ req, onAccept, onDecline }: {
   )
 }
 
-// â”€â”€â”€ Outgoing request card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Outgoing request card ────────────────────────────────────────────────────
 function OutgoingCard({ req, onCancel }: {
   req: ContactRequestRow
   onCancel: (req: ContactRequestRow) => void
 }) {
-  const label = req.status === 'accepted' ? 'âœ“ Accepted'
-    : req.status === 'declined' ? 'âœ• Declined'
+  const label = req.status === 'accepted' ? '✓ Accepted'
+    : req.status === 'declined' ? '✕ Declined'
     : 'Pending'
   const bg = req.status === 'accepted' ? 'var(--accent-4)'
     : req.status === 'declined' ? 'var(--accent-1)'
@@ -113,7 +113,7 @@ function OutgoingCard({ req, onCancel }: {
       >
         <div style={{ fontWeight: 800, fontSize: 14 }}>{req.addressee.display_name}</div>
         <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-dim)' }}>
-          @{req.addressee.username} Â· {timeAgo(req.created_at)}
+          @{req.addressee.username} · {timeAgo(req.created_at)}
         </div>
       </Link>
       <div style={{
@@ -137,7 +137,7 @@ function OutgoingCard({ req, onCancel }: {
   )
 }
 
-// â”€â”€â”€ Suggestion card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Suggestion card ──────────────────────────────────────────────────────────
 function SuggestionCard({ profile, index, onAdd }: {
   profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>
   index: number
@@ -222,7 +222,7 @@ function MobileSuggestionRow({ profile, index, sent, onAdd, onDismiss }: {
   )
 }
 
-// â”€â”€â”€ Contact card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Contact card ─────────────────────────────────────────────────────────────
 function ContactCard({ profile, index, userId, presence, onRemove }: {
   profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>
   index: number
@@ -361,7 +361,7 @@ function ContactActionSheet({ profile, onClose, onMessage, onFollow, onBlock, on
   )
 }
 
-// â”€â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function ContactsPage() {
   const { user } = useAuth()
   const toast = useToast()
@@ -390,12 +390,12 @@ export default function ContactsPage() {
   const NAV: { id: Tab; label: string; badge?: number }[] = [
     { id: 'requests', label: 'Requests', badge: pendingIncoming },
     { id: 'suggest',  label: 'Suggestions' },
-    { id: 'all',      label: `All Â· ${contacts.length}` },
+    { id: 'all',      label: `All · ${contacts.length}` },
   ]
 
   async function handleAccept(req: ContactRequestRow) {
     await respond.mutateAsync({ requestId: req.id, requesterId: req.requester_id, accept: true })
-    toast(`âœ“ You are now connected with ${req.requester.display_name}`)
+    toast(`✓ You are now connected with ${req.requester.display_name}`)
   }
 
   async function handleDecline(req: ContactRequestRow) {
@@ -441,7 +441,7 @@ export default function ContactsPage() {
   return (
     <AppShell left={<LeftSidebar />} right={<RightSidebar />}>
       <div className="contacts-page-grid">
-        {/* â”€â”€ Nav lateral â”€â”€ */}
+        {/* ── Nav lateral ── */}
         <div className="panel contacts-side-panel" style={{ padding: '12px 8px' }}>
           <div style={{
             fontFamily: 'var(--font-display)', fontSize: 20,
@@ -465,7 +465,7 @@ export default function ContactsPage() {
           ))}
         </div>
 
-        {/* â”€â”€ Content â”€â”€ */}
+        {/* ── Content ── */}
         <div>
           <div className="contacts-mobile-home">
             <div className="contacts-mobile-top">
@@ -488,14 +488,14 @@ export default function ContactsPage() {
               {/* Received */}
               <div style={{ marginBottom: 20 }}>
                 <h2 className="section-title" style={{ marginBottom: 12 }}>
-                  â–¸ Received
+                  ▸ Received
                 </h2>
                 {incoming.length === 0 ? (
                   <div className="panel contacts-empty-panel">
                     <UserPlus size={58} strokeWidth={1.8} />
                     <div style={{ fontFamily: 'var(--font-display)', fontSize: 20 }}>NO REQUESTS</div>
                     <div className="text-sm text-mute mt-2" style={{ fontFamily: 'var(--font-mono)' }}>
-                      Cuando alguien te pida ser contacto, aparecerÃ¡ aquÃ­.
+                      Cuando alguien te pida ser contacto, aparecerá aquí.
                     </div>
                     <button type="button" className="btn btn-small btn-primary" onClick={() => setTab('suggest')}>
                       View suggestions
@@ -513,7 +513,7 @@ export default function ContactsPage() {
               {/* Sent */}
               {outgoing.length > 0 && (
                 <div>
-                  <h2 className="section-title" style={{ marginBottom: 12 }}>â–¸ Sent</h2>
+                  <h2 className="section-title" style={{ marginBottom: 12 }}>▸ Sent</h2>
                   <div className="panel" style={{ padding: 0 }}>
                     {outgoing.map(r => (
                       <OutgoingCard key={r.id} req={r} onCancel={handleCancel} />
@@ -562,7 +562,7 @@ export default function ContactsPage() {
           {/* TODOS */}
           {tab === 'all' && (
             <>
-              <h2 className="section-title" style={{ marginBottom: 16 }}>â–¸ All tus contacts</h2>
+              <h2 className="section-title" style={{ marginBottom: 16 }}>▸ All tus contacts</h2>
               {contacts.length === 0 ? (
                 <div className="panel contacts-empty-panel">
                   <div style={{ fontFamily: 'var(--font-display)', fontSize: 20 }}>NO CONTACTS YET</div>

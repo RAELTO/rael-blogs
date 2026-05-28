@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X, Share2, Link, MessageCircle, Users, Smartphone, Check } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'

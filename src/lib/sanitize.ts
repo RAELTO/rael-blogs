@@ -38,7 +38,10 @@ export function sanitizeTagName(value: string): string {
 export function parseTagNames(raw: string): string[] {
   return raw
     .split(',')
-    .map(t => sanitizeTagName(t.replace(/^#/, '')))
-    .filter(t => t.length > 0 && t.length <= 50)
+    .reduce<string[]>((tags, value) => {
+      const tag = sanitizeTagName(value.replace(/^#/, ''))
+      if (tag.length > 0 && tag.length <= 50) tags.push(tag)
+      return tags
+    }, [])
     .slice(0, 10) // máximo 10 tags por post
 }

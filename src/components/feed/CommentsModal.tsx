@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { X, MessageCircle, Send } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'

@@ -98,20 +98,20 @@ export default function ProfilePage() {
               <div className="two-col">
                 <div>
                   <div className="field-group">
-                    <label className="field-label">Display name</label>
-                    <input {...register('display_name')} placeholder="Your name" />
+                    <label className="field-label" htmlFor="profile-display-name">Display name</label>
+                    <input id="profile-display-name" {...register('display_name')} placeholder="Your name" />
                     {errors.display_name && <p style={{ color: 'var(--accent-1)', fontSize: 12, marginTop: 4 }}>{errors.display_name.message}</p>}
                   </div>
 
                   <div className="field-group">
-                    <label className="field-label">Username</label>
-                    <input {...register('username')} placeholder="your_username" style={{ fontFamily: 'var(--font-mono)' }} />
+                    <label className="field-label" htmlFor="profile-username">Username</label>
+                    <input id="profile-username" {...register('username')} placeholder="your_username" style={{ fontFamily: 'var(--font-mono)' }} />
                     {errors.username && <p style={{ color: 'var(--accent-1)', fontSize: 12, marginTop: 4 }}>{errors.username.message}</p>}
                   </div>
 
                   <div className="field-group">
-                    <label className="field-label">Bio</label>
-                    <textarea rows={3} {...register('bio')} placeholder="Tell the world who you are...…" />
+                    <label className="field-label" htmlFor="profile-bio">Bio</label>
+                    <textarea id="profile-bio" rows={3} {...register('bio')} placeholder="Tell the world who you are...…" />
                     {errors.bio && <p style={{ color: 'var(--accent-1)', fontSize: 12, marginTop: 4 }}>{errors.bio.message}</p>}
                   </div>
 
@@ -152,3 +152,4 @@ export default function ProfilePage() {
     </AppShell>
   )
 }
+

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
@@ -15,7 +15,7 @@ export default function CheckEmailPage() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
-        toast('Bienvenido â€” cuenta confirmada')
+        toast('Bienvenido — cuenta confirmada')
         navigate('/')
       }
     })
@@ -52,7 +52,7 @@ export default function CheckEmailPage() {
           margin: '24px 0 8px',
           letterSpacing: '-0.02em',
         }}>
-          âœ‰
+          ✉
         </div>
 
         <h2 style={{
@@ -65,7 +65,7 @@ export default function CheckEmailPage() {
         </h2>
 
         <p style={{ fontSize: 14, color: 'var(--ink-dim)', lineHeight: 1.6, marginBottom: 6 }}>
-          Te enviamos un enlace de confirmaciÃ³n a:
+          Te enviamos un enlace de confirmación a:
         </p>
         {email && (
           <div style={{
@@ -85,13 +85,13 @@ export default function CheckEmailPage() {
 
         <p style={{ fontSize: 13, color: 'var(--ink-mute)', lineHeight: 1.6, marginBottom: 28 }}>
           Open the email and click <strong>"Confirm your mail"</strong>.<br />
-          Esta pestaÃ±a se actualizarÃ¡ automÃ¡ticamente.
+          Esta pestaña se actualizará automáticamente.
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {resent ? (
             <div style={{ fontSize: 13, color: 'var(--ink-dim)', fontFamily: 'var(--font-mono)' }}>
-              âœ“ Email resent
+              ✓ Email resent
             </div>
           ) : (
             <button type="button"
@@ -100,7 +100,7 @@ export default function CheckEmailPage() {
               disabled={resending || !email}
               style={{ width: '100%', justifyContent: 'center' }}
             >
-              {resending ? 'â–’ sending...' : <><RefreshCw size={14} strokeWidth={2.5} /> Resend email</>}
+              {resending ? '▒ sending...' : <><RefreshCw size={14} strokeWidth={2.5} /> Resend email</>}
             </button>
           )}
 
@@ -114,7 +114,7 @@ export default function CheckEmailPage() {
         </div>
 
         <div className="text-xs text-mute mt-4" style={{ letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-          â–’ NBOX Â· Neo Brutal Box
+          ▒ NBOX · Neo Brutal Box
         </div>
       </div>
     </div>

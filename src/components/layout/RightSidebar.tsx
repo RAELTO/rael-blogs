@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { UserPlus, UserCheck, X } from 'lucide-react'
@@ -77,7 +77,7 @@ export default function RightSidebar() {
       {/* Trending tags */}
       <div className="panel mb-4" style={{ padding: 14 }}>
         <div className="uppercase mb-3" style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
-          ðŸ”¥ Loud This Week
+          🔥 Loud This Week
         </div>
         {(tags ?? []).map(t => (
           <NavLink key={t.id} to={`/tag/${t.slug}`} className="trending-tag-item">
@@ -125,7 +125,7 @@ export default function RightSidebar() {
                     </div>
                   </Link>
 
-                  {/* Add contact â€” distinto de seguir */}
+                  {/* Add contact — distinto de seguir */}
                   <button type="button"
                     className="btn btn-icon btn-small"
                     title={isSent ? 'Request sent' : 'Add contact'}
@@ -157,7 +157,7 @@ export default function RightSidebar() {
         </div>
       )}
 
-      {/* Contacts â€” datos reales, solo logueados */}
+      {/* Contacts — datos reales, solo logueados */}
       {user && realContacts.length > 0 && (
         <div className="panel" style={{ padding: 14 }}>
           <div className="uppercase mb-3" style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
@@ -172,15 +172,19 @@ export default function RightSidebar() {
                 onClick={() => handleOpenChat(c.other.id, c.other.display_name, c.other.username, c.other.avatar_url)}
                 onMouseEnter={e => {
                   const el = e.currentTarget as HTMLDivElement
-                  el.style.background = 'var(--accent-2)'
-                  el.style.transform = 'translate(-1px, -1px)'
-                  el.style.boxShadow = '3px 3px 0 var(--ink)'
+                  Object.assign(el.style, {
+                    background: 'var(--accent-2)',
+                    transform: 'translate(-1px, -1px)',
+                    boxShadow: '3px 3px 0 var(--ink)',
+                  })
                 }}
                 onMouseLeave={e => {
                   const el = e.currentTarget as HTMLDivElement
-                  el.style.background = ''
-                  el.style.transform = ''
-                  el.style.boxShadow = ''
+                  Object.assign(el.style, {
+                    background: '',
+                    transform: '',
+                    boxShadow: '',
+                  })
                 }}
               >
                 <Link

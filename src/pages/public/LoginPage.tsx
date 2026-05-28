@@ -146,8 +146,9 @@ export default function LoginPage() {
                 Reset password
               </div>
               <div className="field-group">
-                <label className="field-label">Email</label>
+                <label className="field-label" htmlFor="recovery-email">Email</label>
                 <input
+                  id="recovery-email"
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
@@ -184,16 +185,18 @@ export default function LoginPage() {
           {mode === 'register' && (
             <>
               <div className="field-group">
-                <label className="field-label">Name</label>
+                <label className="field-label" htmlFor="register-display-name">Name</label>
                 <input
+                  id="register-display-name"
                   value={displayName}
                   onChange={e => setDisplayName(e.target.value)}
                   placeholder="John Doe"
                 />
               </div>
               <div className="field-group">
-                <label className="field-label">Username</label>
+                <label className="field-label" htmlFor="register-username">Username</label>
                 <input
+                  id="register-username"
                   value={username}
                   onChange={e => setUsername(e.target.value.toLowerCase().replace(/\s+/g, '_'))}
                   placeholder="john_doe33"
@@ -203,8 +206,9 @@ export default function LoginPage() {
           )}
 
           <div className="field-group">
-            <label className="field-label">Email</label>
+            <label className="field-label" htmlFor="auth-email">Email</label>
             <input
+              id="auth-email"
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
@@ -214,7 +218,7 @@ export default function LoginPage() {
 
           <div className="field-group">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
-              <label className="field-label" style={{ margin: 0 }}>Password</label>
+              <label className="field-label" htmlFor="auth-password" style={{ margin: 0 }}>Password</label>
               {mode === 'login' && (
                 <button
                   type="button"
@@ -226,6 +230,7 @@ export default function LoginPage() {
               )}
             </div>
             <input
+              id="auth-password"
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}

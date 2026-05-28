@@ -1,4 +1,4 @@
-﻿import type { FeedMode } from '../../features/boxes/useBoxes'
+import type { FeedMode } from '../../features/boxes/useBoxes'
 
 const MODES: { id: FeedMode; label: string }[] = [
   { id: 'foryou',    label: 'For You'   },
