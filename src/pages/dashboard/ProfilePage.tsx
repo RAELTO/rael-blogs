@@ -14,12 +14,12 @@ import Avatar from '../../components/ui/Avatar'
 import { useToast } from '../../components/ui/Toast'
 
 const schema = z.object({
-  display_name: z.string().min(2, 'Mínimo 2 caracteres').max(100, 'Máximo 100 caracteres'),
+  display_name: z.string().min(2, 'Minimum 2 characters').max(100, 'Maximum 100 characters'),
   username: z.string()
-    .min(3, 'Mínimo 3 caracteres')
-    .max(30, 'Máximo 30 caracteres')
-    .regex(/^[a-z0-9_]+$/, 'Solo letras minúsculas, números y guión bajo'),
-  bio: z.string().max(500, 'Máximo 500 caracteres').optional().or(z.literal('')),
+    .min(3, 'Minimum 3 characters')
+    .max(30, 'Maximum 30 characters')
+    .regex(/^[a-z0-9_]+$/, 'Lowercase letters, numbers, and underscores only'),
+  bio: z.string().max(500, 'Maximum 500 characters').optional().or(z.literal('')),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -55,9 +55,9 @@ export default function ProfilePage() {
         userId: user.id,
         form: { ...values, bio: values.bio ?? '', avatar_url: avatarUrl },
       })
-      toast('Perfil actualizado ✓')
+      toast('Profile updated ✓')
     } catch (e: unknown) {
-      toast(`⚠ ${e instanceof Error ? e.message : 'Error inesperado'}`)
+      toast(`⚠ ${e instanceof Error ? e.message : 'Unexpected error'}`)
     } finally {
       setUploading(false)
     }
@@ -68,7 +68,7 @@ export default function ProfilePage() {
       {isLoading ? (
         <div className="spinner">
           <div className="spinner-ring" />
-          <span className="spinner-label">▒ cargando perfil...</span>
+          <span className="spinner-label">▒ loading profile...</span>
         </div>
       ) : (
         <>
@@ -98,20 +98,20 @@ export default function ProfilePage() {
               <div className="two-col">
                 <div>
                   <div className="field-group">
-                    <label className="field-label">Nombre público</label>
-                    <input {...register('display_name')} placeholder="Tu nombre" />
+                    <label className="field-label" htmlFor="profile-display-name">Display name</label>
+                    <input id="profile-display-name" {...register('display_name')} placeholder="Your name" />
                     {errors.display_name && <p style={{ color: 'var(--accent-1)', fontSize: 12, marginTop: 4 }}>{errors.display_name.message}</p>}
                   </div>
 
                   <div className="field-group">
-                    <label className="field-label">Username</label>
-                    <input {...register('username')} placeholder="tu_usuario" style={{ fontFamily: 'var(--font-mono)' }} />
+                    <label className="field-label" htmlFor="profile-username">Username</label>
+                    <input id="profile-username" {...register('username')} placeholder="your_username" style={{ fontFamily: 'var(--font-mono)' }} />
                     {errors.username && <p style={{ color: 'var(--accent-1)', fontSize: 12, marginTop: 4 }}>{errors.username.message}</p>}
                   </div>
 
                   <div className="field-group">
-                    <label className="field-label">Bio</label>
-                    <textarea rows={3} {...register('bio')} placeholder="Cuéntale al mundo quién eres…" />
+                    <label className="field-label" htmlFor="profile-bio">Bio</label>
+                    <textarea id="profile-bio" rows={3} {...register('bio')} placeholder="Tell the world who you are...…" />
                     {errors.bio && <p style={{ color: 'var(--accent-1)', fontSize: 12, marginTop: 4 }}>{errors.bio.message}</p>}
                   </div>
 
@@ -121,7 +121,7 @@ export default function ProfilePage() {
                       className="btn btn-primary"
                       disabled={uploading || updateProfile.isPending}
                     >
-                      {uploading || updateProfile.isPending ? '▒ guardando...' : '✓ Guardar'}
+                      {uploading || updateProfile.isPending ? '▒ saving...' : '✓ Save'}
                     </button>
                   </div>
                 </div>
@@ -137,7 +137,7 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div className="sidebar-block">
-                    <h4>Correo</h4>
+                    <h4>Email</h4>
                     <div className="text-sm text-dim" style={{ fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>
                       {user?.email}
                     </div>
@@ -152,3 +152,4 @@ export default function ProfilePage() {
     </AppShell>
   )
 }
+

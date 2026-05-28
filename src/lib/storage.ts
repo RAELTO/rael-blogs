@@ -36,7 +36,7 @@ export async function uploadCoverImage(file: File, userId: string): Promise<stri
   if (err) throw new Error(err.message)
   const path = `${userId}/posts/${Date.now()}.${ext(file)}`
   const { error } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: false })
-  if (error) throw new Error('Error al subir la imagen.')
+  if (error) throw new Error('Failed to upload the image.')
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path)
   return data.publicUrl
 }
@@ -46,7 +46,7 @@ export async function uploadAvatarImage(file: File, userId: string): Promise<str
   if (err) throw new Error(err.message)
   const path = `${userId}/avatar/avatar.${ext(file)}`
   const { error } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: true })
-  if (error) throw new Error('Error al subir el avatar.')
+  if (error) throw new Error('Failed to upload the avatar.')
   const { data } = supabase.storage.from(BUCKET).getPublicUrl(path)
   return `${data.publicUrl}?t=${Date.now()}`
 }

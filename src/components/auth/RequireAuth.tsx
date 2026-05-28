@@ -9,7 +9,7 @@ export default function RequireAuth() {
     return (
       <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 13, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink-mute)' }}>
-          ▒ cargando...
+          loading...
         </div>
       </div>
     )

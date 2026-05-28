@@ -14,7 +14,7 @@ interface AppShellProps {
 
 const MOB_TABS = [
   { to: '/',              Icon: Home,    label: 'Home',     end: true  },
-  { to: '/contacts',      Icon: Contact, label: 'Contactos', end: false },
+  { to: '/contacts',      Icon: Contact, label: 'Contacts', end: false },
   { to: '/notifications', Icon: Bell,    label: 'Notifs',   end: false },
   { to: '/nbox',          Icon: Inbox,   label: 'NBOX',     end: false },
 ] as const
@@ -53,12 +53,12 @@ export default function AppShell({ children, left, right, onDropClick }: AppShel
               src={profile?.avatar_url}
               size="sm"
             />
-            Yo
+            Me
           </NavLink>
         ) : (
           <NavLink to="/login" className="mb-item">
             <LogIn size={22} strokeWidth={2.5} />
-            Entrar
+            Sign in
           </NavLink>
         )}
       </nav>

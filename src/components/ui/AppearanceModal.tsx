@@ -62,7 +62,7 @@ export default function AppearanceModal({ onClose, anchorRef }: AppearanceModalP
         position: 'fixed',
         top: position.top,
         left: position.left,
-        zIndex: 9000,
+        zIndex: 'var(--z-modal)' as unknown as number,
         width: 280,
         background: 'var(--bg-panel)',
         border: 'var(--border)',
@@ -73,9 +73,9 @@ export default function AppearanceModal({ onClose, anchorRef }: AppearanceModalP
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <span style={{ fontFamily: 'var(--font-display)', fontSize: 18, letterSpacing: '-0.01em' }}>
-          Apariencia
+          Appearance
         </span>
-        <button
+        <button type="button"
           onClick={onClose}
           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', color: 'var(--ink)' }}
         >
@@ -83,9 +83,9 @@ export default function AppearanceModal({ onClose, anchorRef }: AppearanceModalP
         </button>
       </div>
 
-      {/* Paleta */}
+      {/* Palette */}
       <div className="tweaks-row">
-        <label className="field-label">Paleta</label>
+        <div className="field-label">Palette</div>
         <div className="swatch-row">
           {PALETTES.map(p => (
             <div
@@ -94,7 +94,7 @@ export default function AppearanceModal({ onClose, anchorRef }: AppearanceModalP
               title={p.label}
               onClick={() => set({ palette: p.id })}
             >
-              {p.colors.map((c, i) => <span key={i} style={{ background: c }} />)}
+              {p.colors.map(c => <span key={`${p.id}-${c}`} style={{ background: c }} />)}
             </div>
           ))}
         </div>
@@ -103,17 +103,17 @@ export default function AppearanceModal({ onClose, anchorRef }: AppearanceModalP
         </div>
       </div>
 
-      {/* Sombras */}
+      {/* Shadows */}
       <div className="tweaks-row">
-        <label className="field-label">Sombras</label>
+        <div className="field-label">Shadows</div>
         <div className="seg">
           {(['low', 'medium', 'high'] as const).map(s => (
-            <button
+            <button type="button"
               key={s}
               className={tweaks.shadow === s ? 'active' : ''}
               onClick={() => set({ shadow: s })}
             >
-              {s === 'low' ? 'Suave' : s === 'medium' ? 'Normal' : 'Brutal'}
+              {s === 'low' ? 'Soft' : s === 'medium' ? 'Normal' : 'Brutal'}
             </button>
           ))}
         </div>

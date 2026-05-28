@@ -19,7 +19,7 @@ interface Props {
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime()
   const min = Math.floor(diff / 60000)
-  if (min < 1) return 'ahora'
+  if (min < 1) return 'now'
   if (min < 60) return `${min}m`
   const h = Math.floor(min / 60)
   if (h < 24) return `${h}h`
@@ -34,51 +34,33 @@ function NotifItem({ n, onAccept, onDecline, onCloseDropdown }: {
 }) {
   const isContactReq = n.kind === 'contact_request'
   return (
-    <div style={{
-      display: 'flex', alignItems: 'flex-start', gap: 10,
-      padding: '10px 14px', borderBottom: '2px solid var(--ink)',
-      background: !n.read_at ? 'var(--accent-2)' : 'var(--bg-panel)',
-    }}>
+    <div className={`notif-item${!n.read_at ? ' unread' : ''}`}>
       {n.actor
         ? (
           <Link to={`/profile/${n.actor.username}`} onClick={onCloseDropdown} style={{ display: 'flex', textDecoration: 'none' }}>
             <Avatar name={n.actor.display_name} src={n.actor.avatar_url} size="sm" />
           </Link>
         )
-        : <div style={{ width: 32, height: 32, background: 'var(--bg-alt)', border: '2px solid var(--ink)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>★</div>
+        : <div className="notif-item-avatar-placeholder">★</div>
       }
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, lineHeight: 1.35 }}>
+      <div className="notif-item-body">
+        <div className="notif-item-text">
           {n.actor && (
-            <Link
-              to={`/profile/${n.actor.username}`}
-              onClick={onCloseDropdown}
-              style={{ fontWeight: 800, color: 'inherit', textDecoration: 'none' }}
-            >
+            <Link className="notif-item-actor-link" to={`/profile/${n.actor.username}`} onClick={onCloseDropdown}>
               {n.actor.display_name}
             </Link>
           )}
           {n.actor && ' '}
           {getNotifText(n)}
         </div>
-        <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', marginTop: 3, fontWeight: 700 }}>
-          {timeAgo(n.created_at)}
-        </div>
+        <div className="notif-item-time">{timeAgo(n.created_at)}</div>
       </div>
       {isContactReq && onAccept && onDecline && (
-        <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-          <button
-            className="contact-btn contact-btn-accept"
-            onClick={() => onAccept(n)}
-            title="Aceptar"
-          >
+        <div className="notif-item-actions">
+          <button type="button" className="contact-btn contact-btn-accept" onClick={() => onAccept(n)} title="Accept">
             <UserCheck size={12} strokeWidth={3} />
           </button>
-          <button
-            className="contact-btn contact-btn-decline"
-            onClick={() => onDecline(n)}
-            title="Rechazar"
-          >
+          <button type="button" className="contact-btn contact-btn-decline" onClick={() => onDecline(n)} title="Decline">
             <UserX size={12} strokeWidth={3} />
           </button>
         </div>
@@ -107,7 +89,6 @@ export default function NotificationsDropdown({ anchorRef, onClose }: Props) {
     }
   }, [anchorRef])
 
-  // Marcar todo como leído al abrir
   useEffect(() => {
     markAllRead.mutate()
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -127,12 +108,12 @@ export default function NotificationsDropdown({ anchorRef, onClose }: Props) {
   async function handleAccept(n: NotificationRow) {
     if (!n.contact_request_id || !n.actor_id) return
     await respond.mutateAsync({ requestId: n.contact_request_id, requesterId: n.actor_id, accept: true })
-    toast(`✓ ${n.actor?.display_name} es ahora tu contacto`)
+    toast(`✓ ${n.actor?.display_name} es now tu contacto`)
   }
   async function handleDecline(n: NotificationRow) {
     if (!n.contact_request_id || !n.actor_id) return
     await respond.mutateAsync({ requestId: n.contact_request_id, requesterId: n.actor_id, accept: false })
-    toast(`Solicitud de ${n.actor?.display_name} rechazada`)
+    toast(`Request from ${n.actor?.display_name} declined`)
   }
 
   const preview = notifications.slice(0, 8)
@@ -140,36 +121,19 @@ export default function NotificationsDropdown({ anchorRef, onClose }: Props) {
   return createPortal(
     <div
       ref={modalRef}
-      style={{
-        position: 'fixed', top: position.top, left: position.left, zIndex: 9000,
-        width: position.width,
-        background: 'var(--bg-panel)',
-        border: '3px solid var(--ink)',
-        boxShadow: '6px 6px 0 var(--ink)',
-      }}
+      className="notif-dropdown"
+      style={{ top: position.top, left: position.left, width: position.width }}
     >
-      {/* Header */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '10px 14px', borderBottom: '3px solid var(--ink)',
-      }}>
-        <span style={{ fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '-0.01em' }}>
-          Notificaciones
-        </span>
-        <button
-          onClick={() => { navigate('/notifications'); onClose() }}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700, color: 'var(--accent-1)', letterSpacing: '.06em', textTransform: 'uppercase' }}
-        >
-          Ver todo →
+      <div className="notif-dropdown-header">
+        <span className="notif-dropdown-title">Notifications</span>
+        <button type="button" className="notif-dropdown-view-all" onClick={() => { navigate('/notifications'); onClose() }}>
+          View all
         </button>
       </div>
 
-      {/* List */}
-      <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+      <div className="notif-dropdown-list">
         {preview.length === 0 && (
-          <div style={{ padding: '32px 20px', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-mute)' }}>
-            Sin notificaciones
-          </div>
+          <div className="notif-dropdown-empty">No notifications</div>
         )}
         {preview.map(n => (
           <NotifItem key={n.id} n={n}
@@ -180,19 +144,11 @@ export default function NotificationsDropdown({ anchorRef, onClose }: Props) {
         ))}
       </div>
 
-      {/* Footer */}
-      <button
+      <button type="button"
+        className="notif-dropdown-footer"
         onClick={() => { navigate('/notifications'); onClose() }}
-        style={{
-          width: '100%', padding: '10px', background: 'var(--bg-alt)',
-          border: 'none', borderTop: '2px solid var(--ink)',
-          fontWeight: 800, fontSize: 12, cursor: 'pointer',
-          fontFamily: 'var(--font-mono)', letterSpacing: '.08em', textTransform: 'uppercase',
-        }}
-        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--accent-2)' }}
-        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-alt)' }}
       >
-        VER TODAS LAS NOTIFICACIONES
+        VIEW ALL NOTIFICATIONS
       </button>
     </div>,
     document.body

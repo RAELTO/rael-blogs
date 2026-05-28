@@ -39,7 +39,7 @@ export default function LeftSidebar() {
 
   async function handleSignOut() {
     await signOut()
-    toast('Hasta pronto. Keep it loud ✦')
+    toast('See you soon. Keep it loud.')
     navigate('/login')
     setConfirmSignOut(false)
   }
@@ -58,7 +58,7 @@ export default function LeftSidebar() {
       >
         {/* Profile snippet */}
         {user && (
-          <NavLink to="/my-box" title="Mi Perfil" className={({ isActive }) => `side-link${isActive ? ' active' : ''}`}>
+          <NavLink to="/my-box" title="My Profile" className={({ isActive }) => `side-link${isActive ? ' active' : ''}`}>
             <Avatar
               name={profile?.display_name ?? user.email ?? 'U'}
               src={profile?.avatar_url}
@@ -70,7 +70,7 @@ export default function LeftSidebar() {
                 {isAdmin && <AdminBadge />}
               </div>
               <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', letterSpacing: '.06em', textTransform: 'uppercase' }}>
-                Mi Perfil
+                My Profile
               </div>
             </div>
           </NavLink>
@@ -91,8 +91,8 @@ export default function LeftSidebar() {
         )}
 
         {user && (
-          <NavLink to="/contacts" title="Contactos" className={({ isActive }) => `side-link${isActive ? ' active' : ''}`}>
-            <Contact size={20} strokeWidth={2.5} /> Contactos
+          <NavLink to="/contacts" title="Contacts" className={({ isActive }) => `side-link${isActive ? ' active' : ''}`}>
+            <Contact size={20} strokeWidth={2.5} /> Contacts
             {incoming.length > 0 && (
               <span className="badge" style={{ marginLeft: 'auto' }}>{incoming.length}</span>
             )}
@@ -100,8 +100,8 @@ export default function LeftSidebar() {
         )}
 
         {user && (
-          <button title="Grupos" className="side-link" onClick={() => toast('Grupos próximamente')}>
-            <UsersRound size={20} strokeWidth={2.5} /> Grupos
+          <button type="button" title="Groups" className="side-link" onClick={() => toast('Groups coming soon')}>
+            <UsersRound size={20} strokeWidth={2.5} /> Groups
           </button>
         )}
 
@@ -112,38 +112,38 @@ export default function LeftSidebar() {
         )}
 
         {user && (
-          <button title="Recuerdos" className="side-link" onClick={() => toast('Memorias próximamente')}>
-            <Clock size={20} strokeWidth={2.5} /> Recuerdos
+          <button type="button" title="Memories" className="side-link" onClick={() => toast('Memories coming soon')}>
+            <Clock size={20} strokeWidth={2.5} /> Memories
           </button>
         )}
 
-        {/* Apariencia — opens modal */}
-        <button
+        {/* Appearance — opens modal */}
+        <button type="button"
           ref={appearanceBtnRef}
-          title="Apariencia"
+          title="Appearance"
           className={`side-link${appearanceOpen ? ' active' : ''}`}
           onClick={() => setAppearanceOpen(o => !o)}
         >
-          <Settings2 size={20} strokeWidth={2.5} /> Apariencia
+          <Settings2 size={20} strokeWidth={2.5} /> Appearance
         </button>
 
         {user ? (
-          <button title="Salir" className="side-link side-link-danger" onClick={() => setConfirmSignOut(true)}>
-            <LogOut size={20} strokeWidth={2.5} /> Salir
+          <button type="button" title="Sign out" className="side-link side-link-danger" onClick={() => setConfirmSignOut(true)}>
+            <LogOut size={20} strokeWidth={2.5} /> Sign out
           </button>
         ) : (
-          <NavLink to="/login" title="Entrar" className="side-link">
-            <LogIn size={20} strokeWidth={2.5} /> Entrar
+          <NavLink to="/login" title="Sign in" className="side-link">
+            <LogIn size={20} strokeWidth={2.5} /> Sign in
           </NavLink>
         )}
 
       </nav>
 
-      {/* Panel Contactos — solo visible en tablet (821-1100px) via CSS */}
+      {/* Panel Contacts — solo visible en tablet (821-1100px) via CSS */}
       {user && realContacts.length > 0 && (
         <div className="sidebar-tablet-contacts panel" style={{ padding: 14, marginTop: 16 }}>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 10 }}>
-            Contactos
+            Contacts
           </div>
           {realContacts.map((c, i) => (
             <div
@@ -154,21 +154,25 @@ export default function LeftSidebar() {
               onClick={() => handleContactChat(c.other.id, c.other.display_name, c.other.username, c.other.avatar_url)}
               onMouseEnter={e => {
                 const el = e.currentTarget as HTMLDivElement
-                el.style.background = 'var(--accent-2)'
-                el.style.transform = 'translate(-1px, -1px)'
-                el.style.boxShadow = '3px 3px 0 var(--ink)'
+                Object.assign(el.style, {
+                  background: 'var(--accent-2)',
+                  transform: 'translate(-1px, -1px)',
+                  boxShadow: '3px 3px 0 var(--ink)',
+                })
               }}
               onMouseLeave={e => {
                 const el = e.currentTarget as HTMLDivElement
-                el.style.background = ''
-                el.style.transform = ''
-                el.style.boxShadow = ''
+                Object.assign(el.style, {
+                  background: '',
+                  transform: '',
+                  boxShadow: '',
+                })
               }}
             >
               <Link
                 to={`/profile/${c.other.username}`}
                 onClick={e => e.stopPropagation()}
-                title={`Ver perfil de ${c.other.display_name}`}
+                title={`View profile for ${c.other.display_name}`}
                 style={{ position: 'relative', flexShrink: 0, display: 'block', textDecoration: 'none' }}
               >
                 <div className="avatar sm" style={{ background: AVATAR_COLORS[i % AVATAR_COLORS.length] }}>
@@ -194,10 +198,10 @@ export default function LeftSidebar() {
       {/* Sign out confirmation */}
       <ConfirmDialog
         open={confirmSignOut}
-        title="¿Cerramos la señal?"
-        message="Estás a punto de cerrar tu sesión. Tendrás que volver a identificarte para publicar, comentar o guardar boxes."
-        confirmLabel="Sí, cerrar sesión"
-        cancelLabel="Quedarme"
+        title="Sign out?"
+        message="You are about to sign out. You will need to sign in again to post, comment, or save boxes."
+        confirmLabel="Yes, sign out"
+        cancelLabel="Stay"
         onConfirm={handleSignOut}
         onCancel={() => setConfirmSignOut(false)}
       />

@@ -14,31 +14,31 @@ interface Props {
 
 export default function ShareModal({ boxId, boxContent, onClose }: Props) {
   const { user } = useAuth()
-  const toast        = useToast()
-  const createBox    = useCreateBox()
-  const recordShare  = useRecordShare(boxId)
+  const toast = useToast()
+  const createBox = useCreateBox()
+  const recordShare = useRecordShare(boxId)
 
-  const [feedOpen, setFeedOpen]   = useState(false)
-  const [feedText, setFeedText]   = useState('')
-  const [copied,   setCopied]     = useState(false)
-  const [posting,  setPosting]    = useState(false)
+  const [feedOpen, setFeedOpen] = useState(false)
+  const [feedText, setFeedText] = useState('')
+  const [copied, setCopied] = useState(false)
+  const [posting, setPosting] = useState(false)
 
   const shareUrl = `${window.location.origin}/box/${boxId}`
 
   async function handleFeedShare() {
-    if (!user) { toast('Inicia sesión para compartir.'); return }
+    if (!user) { toast('Sign in to share.'); return }
     setPosting(true)
     try {
       await createBox.mutateAsync({
         author_id: user.id,
         type: 'quick',
-        content: feedText.trim() || '↗ Compartió un drop',
+        content: feedText.trim() || 'Shared a drop',
         payload: { shared_from_id: boxId },
       })
       await recordShare.mutateAsync({ userId: user.id, shareType: 'feed' })
-      toast('¡Compartido en tu feed! ✦')
+      toast('Shared to your feed.')
       onClose()
-    } catch { toast('Error al compartir.') }
+    } catch { toast('Failed to share.') }
     finally { setPosting(false) }
   }
 
@@ -56,8 +56,8 @@ export default function ShareModal({ boxId, boxContent, onClose }: Props) {
     setTimeout(() => { setCopied(false); onClose() }, 1500)
   }
 
-  function handleProximamente(label: string) {
-    toast(`${label}: próximamente`)
+  function handleComingSoon(label: string) {
+    toast(`${label}: coming soon`)
     onClose()
   }
 
@@ -65,8 +65,8 @@ export default function ShareModal({ boxId, boxContent, onClose }: Props) {
     {
       id: 'feed',
       icon: <Share2 size={20} strokeWidth={2} />,
-      label: 'Compartir en Feed',
-      desc: 'Comparte este drop con un comentario',
+      label: 'Share to Feed',
+      desc: 'Share this drop with a comment',
       accent: 'var(--accent-2)',
       action: () => setFeedOpen(o => !o),
     },
@@ -74,14 +74,14 @@ export default function ShareModal({ boxId, boxContent, onClose }: Props) {
       id: 'whatsapp',
       icon: <Smartphone size={20} strokeWidth={2} />,
       label: 'WhatsApp',
-      desc: 'Envía el enlace por WhatsApp',
+      desc: 'Send the link through WhatsApp',
       accent: '#25D366',
       action: handleWhatsApp,
     },
     {
       id: 'link',
       icon: copied ? <Check size={20} strokeWidth={2.5} /> : <Link size={20} strokeWidth={2} />,
-      label: copied ? '¡Enlace copiado!' : 'Copiar enlace',
+      label: copied ? 'Link copied!' : 'Copy link',
       desc: shareUrl,
       accent: copied ? 'var(--accent-4)' : 'var(--accent-3)',
       action: handleCopyLink,
@@ -89,116 +89,67 @@ export default function ShareModal({ boxId, boxContent, onClose }: Props) {
     {
       id: 'contact',
       icon: <MessageCircle size={20} strokeWidth={2} />,
-      label: 'Enviar a contacto',
-      desc: 'Envía directamente a un amigo',
+      label: 'Send to contact',
+      desc: 'Send directly to a contact',
       accent: 'var(--accent-5)',
-      action: () => handleProximamente('Enviar a contacto'),
+      action: () => handleComingSoon('Send to contact'),
     },
     {
       id: 'group',
       icon: <Users size={20} strokeWidth={2} />,
-      label: 'Compartir a grupo',
-      desc: 'Comparte en un grupo al que perteneces',
+      label: 'Share to group',
+      desc: 'Share to a group you belong to',
       accent: 'var(--accent-3)',
-      action: () => handleProximamente('Compartir a grupo'),
+      action: () => handleComingSoon('Share to group'),
     },
   ]
 
   return createPortal(
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 9000, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+      style={{ position: 'fixed', inset: 0, zIndex: 'var(--z-modal)' as unknown as number, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
       onClick={onClose}
     >
-      <div
-        style={{ background: 'var(--bg-panel)', border: '3px solid var(--ink)', boxShadow: '6px 6px 0 var(--ink)', width: '100%', maxWidth: 440 }}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 18px', borderBottom: '3px solid var(--ink)' }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '.2em', textTransform: 'uppercase', fontWeight: 700 }}>
-            ▓ COMPARTIR
-          </span>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', color: 'var(--ink)' }}>
+      <div className="share-panel" onClick={e => e.stopPropagation()}>
+        <div className="share-header">
+          <span className="share-title">SHARE</span>
+          <button type="button" onClick={onClose} className="modal-close-btn" aria-label="Close share dialog">
             <X size={18} strokeWidth={2.5} />
           </button>
         </div>
 
-        {/* Options */}
         {options.map((opt, i) => (
           <div key={opt.id}>
-            <button
+            <button type="button"
               onClick={opt.action}
-              style={{
-                width: '100%', background: 'none', border: 'none', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 14,
-                padding: '13px 18px',
-                borderBottom: i < options.length - 1 || feedOpen ? '2px solid var(--ink)' : 'none',
-                textAlign: 'left',
-                transition: 'background .1s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-alt)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+              className="share-option-btn"
+              style={{ borderBottom: i < options.length - 1 || feedOpen ? '2px solid var(--ink)' : 'none' }}
             >
-              {/* Icon badge */}
-              <div style={{
-                width: 42, height: 42, flexShrink: 0,
-                background: opt.accent, border: '2px solid var(--ink)',
-                boxShadow: '3px 3px 0 var(--ink)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'var(--ink)',
-              }}>
+              <div className="share-option-icon" style={{ background: opt.accent }}>
                 {opt.icon}
               </div>
-
-              {/* Text */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 800, fontSize: 14 }}>{opt.label}</div>
-                <div style={{
-                  fontSize: 11, color: 'var(--ink-mute)', fontFamily: 'var(--font-mono)',
-                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                  marginTop: 2,
-                }}>
-                  {opt.desc}
-                </div>
+              <div className="share-option-body">
+                <div className="share-option-label">{opt.label}</div>
+                <div className="share-option-desc">{opt.desc}</div>
               </div>
-
-              {/* Chevron for feed */}
               {opt.id === 'feed' && (
-                <span style={{ fontSize: 18, color: 'var(--ink-mute)', transform: feedOpen ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}>
-                  ›
+                <span className="share-option-chevron" style={{ transform: feedOpen ? 'rotate(180deg)' : 'none' }}>
+                  v
                 </span>
               )}
             </button>
 
-            {/* Feed compose area */}
             {opt.id === 'feed' && feedOpen && (
-              <div style={{ padding: '12px 18px 14px', borderBottom: '2px solid var(--ink)', background: 'var(--bg-alt)' }}>
+              <div className="share-compose-area">
                 <textarea
                   value={feedText}
                   onChange={e => setFeedText(e.target.value)}
-                  placeholder="Añade un comentario… (opcional)"
+                  placeholder="Add a comment... (optional)"
                   rows={3}
-                  style={{
-                    width: '100%', border: '2px solid var(--ink)', padding: '10px 12px',
-                    fontFamily: 'var(--font-body)', fontSize: 14, lineHeight: 1.5,
-                    resize: 'none', outline: 'none', background: 'var(--bg-panel)',
-                    boxSizing: 'border-box', color: 'var(--ink)',
-                    boxShadow: 'none', transform: 'none',
-                  }}
+                  className="share-compose-textarea"
                 />
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
-                  <button
-                    onClick={handleFeedShare}
-                    disabled={posting}
-                    style={{
-                      padding: '8px 20px', border: '2px solid var(--ink)',
-                      background: 'var(--accent-1)', color: 'var(--bg-panel)',
-                      fontWeight: 800, fontSize: 13, cursor: 'pointer',
-                      fontFamily: 'var(--font-display)', boxShadow: '3px 3px 0 var(--ink)',
-                      letterSpacing: '-0.01em',
-                    }}
-                  >
-                    {posting ? '...' : 'DROPEAR ✦'}
+                <div className="share-compose-footer">
+                  <button type="button" onClick={handleFeedShare} disabled={posting} className="share-compose-submit">
+                    {posting ? '...' : 'Drop'}
                   </button>
                 </div>
               </div>

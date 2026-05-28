@@ -81,7 +81,7 @@ export function RealtimePresenceProvider({ children }: { children: ReactNode }) 
   const { user } = useAuth()
   const { data: contacts } = useContacts(user?.id)
   const contactIds = useMemo(
-    () => [...new Set((contacts ?? []).map(contact => contact.other.id))].sort(),
+    () => [...new Set((contacts ?? []).map(contact => contact.other.id))].toSorted(),
     [contacts],
   )
   const contactIdsKey = contactIds.join(',')
@@ -115,7 +115,7 @@ export function RealtimePresenceProvider({ children }: { children: ReactNode }) 
       await Promise.all(channels.map(async channel => {
         const status = await channel.track(buildPayload(user.id))
         if (status === 'error' && import.meta.env.DEV) {
-          console.warn('[presence] No se pudo publicar el estado realtime')
+          console.warn('[presence] Could not publish realtime status')
         }
       }))
     }
@@ -133,7 +133,7 @@ export function RealtimePresenceProvider({ children }: { children: ReactNode }) 
           if (status === 'SUBSCRIBED') {
             const trackStatus = await channel.track(buildPayload(user.id))
             if (trackStatus === 'error' && import.meta.env.DEV) {
-              console.warn('[presence] No se pudo publicar el estado realtime')
+              console.warn('[presence] Could not publish realtime status')
             }
             syncPresence()
           }

@@ -32,9 +32,9 @@ export default function ComposerCard({ onOpenModal }: ComposerCardProps) {
       })
       setText('')
       setExpanded(false)
-      toast('¡DROP PUBLICADO!')
+      toast('Drop published.')
     } catch {
-      toast('Error al publicar. Inténtalo de nuevo.')
+      toast('Failed to publish. Please try again.')
     }
   }
 
@@ -51,40 +51,39 @@ export default function ComposerCard({ onOpenModal }: ComposerCardProps) {
           src={profile?.avatar_url}
           size="md"
         />
-        {/* Input opens the full DropModal */}
         <div className="composer-input" onClick={() => openModal('quick')}>
-          ¿Qué vas a dropear, {profile?.display_name ?? 'tú'}?
+          What are you dropping, {profile?.display_name ?? 'you'}?
         </div>
       </div>
 
       {expanded && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
-          <button className="btn btn-ghost btn-small" onClick={() => { setExpanded(false); setText('') }}>
-            Cancelar
+          <button type="button" className="btn btn-ghost btn-small" onClick={() => { setExpanded(false); setText('') }}>
+            Cancel
           </button>
-          <button
+          <button type="button"
             className="btn btn-primary btn-small"
             onClick={handleQuickDrop}
             disabled={!text.trim() || createBox.isPending}
             style={{ marginLeft: 8 }}
           >
-            {createBox.isPending ? '...' : 'Drop ✦'}
+            {createBox.isPending ? '...' : 'Drop'}
           </button>
         </div>
       )}
 
       <div className="composer-actions">
-        <button className="composer-action ca-media" onClick={() => openModal('media')}>
-          <Camera size={14} strokeWidth={2.5} /> Foto
+        <button type="button" className="composer-action ca-media" onClick={() => openModal('media')}>
+          <Camera size={14} strokeWidth={2.5} /> Photo
         </button>
-        <button className="composer-action ca-poll" onClick={() => openModal('poll')}>
-          ▤ Encuesta
+        <button type="button" className="composer-action ca-poll" onClick={() => openModal('poll')}>
+          Poll
         </button>
-        <button className="composer-action ca-mood" onClick={() => openModal('mood')}>
-          ✦ Mood
+        <button type="button" className="composer-action ca-mood" onClick={() => openModal('mood')}>
+          Mood
         </button>
-        <button className="composer-action ca-link" onClick={() => openModal('link')}>
-          ⌬ Link
+        <button type="button" className="composer-action ca-link" onClick={() => openModal('link')}>
+          Link
         </button>
       </div>
     </div>

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { sanitizeText } from '../../lib/sanitize'
 
-const AUTH_ERROR = 'Correo o contraseña incorrectos.'
+const AUTH_ERROR = 'Incorrect email or password.'
 
 export function useSignIn() {
   const [loading, setLoading] = useState(false)
@@ -32,7 +32,7 @@ export function useSignIn() {
 
     if (profile?.is_banned) {
       await supabase.auth.signOut()
-      setError('Esta cuenta ha sido suspendida. Contacta al administrador.')
+      setError('This account has been suspended. Contact the administrator.')
       setLoading(false)
       return false
     }

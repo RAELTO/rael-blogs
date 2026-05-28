@@ -11,7 +11,7 @@ import { useToast } from '../ui/Toast'
 
 function timeMsg(iso: string) {
   const d = new Date(iso)
-  return d.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
 }
 
 function FloatingWindow({ entry, index }: { entry: FloatingChatEntry; index: number }) {
@@ -24,7 +24,6 @@ function FloatingWindow({ entry, index }: { entry: FloatingChatEntry; index: num
   const [draft, setDraft] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  // Clampar para que no salga de pantalla en tablet/móvil
   const right = Math.min(18 + index * 356, Math.max(10, window.innerWidth - 360))
 
   useEffect(() => {
@@ -59,7 +58,7 @@ function FloatingWindow({ entry, index }: { entry: FloatingChatEntry; index: num
         </div>
         <button
           type="button"
-          aria-label="Cerrar chat"
+          aria-label="Close chat"
           style={{
             width: 26, height: 26, flexShrink: 0,
             background: 'var(--ink)', border: '2px solid var(--ink)',
@@ -76,12 +75,10 @@ function FloatingWindow({ entry, index }: { entry: FloatingChatEntry; index: num
 
   return (
     <div className="float-chat" style={{ right }}>
-      {/* Header */}
       <div className="fc-head">
-        {/* Avatar con indicador cuadrado */}
         <Link
           to={`/profile/${entry.otherUsername}`}
-          title={`Ver perfil de ${entry.otherName}`}
+          title={`View ${entry.otherName}'s profile`}
           style={{ position: 'relative', flexShrink: 0, display: 'block', textDecoration: 'none' }}
         >
           <Avatar name={entry.otherName} src={entry.otherAvatar} size="sm" />
@@ -100,28 +97,27 @@ function FloatingWindow({ entry, index }: { entry: FloatingChatEntry; index: num
             {entry.otherName}
           </div>
           <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: presence.color, letterSpacing: '.04em' }}>
-            {presence.label || (presence.status === 'offline' ? '● OFFLINE' : '● ACTIVO')}
+            {presence.label || (presence.status === 'offline' ? 'OFFLINE' : 'ACTIVE')}
           </div>
         </Link>
-        <button className="fc-icon fc-call" type="button" title="Llamar" onClick={() => toast('Llamadas proximamente')}>
+        <button className="fc-icon fc-call" type="button" title="Call" onClick={() => toast('Calls coming soon')}>
           <Phone size={13} strokeWidth={2.5} />
         </button>
-        <button className="fc-icon fc-video" type="button" title="Video" onClick={() => toast('Video proximamente')}>
+        <button className="fc-icon fc-video" type="button" title="Video" onClick={() => toast('Video coming soon')}>
           <Video size={13} strokeWidth={2.5} />
         </button>
-        <button className="fc-icon" type="button" title="Minimizar" onClick={() => toggleMinimize(entry.conversationId)}>
+        <button className="fc-icon" type="button" title="Minimize" onClick={() => toggleMinimize(entry.conversationId)}>
           <Minus size={12} strokeWidth={2.5} />
         </button>
-        <button className="fc-icon" type="button" title="Cerrar" onClick={() => closeChat(entry.conversationId)}>
+        <button className="fc-icon" type="button" title="Close" onClick={() => closeChat(entry.conversationId)}>
           <X size={12} strokeWidth={2.5} />
         </button>
       </div>
 
-      {/* Messages */}
       <div className="fc-msgs">
         {messages.length === 0 && (
           <div style={{ textAlign: 'center', padding: '20px 10px', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-mute)' }}>
-            Se el primero en escribir
+            Be the first to write
           </div>
         )}
         {messages.map(m => {
@@ -129,24 +125,23 @@ function FloatingWindow({ entry, index }: { entry: FloatingChatEntry; index: num
           return (
             <div key={m.id} className={`msg-bubble ${isMe ? 'me' : 'them'}`} style={{ fontSize: 13 }}>
               {m.body}
-              <div className="msg-time">{timeMsg(m.created_at)}{isMe && ' ✓✓'}</div>
+              <div className="msg-time">{timeMsg(m.created_at)}{isMe && ' sent'}</div>
             </div>
           )
         })}
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
       <div className="fc-input">
-        <button className="fc-icon" type="button" title="Adjuntar" onClick={() => toast('Adjuntos proximamente')}>
+        <button className="fc-icon" type="button" title="Attach" onClick={() => toast('Attachments coming soon')}>
           <Paperclip size={13} strokeWidth={2.5} />
         </button>
         <input
           value={draft}
           onChange={e => setDraft(e.target.value)}
           onKeyDown={handleKey}
-          placeholder="Mensaje..."
-          aria-label="Mensaje"
+          placeholder="Message..."
+          aria-label="Message"
         />
         <button
           className="fc-icon"

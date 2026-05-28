@@ -59,11 +59,14 @@ export function useSavedBoxes(userId?: string) {
       if (error) throw error
 
       return ((data ?? []) as { created_at: string; box: Record<string, unknown> | null }[])
-        .filter((row): row is { created_at: string; box: Record<string, unknown> } => !!row.box)
-        .map((row) => ({
-          savedAt: row.created_at,
-          box: normalizeBox(row.box),
-        }))
+        .reduce<SavedBoxItem[]>((items, row) => {
+          if (!row.box) return items
+          items.push({
+            savedAt: row.created_at,
+            box: normalizeBox(row.box),
+          })
+          return items
+        }, [])
     },
     enabled: !!userId,
     staleTime: 30_000,

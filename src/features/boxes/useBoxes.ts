@@ -133,18 +133,17 @@ export function useCreateBox() {
 
       // Save tags if provided
       if (tags && tags.length > 0) {
-        for (const name of tags) {
+        const slugs = tags.flatMap(name => {
           const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-          if (!slug) continue
-
-          // Find existing tag by slug
+          return slug ? [slug] : []
+        })
+        await Promise.all(slugs.map(async (slug) => {
           let { data: tag } = await supabase
             .from('tags')
             .select('id')
             .eq('slug', slug)
             .maybeSingle()
 
-          // Create if not found
           if (!tag) {
             const { data: newTag } = await supabase
               .from('tags')
@@ -157,7 +156,7 @@ export function useCreateBox() {
           if (tag?.id) {
             await supabase.from('box_tags').insert({ box_id: data.id, tag_id: tag.id })
           }
-        }
+        }))
       }
 
       return data

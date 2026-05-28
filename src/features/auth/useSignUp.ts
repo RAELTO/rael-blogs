@@ -16,7 +16,7 @@ export function useSignUp() {
     const cleanDisplayName = sanitizeText(displayName).slice(0, 100)
 
     if (!USERNAME_RE.test(cleanUsername)) {
-      setError('El usuario solo puede tener letras minúsculas, números y guiones bajos (3–30 caracteres).')
+      setError('Usernames can only use lowercase letters, numbers, and underscores (3-30 characters).')
       setLoading(false)
       return false
     }
@@ -29,7 +29,7 @@ export function useSignUp() {
       .maybeSingle()
 
     if (existing) {
-      setError('Ese nombre de usuario ya está en uso. Elige otro.')
+      setError('That username is already taken. Choose another one.')
       setLoading(false)
       return false
     }
@@ -47,9 +47,9 @@ export function useSignUp() {
 
     if (error) {
       if (error.message.toLowerCase().includes('already registered') || error.code === 'email_address_in_use') {
-        setError('Este correo ya tiene una cuenta registrada.')
+        setError('This email already has a registered account.')
       } else {
-        setError('No se pudo crear la cuenta. Intenta de nuevo.')
+        setError('Could not create the account. Try again.')
       }
     }
     setLoading(false)

@@ -61,7 +61,7 @@ export default function CheckEmailPage() {
           margin: '0 0 12px',
           letterSpacing: '-0.01em',
         }}>
-          Revisa tu correo
+          Check your email
         </h2>
 
         <p style={{ fontSize: 14, color: 'var(--ink-dim)', lineHeight: 1.6, marginBottom: 6 }}>
@@ -84,32 +84,32 @@ export default function CheckEmailPage() {
         )}
 
         <p style={{ fontSize: 13, color: 'var(--ink-mute)', lineHeight: 1.6, marginBottom: 28 }}>
-          Abre el correo y pulsa <strong>"Confirm your mail"</strong>.<br />
+          Open the email and click <strong>"Confirm your mail"</strong>.<br />
           Esta pestaña se actualizará automáticamente.
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {resent ? (
-            <div style={{ fontSize: 13, color: 'var(--ink-dim)', fontFamily: 'var(--font-mono)', letterSpacing: '0.1em' }}>
-              ✓ Correo reenviado
+            <div style={{ fontSize: 13, color: 'var(--ink-dim)', fontFamily: 'var(--font-mono)' }}>
+              ✓ Email resent
             </div>
           ) : (
-            <button
+            <button type="button"
               className="btn"
               onClick={handleResend}
               disabled={resending || !email}
               style={{ width: '100%', justifyContent: 'center' }}
             >
-              {resending ? '▒ enviando...' : <><RefreshCw size={14} strokeWidth={2.5} /> Reenviar correo</>}
+              {resending ? '▒ sending...' : <><RefreshCw size={14} strokeWidth={2.5} /> Resend email</>}
             </button>
           )}
 
-          <button
+          <button type="button"
             className="btn btn-ghost"
             onClick={() => navigate('/login')}
             style={{ width: '100%', justifyContent: 'center', fontSize: 13 }}
           >
-            <ArrowLeft size={14} strokeWidth={2.5} /> Volver al inicio de sesión
+            <ArrowLeft size={14} strokeWidth={2.5} /> Back to sign in
           </button>
         </div>
 

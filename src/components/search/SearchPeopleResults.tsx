@@ -116,7 +116,7 @@ export default function SearchPeopleResults({ query, userId }: Props) {
       </div>
 
       {isLoading && (
-        <div className="search-people-empty">Searching people...</div>
+        <div className="search-people-empty">Searching people…</div>
       )}
 
       {isError && (

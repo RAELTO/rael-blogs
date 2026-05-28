@@ -21,7 +21,7 @@ interface Tab {
 const NAV_TABS: Tab[] = [
   { to: '/',              Icon: Home,  label: 'Home',           end: true  },
   { to: '/nbox',          Icon: Inbox, label: 'NBOX',           end: false, badge: 0 },
-  { to: '/notifications', Icon: Bell,  label: 'Notificaciones', end: false, badge: 0 },
+  { to: '/notifications', Icon: Bell,  label: 'Notifications', end: false, badge: 0 },
 ]
 
 interface HeaderProps {
@@ -65,17 +65,18 @@ export default function Header({ onDropClick }: HeaderProps) {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Buscar en NBOX"
-            aria-label="Buscar"
+            placeholder="Search NBOX"
+            aria-label="Search"
           />
         </form>
 
         {/* Center nav tabs — Inbox y Bell solo visibles si está logueado */}
         <nav className="header-tabs" aria-label="Navegación">
-          {NAV_TABS.filter(t => user || t.Icon === Home).map(({ to, Icon, label, end, badge }) => {
+          {NAV_TABS.flatMap(({ to, Icon, label, end, badge }) => {
+            if (!user && Icon !== Home) return []
             if (Icon === Bell) {
-              return (
-                <button
+              return [(
+                <button type="button"
                   key={to}
                   ref={bellRef}
                   className={`header-tab${notifOpen ? ' active' : ''}`}
@@ -86,9 +87,9 @@ export default function Header({ onDropClick }: HeaderProps) {
                   <Bell size={22} strokeWidth={2.5} />
                   {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
                 </button>
-              )
+              )]
             }
-            return (
+            return [(
               <NavLink
                 key={to}
                 to={to}
@@ -99,13 +100,13 @@ export default function Header({ onDropClick }: HeaderProps) {
                 <Icon size={22} strokeWidth={2.5} />
                 {!!badge && badge > 0 && <span className="badge">{badge}</span>}
               </NavLink>
-            )
+            )]
           })}
-          {/* Buscar — solo en móvil, agrupado con los tabs de nav */}
+          {/* Search — solo en móvil, agrupado con los tabs de nav */}
           {user && (
-            <button
+            <button type="button"
               className="header-tab header-mobile-btn"
-              title="Buscar"
+              title="Search"
               onClick={() => setSearchOpen(true)}
             >
               <Search size={22} strokeWidth={2.5} />
@@ -124,19 +125,19 @@ export default function Header({ onDropClick }: HeaderProps) {
         <div className="header-right">
           {user ? (
             <>
-              {/* Apariencia — solo visible en móvil (desktop usa el sidebar) */}
-              <button
+              {/* Appearance — solo visible en móvil (desktop usa el sidebar) */}
+              <button type="button"
                 ref={paletteRef}
                 className="btn btn-icon header-palette-btn"
-                title="Apariencia"
+                title="Appearance"
                 onClick={() => setPaletteOpen(o => !o)}
               >
                 <Palette size={18} strokeWidth={2.5} />
               </button>
-              <button className="btn btn-icon btn-primary" title="Drop" onClick={onDropClick}>
+              <button type="button" className="btn btn-icon btn-primary" title="Drop" onClick={onDropClick}>
                 <Plus size={20} strokeWidth={2.5} />
               </button>
-              <NavLink to="/my-box" className="header-avatar" title="Mi Perfil">
+              <NavLink to="/my-box" className="header-avatar" title="My Profile">
                 <Avatar
                   name={profile?.display_name ?? user.email ?? 'U'}
                   size="sm"
@@ -146,7 +147,7 @@ export default function Header({ onDropClick }: HeaderProps) {
             </>
           ) : (
             <NavLink to="/login" className="btn btn-primary btn-small">
-              Entrar
+              Sign in
             </NavLink>
           )}
         </div>

@@ -8,7 +8,7 @@ import { useToast } from '../ui/Toast'
 import { sanitizeUrl } from '../../lib/sanitize'
 import type { BoxType, MoodPayload } from '../../types/database'
 
-// ─── Type config ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ Type config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface DropType { id: BoxType; label: string; Icon: React.ElementType; bg: string }
 
 const DROP_TYPES: DropType[] = [
@@ -28,19 +28,19 @@ const MOOD_COLORS: { id: MoodPayload['color']; hex: string }[] = [
   { id: 'm5', hex: '#ffd23f' },
 ]
 
-// ─── Props ─────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Props â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface DropModalProps {
   initialType?: BoxType
   onClose: () => void
 }
 
-// ─── Shared style tokens ────────────────────────────────────────────────────────
-const BORDER  = '3px solid var(--ink)'
-const SHADOW  = '6px 6px 0 var(--ink)'
-const FONT_DISPLAY = "'Archivo Black', sans-serif"
-const FONT_MONO    = "'Space Mono', monospace"
 
-// ─── Component ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+type PollOpt    = { id: string; text: string }
+type ThreadItem = { id: string; text: string }
+const newOpt  = (text = ''): PollOpt    => ({ id: crypto.randomUUID(), text })
+const newItem = (text = ''): ThreadItem => ({ id: crypto.randomUUID(), text })
+
 export default function DropModal({ initialType = 'quick', onClose }: DropModalProps) {
   const { user } = useAuth()
   const createBox  = useCreateBox()
@@ -52,22 +52,24 @@ export default function DropModal({ initialType = 'quick', onClose }: DropModalP
   const [tagsInput,    setTagsInput]    = useState('')
   const [mood,         setMood]         = useState<MoodPayload['color']>('m1')
   const [mediaMode,    setMediaMode]    = useState<'image' | 'video'>('image')
-  const [mediaFile,    setMediaFile]    = useState<File | null>(null)
+  const mediaFileRef                     = useRef<File | null>(null)
   const [mediaPreview, setMediaPreview] = useState<string | null>(null)
   const [videoUrl,     setVideoUrl]     = useState('')
   const [linkUrl,      setLinkUrl]      = useState('')
-  const [pollOpts,     setPollOpts]     = useState(['', '', ''])
-  const [threadItems,  setThreadItems]  = useState(['', ''])
+  const [pollOpts,     setPollOpts]     = useState<PollOpt[]>(() => ['', '', ''].map(newOpt))
+  const [threadItems,  setThreadItems]  = useState<ThreadItem[]>(() => ['', ''].map(newItem))
   const [uploading,    setUploading]    = useState(false)
 
   const embedUrl    = getVideoEmbedUrl(videoUrl)
-  const parsedTags  = tagsInput.split(/[\s,]+/).map(t => t.trim()).filter(Boolean)
-    .map(t => (t.startsWith('#') ? t.slice(1) : t))
+  const parsedTags  = tagsInput.split(/[\s,]+/).flatMap(t => {
+    const s = t.trim()
+    return s ? [s.startsWith('#') ? s.slice(1) : s] : []
+  })
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]
     if (!f) return
-    setMediaFile(f)
+    mediaFileRef.current = f
     setMediaPreview(URL.createObjectURL(f))
   }
 
@@ -78,172 +80,83 @@ export default function DropModal({ initialType = 'quick', onClose }: DropModalP
     let payload: Record<string, any> = {}
     try {
       setUploading(true)
-      if (type === 'quick' && !content) { toast('Escribe algo antes de dropear.'); return }
+      if (type === 'quick' && !content) { toast('Write something before dropping.'); return }
       if (type === 'media') {
         if (mediaMode === 'image') {
-          if (!mediaFile) { toast('Sube una imagen primero.'); return }
-          const url = await uploadCoverImage(mediaFile, user.id)
+          if (!mediaFileRef.current) { toast('Upload an image first.'); return }
+          const url = await uploadCoverImage(mediaFileRef.current, user.id)
           payload = { url, kind: 'image' }
         } else {
-          if (!embedUrl) { toast('URL de YouTube o Vimeo no válida.'); return }
+          if (!embedUrl) { toast('Invalid YouTube or Vimeo URL.'); return }
           payload = { url: embedUrl, kind: 'video' }
         }
       }
       if (type === 'mood') {
-        if (!content) { toast('Escribe el mood.'); return }
+        if (!content) { toast('Write the mood.'); return }
         payload = { color: mood }
       }
       if (type === 'poll') {
-        const opts = pollOpts.filter(o => o.trim())
-        if (opts.length < 2) { toast('Necesitas al menos 2 opciones.'); return }
-        payload = { question: content || '¿Cuál eliges?', options: opts.map(o => ({ text: o, votes: 0 })) }
-        if (!content) content = '¿Cuál eliges?'
+        const opts = pollOpts.flatMap(o => o.text.trim() ? [o.text] : [])
+        if (opts.length < 2) { toast('You need at least 2 options.'); return }
+        payload = { question: content || 'Which one do you choose?', options: opts.map(o => ({ text: o, votes: 0 })) }
+        if (!content) content = 'Which one do you choose?'
       }
       if (type === 'thread') {
-        const items = threadItems.filter(i => i.trim())
-        if (!content) { toast('Escribe un título para el hilo.'); return }
-        if (items.length < 1) { toast('Agrega al menos un punto.'); return }
+        const items = threadItems.flatMap(i => i.text.trim() ? [i.text] : [])
+        if (!content) { toast('Write a thread title.'); return }
+        if (items.length < 1) { toast('Add at least one item.'); return }
         payload = { items }
       }
       if (type === 'link') {
         const safeUrl = sanitizeUrl(linkUrl)
-        if (!safeUrl) { toast('URL no válida. Solo se permiten URLs http/https.'); return }
+        if (!safeUrl) { toast('Invalid URL. Only http/https URLs are allowed.'); return }
         try { const u = new URL(safeUrl); payload = { url: safeUrl, host: u.hostname } }
-        catch { toast('URL no válida.'); return }
+        catch { toast('Invalid URL.'); return }
         if (!content) content = safeUrl
       }
       await createBox.mutateAsync({ author_id: user.id, type, content, payload, tags: parsedTags })
-      toast('¡DROP PUBLICADO! ✦')
+      toast('Drop published.')
       onClose()
-    } catch { toast('Error al publicar. Inténtalo de nuevo.') }
+    } catch { toast('Failed to publish. Please try again.') }
     finally { setUploading(false) }
   }
 
-  // ── Layout helpers ──
-  const labelStyle: React.CSSProperties = {
-    fontFamily: FONT_MONO,
-    fontSize: 10,
-    letterSpacing: '0.15em',
-    textTransform: 'uppercase',
-    color: 'var(--ink-mute)',
-    marginBottom: 8,
-    fontWeight: 800,
-  }
-
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    boxSizing: 'border-box',
-    border: BORDER,
-    padding: '10px 14px',
-    fontFamily: "'Space Grotesk', sans-serif",
-    fontSize: 15,
-    background: 'var(--bg-panel)',
-    color: 'var(--ink)',
-    outline: 'none',
-    borderRadius: 0,
-  }
-
-  const textareaStyle: React.CSSProperties = {
-    ...inputStyle,
-    resize: 'vertical',
-    minHeight: 120,
-    lineHeight: 1.5,
-  }
-
   return (
-    /* ── Overlay ── */
+    /* â”€â”€ Overlay â”€â”€ */
     <div
       onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, zIndex: 300,
-        background: 'rgba(0,0,0,0.55)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 20,
-      }}
+      className="drop-overlay"
+      style={{ zIndex: 'var(--z-drop-modal)' as unknown as number }}
     >
-      {/* ── Modal panel ── */}
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          width: '100%', maxWidth: 560,
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          background: 'var(--bg-panel)',
-          border: BORDER,
-          boxShadow: SHADOW,
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        {/* ── Header ── */}
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '14px 18px',
-          borderBottom: BORDER,
-          background: 'var(--accent-2)',
-          flexShrink: 0,
-        }}>
-          <h2 style={{
-            margin: 0,
-            fontFamily: FONT_DISPLAY,
-            fontSize: 24,
-            letterSpacing: '-0.02em',
-            color: 'var(--ink)',
-          }}>
-            NUEVO DROP
-          </h2>
-          <button
-            onClick={onClose}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '6px 12px',
-              border: BORDER,
-              background: 'var(--bg-panel)',
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontWeight: 800, fontSize: 13,
-              cursor: 'pointer', color: 'var(--ink)',
-              boxShadow: '2px 2px 0 var(--ink)',
-            }}
-          >
-            <X size={13} strokeWidth={2.5} /> Cerrar
+      {/* â”€â”€ Modal panel â”€â”€ */}
+      <div onClick={e => e.stopPropagation()} className="drop-panel">
+
+        {/* â”€â”€ Header â”€â”€ */}
+        <div className="drop-header">
+          <h2 className="drop-title">NEW DROP</h2>
+          <button type="button" onClick={onClose} className="drop-close-btn">
+            <X size={13} strokeWidth={2.5} /> Close
           </button>
         </div>
 
-        {/* ── Body ── */}
-        <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* â”€â”€ Body â”€â”€ */}
+        <div className="drop-body">
 
-          {/* ── Type grid ── */}
+          {/* â”€â”€ Type grid â”€â”€ */}
           <div>
-            <div style={labelStyle}>Tipo de Box</div>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: 10,
-            }}>
+            <div className="drop-field-label">Box type</div>
+            <div className="drop-type-grid">
               {DROP_TYPES.map(({ id, label, Icon, bg }) => {
                 const selected = type === id
                 return (
                   <div
                     key={id}
                     onClick={() => setType(id)}
+                    className="drop-type-card"
                     style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 8,
-                      padding: '18px 10px',
-                      border: BORDER,
-                      cursor: 'pointer',
                       background: selected ? 'var(--ink)' : bg,
                       color: selected ? 'var(--bg-panel)' : 'var(--ink)',
-                      fontFamily: FONT_DISPLAY,
-                      fontSize: 11,
-                      letterSpacing: '0.02em',
-                      textTransform: 'uppercase',
                       boxShadow: selected ? '4px 4px 0 var(--ink-mute)' : '2px 2px 0 var(--ink)',
-                      transition: 'transform .08s',
-                      userSelect: 'none',
                     }}
                   >
                     <Icon size={28} strokeWidth={2} />
@@ -254,49 +167,36 @@ export default function DropModal({ initialType = 'quick', onClose }: DropModalP
             </div>
           </div>
 
-          {/* ── Content textarea (all types) ── */}
+          {/* â”€â”€ Content textarea (all types) â”€â”€ */}
           <textarea
             value={text}
             onChange={e => setText(e.target.value)}
             placeholder={
-              type === 'mood'   ? '¿Cuál es el mood?' :
-              type === 'thread' ? 'Título del hilo…'  :
-              type === 'poll'   ? 'Pregunta de la encuesta…' :
-              '¿Qué quieres dropear?'
+              type === 'mood'   ? 'What is the mood?' :
+              type === 'thread' ? 'Thread title...'  :
+              type === 'poll'   ? 'Poll question...' :
+              'What do you want to drop?'
             }
-            style={textareaStyle}
+            className="drop-textarea"
           />
 
-          {/* ── Media Box extras ── */}
+          {/* â”€â”€ Media Box extras â”€â”€ */}
           {type === 'media' && (
             <div>
-              <div style={labelStyle}>Tipo de medio</div>
-              <div style={{
-                display: 'flex',
-                border: BORDER,
-                boxShadow: '2px 2px 0 var(--ink)',
-                marginBottom: 12,
-              }}>
+              <div className="drop-field-label">Media type</div>
+              <div className="drop-media-tabs">
                 {(['image', 'video'] as const).map((m, i) => (
-                  <button
+                  <button type="button"
                     key={m}
                     onClick={() => setMediaMode(m)}
+                    className="drop-media-tab"
                     style={{
-                      flex: 1,
-                      padding: '10px',
-                      border: 'none',
-                      borderLeft: i > 0 ? BORDER : 'none',
+                      borderLeft: i > 0 ? '3px solid var(--ink)' : 'none',
                       background: mediaMode === m ? 'var(--ink)' : 'var(--bg-panel)',
                       color: mediaMode === m ? 'var(--bg-panel)' : 'var(--ink)',
-                      fontFamily: FONT_DISPLAY,
-                      fontSize: 12,
-                      letterSpacing: '0.05em',
-                      textTransform: 'uppercase',
-                      cursor: 'pointer',
-                      fontWeight: 900,
                     }}
                   >
-                    {m === 'image' ? 'Imagen' : 'Video'}
+                    {m === 'image' ? 'Image' : 'Video'}
                   </button>
                 ))}
               </div>
@@ -306,50 +206,19 @@ export default function DropModal({ initialType = 'quick', onClose }: DropModalP
                   <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif"
                     style={{ display: 'none' }} onChange={handleFile} />
                   {mediaPreview ? (
-                    <div style={{ position: 'relative' }}>
-                      <img src={mediaPreview} alt="preview"
-                        style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', border: BORDER, display: 'block' }} />
-                      <button
-                        onClick={() => { setMediaFile(null); setMediaPreview(null) }}
-                        style={{
-                          position: 'absolute', top: 8, right: 8,
-                          padding: '4px 8px', border: BORDER, cursor: 'pointer',
-                          background: 'var(--accent-1)', fontWeight: 800,
-                          display: 'flex', alignItems: 'center', gap: 4,
-                        }}
+                    <div className="drop-preview-wrap">
+                      <img src={mediaPreview} alt="preview" className="drop-preview-img" />
+                      <button type="button"
+                        onClick={() => { mediaFileRef.current = null; setMediaPreview(null) }}
+                        className="drop-preview-remove"
                       >
-                        <X size={12} /> Quitar
+                        <X size={12} /> Remove
                       </button>
                     </div>
                   ) : (
-                    <div
-                      onClick={() => fileRef.current?.click()}
-                      style={{
-                        width: '100%', aspectRatio: '16/9',
-                        background: 'var(--accent-2)',
-                        border: BORDER,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        cursor: 'pointer',
-                        position: 'relative',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {/* diagonal stripes */}
-                      <div style={{
-                        position: 'absolute', inset: 0,
-                        backgroundImage: 'repeating-linear-gradient(45deg, transparent 0 14px, var(--ink) 14px 16px)',
-                        opacity: 0.1, pointerEvents: 'none',
-                      }} />
-                      <span style={{
-                        position: 'relative', zIndex: 1,
-                        border: BORDER, padding: '6px 16px',
-                        background: 'var(--bg-panel)',
-                        fontFamily: FONT_MONO, fontSize: 12,
-                        fontWeight: 800, letterSpacing: '0.1em',
-                        textTransform: 'uppercase',
-                      }}>
-                        Sube tu imagen
-                      </span>
+                    <div onClick={() => fileRef.current?.click()} className="drop-dropzone">
+                      <div className="drop-dropzone-stripes" />
+                      <span className="drop-dropzone-label">Upload your image</span>
                     </div>
                   )}
                 </>
@@ -358,17 +227,17 @@ export default function DropModal({ initialType = 'quick', onClose }: DropModalP
                   <input
                     value={videoUrl}
                     onChange={e => setVideoUrl(e.target.value)}
-                    placeholder="https://youtube.com/watch?v=... o youtu.be/..."
-                    style={{ ...inputStyle, marginBottom: 10 }}
+                    placeholder="https://youtube.com/watch?v=... or youtu.be/..."
+                    className="drop-input"
+                    style={{ marginBottom: 10 }}
                   />
                   {embedUrl ? (
-                    <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9' }}>
-                      <iframe src={embedUrl} style={{ width: '100%', height: '100%', border: BORDER }}
-                        allowFullScreen title="Video preview" />
+                    <div className="drop-video-preview">
+                      <iframe src={embedUrl} allowFullScreen title="Video preview" sandbox="allow-scripts allow-same-origin allow-presentation" />
                     </div>
                   ) : videoUrl ? (
-                    <div style={{ fontSize: 12, color: 'var(--ink-mute)', fontFamily: FONT_MONO }}>
-                      URL no reconocida — soportamos YouTube y Vimeo.
+                    <div className="drop-video-error">
+                      URL not recognized - YouTube and Vimeo are supported.
                     </div>
                   ) : null}
                 </>
@@ -376,23 +245,20 @@ export default function DropModal({ initialType = 'quick', onClose }: DropModalP
             </div>
           )}
 
-          {/* ── Mood colors ── */}
+          {/* â”€â”€ Mood colors â”€â”€ */}
           {type === 'mood' && (
             <div>
-              <div style={labelStyle}>Color del mood</div>
-              <div style={{ display: 'flex', gap: 10 }}>
+              <div className="drop-field-label">Mood color</div>
+              <div className="drop-mood-colors">
                 {MOOD_COLORS.map(({ id, hex }) => (
                   <div
                     key={id}
                     onClick={() => setMood(id)}
+                    className="drop-mood-swatch"
                     style={{
-                      width: 48, height: 48,
                       background: hex,
-                      border: BORDER,
-                      cursor: 'pointer',
                       boxShadow: mood === id ? '5px 5px 0 var(--ink)' : '2px 2px 0 var(--ink)',
                       transform: mood === id ? 'translate(-2px,-2px)' : 'none',
-                      transition: 'transform .1s, box-shadow .1s',
                     }}
                   />
                 ))}
@@ -400,28 +266,22 @@ export default function DropModal({ initialType = 'quick', onClose }: DropModalP
             </div>
           )}
 
-          {/* ── Poll options ── */}
+          {/* â”€â”€ Poll options â”€â”€ */}
           {type === 'poll' && (
             <div>
-              <div style={labelStyle}>Opciones</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div className="drop-field-label">Options</div>
+              <div className="drop-options-col">
                 {pollOpts.map((opt, i) => (
-                  <div key={i} style={{ display: 'flex', gap: 8 }}>
+                  <div key={opt.id} className="drop-item-row" style={{ alignItems: 'center' }}>
                     <input
-                      value={opt}
-                      onChange={e => setPollOpts(p => p.map((v, j) => j === i ? e.target.value : v))}
-                      placeholder={`Opción ${i + 1}`}
-                      style={{ ...inputStyle, flex: 1 }}
+                      value={opt.text}
+                      onChange={e => setPollOpts(p => p.map((v, j) => j === i ? { ...v, text: e.target.value } : v))}
+                      placeholder={`Option ${i + 1}`}
+                      className="drop-input"
+                      style={{ flex: 1 }}
                     />
                     {pollOpts.length > 2 && (
-                      <button
-                        onClick={() => setPollOpts(p => p.filter((_, j) => j !== i))}
-                        style={{
-                          border: BORDER, background: 'var(--bg-panel)',
-                          cursor: 'pointer', padding: '0 10px',
-                          color: 'var(--accent-1)',
-                        }}
-                      >
+                      <button type="button" onClick={() => setPollOpts(p => p.filter((_, j) => j !== i))} className="drop-remove-btn">
                         <X size={14} />
                       </button>
                     )}
@@ -429,98 +289,65 @@ export default function DropModal({ initialType = 'quick', onClose }: DropModalP
                 ))}
               </div>
               {pollOpts.length < 4 && (
-                <button
-                  onClick={() => setPollOpts(p => [...p, ''])}
-                  style={{
-                    marginTop: 8,
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    padding: '6px 12px',
-                    border: BORDER, background: 'var(--bg-panel)',
-                    cursor: 'pointer', fontWeight: 800, fontSize: 13,
-                    boxShadow: '2px 2px 0 var(--ink)',
-                    fontFamily: "'Space Grotesk', sans-serif",
-                  }}
-                >
-                  <Plus size={13} /> Añadir opción
+                <button type="button" onClick={() => setPollOpts(p => [...p, newOpt()])} className="drop-add-btn">
+                  <Plus size={13} /> Add Option
                 </button>
               )}
             </div>
           )}
 
-          {/* ── Thread items ── */}
+          {/* â”€â”€ Thread items â”€â”€ */}
           {type === 'thread' && (
             <div>
-              <div style={labelStyle}>Hilo</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div className="drop-field-label">Thread</div>
+              <div className="drop-options-col">
                 {threadItems.map((item, i) => (
-                  <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                    <span style={{
-                      fontFamily: FONT_MONO, fontSize: 13,
-                      color: 'var(--ink-mute)', paddingTop: 12, flexShrink: 0,
-                    }}>
-                      {i + 1}.
-                    </span>
+                  <div key={item.id} className="drop-item-row">
+                    <span className="drop-thread-num">{i + 1}.</span>
                     <textarea
-                      value={item}
-                      onChange={e => setThreadItems(p => p.map((v, j) => j === i ? e.target.value : v))}
-                      placeholder={`Punto ${i + 1}`}
-                      style={{ ...textareaStyle, flex: 1, minHeight: 70 }}
+                      value={item.text}
+                      onChange={e => setThreadItems(p => p.map((v, j) => j === i ? { ...v, text: e.target.value } : v))}
+                      placeholder={`Item ${i + 1}`}
+                      className="drop-textarea"
+                      style={{ flex: 1, minHeight: 70 }}
                     />
                     {threadItems.length > 1 && (
-                      <button
-                        onClick={() => setThreadItems(p => p.filter((_, j) => j !== i))}
-                        style={{
-                          border: BORDER, background: 'var(--bg-panel)',
-                          cursor: 'pointer', padding: '8px 10px',
-                          color: 'var(--accent-1)', marginTop: 2,
-                        }}
-                      >
+                      <button type="button" onClick={() => setThreadItems(p => p.filter((_, j) => j !== i))} className="drop-thread-remove-btn">
                         <X size={14} />
                       </button>
                     )}
                   </div>
                 ))}
               </div>
-              <button
-                onClick={() => setThreadItems(p => [...p, ''])}
-                style={{
-                  marginTop: 8,
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '6px 12px',
-                  border: BORDER, background: 'var(--bg-panel)',
-                  cursor: 'pointer', fontWeight: 800, fontSize: 13,
-                  boxShadow: '2px 2px 0 var(--ink)',
-                  fontFamily: "'Space Grotesk', sans-serif",
-                }}
-              >
-                <Plus size={13} /> Añadir punto
+              <button type="button" onClick={() => setThreadItems(p => [...p, newItem()])} className="drop-add-btn">
+                <Plus size={13} /> Add point
               </button>
             </div>
           )}
 
-          {/* ── Link URL ── */}
+          {/* â”€â”€ Link URL â”€â”€ */}
           {type === 'link' && (
             <div>
               <input
                 value={linkUrl}
                 onChange={e => setLinkUrl(e.target.value)}
                 placeholder="https://..."
-                style={inputStyle}
+                className="drop-input"
               />
             </div>
           )}
 
-          {/* ── Tags ── */}
+          {/* â”€â”€ Tags â”€â”€ */}
           <div>
-            <div style={labelStyle}>Tags</div>
+            <div className="drop-field-label">Tags</div>
             <input
               value={tagsInput}
               onChange={e => setTagsInput(e.target.value)}
               placeholder="#freshdrops #design"
-              style={inputStyle}
+              className="drop-input"
             />
             {parsedTags.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+              <div className="drop-tags-preview">
                 {parsedTags.map(t => (
                   <span key={t} className="chip">#{t}</span>
                 ))}
@@ -529,48 +356,19 @@ export default function DropModal({ initialType = 'quick', onClose }: DropModalP
           </div>
         </div>
 
-        {/* ── Footer ── */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '14px 18px',
-          borderTop: BORDER,
-          background: 'var(--bg-alt)',
-          flexShrink: 0,
-        }}>
-          <button
-            onClick={onClose}
-            style={{
-              padding: '10px 20px',
-              border: BORDER,
-              background: 'var(--bg-panel)',
-              cursor: 'pointer',
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontWeight: 800, fontSize: 14,
-              boxShadow: '3px 3px 0 var(--ink)',
-              color: 'var(--ink)',
-            }}
-          >
-            Cancelar
-          </button>
-          <button
+        {/* â”€â”€ Footer â”€â”€ */}
+        <div className="drop-footer">
+          <button type="button" onClick={onClose} className="drop-cancel-btn">Cancel</button>
+          <button type="button"
             onClick={handlePublish}
             disabled={uploading || createBox.isPending}
+            className="drop-submit-btn"
             style={{
-              padding: '10px 24px',
-              border: BORDER,
-              background: 'var(--accent-1)',
               cursor: uploading ? 'not-allowed' : 'pointer',
-              fontFamily: FONT_DISPLAY,
-              fontSize: 14,
-              letterSpacing: '0.02em',
-              boxShadow: '3px 3px 0 var(--ink)',
-              color: 'var(--ink)',
               opacity: uploading ? 0.7 : 1,
             }}
           >
-            {uploading || createBox.isPending ? '▒ publicando…' : 'DROPEAR ✦'}
+            {uploading || createBox.isPending ? 'dropping...' : 'DROP'}
           </button>
         </div>
       </div>
