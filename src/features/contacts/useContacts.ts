@@ -39,7 +39,7 @@ export function useContacts(userId: string | undefined) {
   })
 }
 
-// IDs de contactos del usuario actual (para filtrar sugerencias, etc.)
+// Current user contact IDs for filtering suggestions, etc.
 export function useContactIds(userId: string | undefined): Set<string> {
   const { data = [] } = useContacts(userId)
   return new Set(data.map(c => c.other.id))

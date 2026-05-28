@@ -96,7 +96,7 @@ function SavedCard({ item, onOpen, onUnsave }: {
           {menuOpen && (
             <div
               className="panel"
-              style={{ position: 'absolute', bottom: 'calc(100% + 4px)', right: 0, zIndex: 200, minWidth: 190, padding: 0 }}
+              style={{ position: 'absolute', bottom: 'calc(100% + 4px)', right: 0, zIndex: 'var(--z-dropdown)' as unknown as number, minWidth: 190, padding: 0 }}
               onMouseLeave={() => setMenuOpen(false)}
             >
               <button
@@ -202,7 +202,7 @@ export default function SavedPage() {
             <h2>{filter === 'all' ? 'All' : tabs.find(tab => tab.id === filter)?.label}</h2>
           </div>
 
-          {isLoading && <div className="panel saved-empty">Loading saved posts...</div>}
+          {isLoading && <div className="panel saved-empty">Loading saved posts…</div>}
           {isError && <div className="panel saved-empty">Could not load saved posts.</div>}
           {!isLoading && !isError && saved.length === 0 && (
             <div className="panel saved-empty">

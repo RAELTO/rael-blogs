@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { UserPlus, UserCheck, X } from 'lucide-react'
@@ -77,7 +77,7 @@ export default function RightSidebar() {
       {/* Trending tags */}
       <div className="panel mb-4" style={{ padding: 14 }}>
         <div className="uppercase mb-3" style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
-          🔥 Loud This Week
+          ðŸ”¥ Loud This Week
         </div>
         {(tags ?? []).map(t => (
           <NavLink key={t.id} to={`/tag/${t.slug}`} className="trending-tag-item">
@@ -88,15 +88,15 @@ export default function RightSidebar() {
           </NavLink>
         ))}
         {(tags ?? []).length === 0 && (
-          <div className="text-xs text-mute">Sin tags aún</div>
+          <div className="text-xs text-mute">No tags yet</div>
         )}
       </div>
 
-      {/* Sugerencias y Contactos solo para usuarios logueados */}
+      {/* Suggestions and Contacts only for signed-in users */}
       {user && visibleSuggestions.length > 0 && (
         <div className="panel mb-4" style={{ padding: 14 }}>
           <div className="uppercase mb-3" style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
-            Sugerencias
+            Suggestions
           </div>
           <div style={{ maxHeight: 180, overflowY: 'auto', marginRight: -6, paddingRight: 6 }}>
             {visibleSuggestions.map((u, i) => {
@@ -105,7 +105,7 @@ export default function RightSidebar() {
                 <div key={u.id} className="row gap-3 mb-3 items-center">
                   <Link
                     to={`/profile/${u.username}`}
-                    title={`Ver perfil de ${u.display_name}`}
+                    title={`View profile for ${u.display_name}`}
                     style={{ display: 'block', flexShrink: 0, textDecoration: 'none' }}
                   >
                     <div className="avatar sm" style={{ background: avatarColor(i) }}>
@@ -125,10 +125,10 @@ export default function RightSidebar() {
                     </div>
                   </Link>
 
-                  {/* Agregar contacto — distinto de seguir */}
-                  <button
+                  {/* Add contact â€” distinto de seguir */}
+                  <button type="button"
                     className="btn btn-icon btn-small"
-                    title={isSent ? 'Solicitud enviada' : 'Agregar contacto'}
+                    title={isSent ? 'Request sent' : 'Add contact'}
                     onClick={() => !isSent && handleAddContact(u.id)}
                     style={{
                       background: isSent ? 'var(--accent-4)' : 'var(--accent-1)',
@@ -142,9 +142,9 @@ export default function RightSidebar() {
                     }
                   </button>
 
-                  <button
+                  <button type="button"
                     className="btn btn-icon btn-small"
-                    title="Descartar"
+                    title="Dismiss"
                     onClick={() => setDismissed(s => new Set([...s, u.id]))}
                     style={{ background: 'var(--bg-panel)', color: 'var(--accent-1)', flexShrink: 0, width: 30, height: 30 }}
                   >
@@ -157,11 +157,11 @@ export default function RightSidebar() {
         </div>
       )}
 
-      {/* Contacts — datos reales, solo logueados */}
+      {/* Contacts â€” datos reales, solo logueados */}
       {user && realContacts.length > 0 && (
         <div className="panel" style={{ padding: 14 }}>
           <div className="uppercase mb-3" style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
-            Contactos
+            Contacts
           </div>
           <div style={{ maxHeight: 168, overflowY: 'auto', marginRight: -6, paddingRight: 6 }}>
             {realContacts.map((c, i) => (
@@ -186,7 +186,7 @@ export default function RightSidebar() {
                 <Link
                   to={`/profile/${c.other.username}`}
                   onClick={e => e.stopPropagation()}
-                  title={`Ver perfil de ${c.other.display_name}`}
+                  title={`View profile for ${c.other.display_name}`}
                   style={{ position: 'relative', flexShrink: 0, display: 'block', textDecoration: 'none' }}
                 >
                   <div className="avatar sm" style={{ background: avatarColor(i) }}>

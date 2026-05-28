@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+﻿import { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { ThumbsUp, ThumbsDown, Trash2 } from 'lucide-react'
@@ -12,33 +12,33 @@ import { useConfirm } from '../ui/ConfirmContext'
 import type { CommentWithAuthor } from '../../features/comments/useComments'
 import type { ReactionType, VoteType } from '../../types/database'
 
-// ─── Config ──────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const CUSTOM_REACTIONS: { type: ReactionType; emoji: string; label: string }[] = [
-  { type: 'loud',  emoji: '❤️', label: 'Me encanta' },
-  { type: 'fire',  emoji: '😆', label: 'Haha'       },
-  { type: 'sharp', emoji: '😮', label: 'Wow'        },
-  { type: 'save',  emoji: '😢', label: 'Sad'        },
-  { type: 'angry', emoji: '😠', label: 'Angry'      },
+  { type: 'loud',  emoji: 'â¤ï¸', label: 'Love it' },
+  { type: 'fire',  emoji: 'ðŸ˜†', label: 'Haha'       },
+  { type: 'sharp', emoji: 'ðŸ˜®', label: 'Wow'        },
+  { type: 'save',  emoji: 'ðŸ˜¢', label: 'Sad'        },
+  { type: 'angry', emoji: 'ðŸ˜ ', label: 'Angry'      },
 ]
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
   const min = Math.floor(diff / 60000)
-  if (min < 1) return 'ahora'
+  if (min < 1) return 'now'
   if (min < 60) return `${min}m`
   const h = Math.floor(min / 60)
   if (h < 24) return `${h}h`
   return `${Math.floor(h / 24)}d`
 }
 
-// ─── Props ────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Props â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface Props {
   comment: CommentWithAuthor
   onDelete?: (id: string) => void
   onOpenActivity?: (commentId: string) => void
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function CommentItem({ comment, onDelete, onOpenActivity }: Props) {
   const { user } = useAuth()
   const confirm = useConfirm()
@@ -57,8 +57,10 @@ export default function CommentItem({ comment, onDelete, onOpenActivity }: Props
   const likeCount    = voteCounts?.like    ?? 0
   const dislikeCount = voteCounts?.dislike ?? 0
   const topReactions = CUSTOM_REACTIONS
-    .map(r => ({ ...r, n: reactCounts?.[r.type] ?? 0 }))
-    .filter(r => r.n > 0)
+    .reduce<Array<(typeof CUSTOM_REACTIONS[number]) & { n: number }>>(
+      (acc, r) => { const n = reactCounts?.[r.type] ?? 0; if (n > 0) acc.push({ ...r, n }); return acc },
+      []
+    )
     .sort((a, b) => b.n - a.n)
   const totalReactions = topReactions.reduce((s, r) => s + r.n, 0)
   const totalActivity = likeCount + dislikeCount + totalReactions
@@ -81,7 +83,7 @@ export default function CommentItem({ comment, onDelete, onOpenActivity }: Props
     clearTimeout(closeTimer.current)
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect()
-      // popup: 2 votes(36px) + divider + 5 emojis(36px) + gaps + padding ≈ 312px
+      // popup: 2 votes(36px) + divider + 5 emojis(36px) + gaps + padding â‰ˆ 312px
       const POPUP_W = 312
       const left = Math.max(8, Math.min(rect.left, window.innerWidth - POPUP_W - 8))
       setPopPos({ top: rect.top - 60, left })
@@ -96,75 +98,56 @@ export default function CommentItem({ comment, onDelete, onOpenActivity }: Props
 
   return (
     <>
-      <div style={{ display: 'flex', gap: 10, padding: '12px 18px', borderBottom: '2px solid var(--ink)' }}>
+      <div className="comment-row">
         {/* Avatar */}
         <Link to={`/profile/${comment.author.username}`} style={{ display: 'flex', textDecoration: 'none' }}>
           <Avatar name={comment.author.display_name} src={comment.author.avatar_url} size="sm" />
         </Link>
 
         {/* Bubble */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{
-            background: 'var(--bg-alt)',
-            border: '2px solid var(--ink)',
-            boxShadow: '3px 3px 0 var(--ink)',
-            padding: '8px 12px',
-            marginBottom: 6,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
-              <Link
-                to={`/profile/${comment.author.username}`}
-                style={{ fontWeight: 800, fontSize: 13, color: 'inherit', textDecoration: 'none' }}
-              >
+        <div className="comment-body">
+          <div className="comment-bubble">
+            <div className="comment-bubble-head">
+              <Link to={`/profile/${comment.author.username}`} className="comment-author">
                 {comment.author.display_name}
                 {comment.author.role === 'admin' && <AdminBadge />}
               </Link>
               {isOwner && onDelete && (
-                <button
+                <button type="button"
                   onClick={async () => {
                     const ok = await confirm({ title: 'Delete comment?', message: 'This action is permanent and cannot be undone.', confirmLabel: 'Delete', danger: true })
                     if (ok) onDelete(comment.id)
                   }}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--ink-mute)', display: 'flex' }}
+                  className="comment-delete-btn"
                   title="Delete comment"
                 >
                   <Trash2 size={12} strokeWidth={2} />
                 </button>
               )}
             </div>
-            <p style={{ fontSize: 14, lineHeight: 1.55, margin: 0, whiteSpace: 'pre-wrap' }}>{comment.content}</p>
+            <p className="comment-content">{comment.content}</p>
           </div>
 
           {/* Action row */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingLeft: 4 }}>
-            {/* Time */}
-            <span style={{ fontSize: 11, color: 'var(--ink-mute)', fontFamily: 'var(--font-mono)' }}>
-              {timeAgo(comment.created_at)}
-            </span>
+          <div className="comment-actions">
+            <span className="comment-time">{timeAgo(comment.created_at)}</span>
 
             {/* Vote buttons */}
-            <button
+            <button type="button"
               onClick={() => handleVote('like')}
-              style={{
-                background: myVote === 'like' ? 'var(--accent-4)' : 'none',
-                border: 'none', cursor: 'pointer', padding: '2px 6px',
-                display: 'flex', alignItems: 'center', gap: 3,
-                fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)',
-                color: 'var(--ink)',
-              }}
+              className="comment-vote-btn"
+              style={{ background: myVote === 'like' ? 'var(--accent-4)' : 'none' }}
               title="Like"
             >
               <ThumbsUp size={11} strokeWidth={2.5} style={{ color: myVote === 'like' ? 'var(--ink)' : 'var(--accent-4)' }} />
               {likeCount > 0 && likeCount}
             </button>
 
-            <button
+            <button type="button"
               onClick={() => handleVote('dislike')}
+              className="comment-vote-btn"
               style={{
                 background: myVote === 'dislike' ? 'var(--accent-1)' : 'none',
-                border: 'none', cursor: 'pointer', padding: '2px 6px',
-                display: 'flex', alignItems: 'center', gap: 3,
-                fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)',
                 color: myVote === 'dislike' ? 'var(--bg-panel)' : 'var(--ink)',
               }}
               title="Dislike"
@@ -178,56 +161,38 @@ export default function CommentItem({ comment, onDelete, onOpenActivity }: Props
               ref={triggerRef}
               onMouseEnter={openPopover}
               onMouseLeave={scheduleClose}
-              style={{ display: 'flex', alignItems: 'center', gap: 3, cursor: 'pointer', position: 'relative' }}
+              className="comment-react-trigger"
             >
               {myReaction
-                ? <span style={{ fontSize: 13 }}>{CUSTOM_REACTIONS.find(r => r.type === myReaction)?.emoji ?? '😀'}</span>
-                : <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)' }}>Reaccionar</span>
+                ? <span style={{ fontSize: 13 }}>{CUSTOM_REACTIONS.find(r => r.type === myReaction)?.emoji ?? 'ðŸ˜€'}</span>
+                : <span className="comment-react-label">React</span>
               }
             </div>
 
             {/* Reaction summary (clickable) */}
             {hasActivity && (
-              <button
-                onClick={() => onOpenActivity?.(comment.id)}
-                style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: 3,
-                  fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-dim)', fontWeight: 700,
-                  marginLeft: 'auto', padding: 0,
-                }}
-              >
-                <span>Actividad · {activityCount}</span>
+              <button type="button" onClick={() => onOpenActivity?.(comment.id)} className="comment-activity-btn">
+                <span>Activity Â· {activityCount}</span>
               </button>
             )}
           </div>
         </div>
       </div>
 
-      {/* Reaction popover — portal so it's never clipped by overflow */}
+      {/* Reaction popover â€” portal so it's never clipped by overflow */}
       {popPos && createPortal(
         <div
-          style={{
-            position: 'fixed', top: popPos.top, left: popPos.left, zIndex: 10100,
-            display: 'flex', gap: 4, padding: '6px 8px',
-            background: 'var(--bg-panel)', border: '2px solid var(--ink)',
-            boxShadow: '4px 4px 0 var(--ink)',
-          }}
+          className="comment-react-popover"
+          style={{ position: 'fixed', top: popPos.top, left: popPos.left }}
           onMouseEnter={() => clearTimeout(closeTimer.current)}
           onMouseLeave={scheduleClose}
         >
-          {/* Emoji reactions — like/dislike already accessible inline in the action row */}
           {CUSTOM_REACTIONS.map(r => (
-            <button
+            <button type="button"
               key={r.type}
               onClick={() => handleReact(r.type)}
               title={r.label}
-              style={{
-                width: 36, height: 36, border: '2px solid var(--ink)',
-                background: myReaction === r.type ? 'var(--accent-2)' : 'var(--bg-panel)',
-                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 18, boxShadow: '2px 2px 0 var(--ink)', transition: 'transform .08s',
-              }}
+              className={`comment-react-btn${myReaction === r.type ? ' active' : ''}`}
             >
               {r.emoji}
             </button>

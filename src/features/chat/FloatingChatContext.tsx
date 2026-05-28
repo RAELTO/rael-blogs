@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, use, useCallback, useMemo, useState } from 'react'
 
 export interface FloatingChatEntry {
   conversationId: string
@@ -23,25 +23,26 @@ const FloatingChatContext = createContext<Ctx>({
 export function FloatingChatProvider({ children }: { children: React.ReactNode }) {
   const [chats, setChats] = useState<FloatingChatEntry[]>([])
 
-  const openChat = (entry: Omit<FloatingChatEntry, 'minimized'>) => {
+  const openChat = useCallback((entry: Omit<FloatingChatEntry, 'minimized'>) => {
     setChats(prev => {
       const exists = prev.find(c => c.conversationId === entry.conversationId)
       if (exists) {
-        // Si estaba minimizado, desminimizar
         return prev.map(c => c.conversationId === entry.conversationId ? { ...c, minimized: false } : c)
       }
       return [...prev, { ...entry, minimized: false }]
     })
-  }
+  }, [])
 
-  const closeChat = (conversationId: string) =>
-    setChats(prev => prev.filter(c => c.conversationId !== conversationId))
+  const closeChat = useCallback((conversationId: string) =>
+    setChats(prev => prev.filter(c => c.conversationId !== conversationId)), [])
 
-  const toggleMinimize = (conversationId: string) =>
-    setChats(prev => prev.map(c => c.conversationId === conversationId ? { ...c, minimized: !c.minimized } : c))
+  const toggleMinimize = useCallback((conversationId: string) =>
+    setChats(prev => prev.map(c => c.conversationId === conversationId ? { ...c, minimized: !c.minimized } : c)), [])
+
+  const ctxValue = useMemo(() => ({ chats, openChat, closeChat, toggleMinimize }), [chats, openChat, closeChat, toggleMinimize])
 
   return (
-    <FloatingChatContext.Provider value={{ chats, openChat, closeChat, toggleMinimize }}>
+    <FloatingChatContext.Provider value={ctxValue}>
       {children}
     </FloatingChatContext.Provider>
   )
@@ -49,5 +50,5 @@ export function FloatingChatProvider({ children }: { children: React.ReactNode }
 
 // eslint-disable-next-line react-refresh/only-export-components
 export function useFloatingChat() {
-  return useContext(FloatingChatContext)
+  return use(FloatingChatContext)
 }

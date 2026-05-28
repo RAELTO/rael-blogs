@@ -71,7 +71,7 @@ export default function MobileSearchOverlay({ onClose }: Props) {
             ref={inputRef}
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Buscar en NBOX"
+            placeholder="Search NBOX"
             style={{ paddingLeft: 36, height: 44, width: '100%' }}
           />
         </form>
@@ -103,7 +103,7 @@ export default function MobileSearchOverlay({ onClose }: Props) {
 
         {tags.length === 0 && (
           <div style={{ color: 'var(--ink-mute)', fontSize: 12, fontFamily: 'var(--font-mono)', padding: '8px 0' }}>
-            Sin tendencias aún
+            No trends yet
           </div>
         )}
       </div>

@@ -59,7 +59,7 @@ export function useUpdateProfile() {
       const cleanUsername = sanitizeText(form.username).toLowerCase().replace(/\s+/g, '_')
 
       if (!USERNAME_RE.test(cleanUsername)) {
-        throw new Error('El usuario solo puede tener letras minúsculas, números y guiones bajos (3–30 caracteres).')
+        throw new Error('Usernames can only use lowercase letters, numbers, and underscores (3-30 characters).')
       }
 
       const { error } = await supabase

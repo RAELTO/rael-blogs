@@ -12,7 +12,7 @@ export function useSendRecovery() {
     const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
       redirectTo: `${window.location.origin}/reset-password`,
     })
-    // No revelar si el correo existe o no (evita enumeración)
+    // oo revelar si el correo existe o no (evita enumeración)
     if (err) console.warn('recovery error (suppressed)', err.message)
     setSent(true)
     setLoading(false)
@@ -32,7 +32,7 @@ export function useUpdatePassword() {
     setError(null)
     const { error: err } = await supabase.auth.updateUser({ password })
     if (err) {
-      setError('No se pudo actualizar la contraseña. El enlace puede haber expirado.')
+      setError('Could not update the password. The link may have expired.')
       setLoading(false)
       return false
     }

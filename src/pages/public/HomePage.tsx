@@ -19,12 +19,12 @@ function EmptyFeed({ mode }: { mode: FeedMode }) {
     <div className="panel" style={{ padding: 48, textAlign: 'center' }}>
       <div className="mp mp-gif" style={{ height: 100, maxWidth: 200, margin: '0 auto 20px', borderBottom: 'none' }} />
       <div style={{ fontFamily: 'var(--font-display)', fontSize: 24, letterSpacing: '-0.02em', marginBottom: 8 }}>
-        {mode === 'following' ? 'Aún no sigues a nadie' : 'Sin boxes aún'}
+        {mode === 'following' ? "You aren't following anyone yet" : 'No boxes yet'}
       </div>
       <div className="text-mute text-sm">
         {mode === 'following'
-          ? 'Ve a Explore para encontrar gente que dropea boxes interesantes.'
-          : 'Sé el primero en dropear algo brutal.'}
+          ? 'Go to Explore to find people dropping interesting boxes.'
+          : 'Be the first to drop something loud.'}
       </div>
     </div>
   )
@@ -47,14 +47,14 @@ export default function HomePage() {
   const deleteBox = useDeleteBox()
 
   function openDrop(type: BoxType = 'quick') {
-    if (!user) { toast('Inicia sesión para dropear.'); return }
+    if (!user) { toast('Sign in to drop.'); return }
     setDropOpen(type)
   }
 
   function handleDelete(id: string) {
     deleteBox.mutate(id, {
-      onSuccess: () => toast('Box eliminada.'),
-      onError:   () => toast('Error al eliminar.'),
+      onSuccess: () => toast('Box deleted.'),
+      onError:   () => toast('Failed to delete.'),
     })
   }
 
@@ -67,7 +67,7 @@ export default function HomePage() {
       >
         {!hasSearch && (
           <>
-            <StoriesRail onCreateStory={() => toast('Stories próximamente')} />
+            <StoriesRail onCreateStory={() => toast('Stories coming soon')} />
             <ComposerCard onOpenModal={openDrop} />
             <ModeSelector value={mode} onChange={setMode} />
           </>
@@ -89,13 +89,13 @@ export default function HomePage() {
         {isLoading && (
           <div className="spinner">
             <div className="spinner-ring" />
-            <span className="spinner-label">▒ cargando boxes...</span>
+            <span className="spinner-label">▒ loading boxes...</span>
           </div>
         )}
 
         {isError && (
           <div className="panel" style={{ padding: 40, textAlign: 'center', color: 'var(--accent-1)', fontWeight: 700 }}>
-            ⚠ Error al cargar el feed. Intenta de nuevo.
+            ⚠ Failed to load the feed. Try again.
           </div>
         )}
 

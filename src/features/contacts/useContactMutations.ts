@@ -9,7 +9,6 @@ function invalidateContacts(qc: ReturnType<typeof useQueryClient>, userId: strin
   qc.invalidateQueries({ queryKey: ['search-people'] })
 }
 
-// ── Enviar solicitud ──────────────────────────────────────────────────────────
 export function useSendContactRequest(userId: string) {
   const qc = useQueryClient()
   return useMutation({
@@ -23,7 +22,6 @@ export function useSendContactRequest(userId: string) {
   })
 }
 
-// ── Cancelar solicitud enviada ────────────────────────────────────────────────
 export function useCancelContactRequest(userId: string) {
   const qc = useQueryClient()
   return useMutation({
@@ -39,7 +37,6 @@ export function useCancelContactRequest(userId: string) {
   })
 }
 
-// ── Responder solicitud recibida (aceptar / rechazar) ─────────────────────────
 export function useRespondContactRequest(userId: string) {
   const qc = useQueryClient()
   return useMutation({
@@ -52,7 +49,6 @@ export function useRespondContactRequest(userId: string) {
       accept: boolean
     }) => {
       if (accept) {
-        // RPC atómica: actualiza contact_requests + inserta en contacts en una tx
         const { error } = await supabase.rpc('accept_contact_request', { p_request_id: requestId })
         if (error) throw error
       } else {
@@ -68,7 +64,6 @@ export function useRespondContactRequest(userId: string) {
   })
 }
 
-// ── Eliminar contacto ─────────────────────────────────────────────────────────
 export function useRemoveContact(userId: string) {
   const qc = useQueryClient()
   return useMutation({

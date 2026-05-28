@@ -45,7 +45,7 @@ export function updateFavicon(palette: Palette) {
   if (link) {
     const prev = link.href
     link.href = url
-    // Delay para que el browser cargue el nuevo favicon antes de liberar el anterior
+    // Delay so the browser loads the new favicon before releasing the previous one
     if (prev.startsWith('blob:')) setTimeout(() => URL.revokeObjectURL(prev), 2000)
   }
 }

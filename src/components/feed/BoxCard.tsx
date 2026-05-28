@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+﻿import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Bell, Bookmark, Trash2, ThumbsUp, ThumbsDown, MessageCircle, Share2, MoreHorizontal } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
@@ -15,13 +15,13 @@ import { useShareCount } from '../../features/shares/useShares'
 import { useIsBoxSaved, useToggleBoxSave } from '../../features/saves/useBoxSaves'
 import type { BoxWithAuthor, ReactionType, VoteType, MediaPayload, PollPayload, MoodPayload, LinkPayload, ThreadPayload } from '../../types/database'
 
-// ─── Reaction config ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Reaction config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const CUSTOM_REACTIONS: { type: ReactionType; emoji: string; label: string }[] = [
-  { type: 'loud',  emoji: '❤️', label: 'Me encanta' },
-  { type: 'fire',  emoji: '😆', label: 'Haha'       },
-  { type: 'sharp', emoji: '😮', label: 'Wow'        },
-  { type: 'save',  emoji: '😢', label: 'Sad'        },
-  { type: 'angry', emoji: '😠', label: 'Angry'      },
+  { type: 'loud',  emoji: 'â¤ï¸', label: 'Love it' },
+  { type: 'fire',  emoji: 'ðŸ˜†', label: 'Haha'       },
+  { type: 'sharp', emoji: 'ðŸ˜®', label: 'Wow'        },
+  { type: 'save',  emoji: 'ðŸ˜¢', label: 'Sad'        },
+  { type: 'angry', emoji: 'ðŸ˜ ', label: 'Angry'      },
 ]
 
 const MOOD_BG: Record<MoodPayload['color'], string> = {
@@ -32,7 +32,7 @@ const MOOD_BG: Record<MoodPayload['color'], string> = {
   m5: '#ffd23f',
 }
 
-// ─── Helpers ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function safeHref(url: string): string {
   try {
     const u = new URL(url)
@@ -44,14 +44,14 @@ function timeAgo(iso: string | null): string {
   if (!iso) return ''
   const diff = Date.now() - new Date(iso).getTime()
   const min = Math.floor(diff / 60000)
-  if (min < 1) return 'ahora'
+  if (min < 1) return 'now'
   if (min < 60) return `${min}m`
   const h = Math.floor(min / 60)
   if (h < 24) return `${h}h`
   return `${Math.floor(h / 24)}d`
 }
 
-// ─── Content renderers per box type ────────────────────────────────────────────
+// â”€â”€â”€ Content renderers per box type â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function BoxContent({ box }: { box: BoxWithAuthor }) {
   const [voted, setVoted] = useState<string | null>(null)
 
@@ -60,19 +60,21 @@ function BoxContent({ box }: { box: BoxWithAuthor }) {
     if (!p?.url) return null
     if (p.kind === 'video') {
       return (
-        <div style={{ borderTop: '3px solid var(--ink)', borderBottom: '3px solid var(--ink)', lineHeight: 0 }}>
+        <div className="box-media-wrap">
           <iframe
             src={p.url}
-            style={{ width: '100%', aspectRatio: '16/9', border: 'none', display: 'block' }}
+            title="Video player"
+            className="box-media-iframe"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
+            sandbox="allow-scripts allow-same-origin allow-presentation"
           />
         </div>
       )
     }
     return (
-      <div style={{ borderTop: '3px solid var(--ink)', borderBottom: '3px solid var(--ink)', lineHeight: 0 }}>
-        <img src={p.url} alt={p.caption ?? ''} style={{ width: '100%', height: 'auto', display: 'block', maxHeight: '72vh', objectFit: 'contain' }} />
+      <div className="box-media-wrap">
+        <img src={p.url} alt={p.caption ?? ''} className="box-media-img" />
       </div>
     )
   }
@@ -97,7 +99,7 @@ function BoxContent({ box }: { box: BoxWithAuthor }) {
           const isVoted = voted === String(i)
           return (
             <div
-              key={i}
+              key={opt.text || String(i)}
               className={`poll-option${isVoted ? ' voted' : ''}`}
               onClick={() => setVoted(String(i))}
             >
@@ -107,7 +109,7 @@ function BoxContent({ box }: { box: BoxWithAuthor }) {
             </div>
           )
         })}
-        <div className="poll-meta">{totalVotes} votos · toca para votar</div>
+        <div className="poll-meta">{totalVotes} votes - tap to vote</div>
       </div>
     )
   }
@@ -118,9 +120,9 @@ function BoxContent({ box }: { box: BoxWithAuthor }) {
     return (
       <div className="thread-wrap">
         {p.items.map((item, i) => (
-          <div key={i} className="thread-item">
+          <div key={item || String(i)} className="thread-item">
             <div className="thread-num">{i + 1}</div>
-            <span style={{ lineHeight: 1.5 }}>{item}</span>
+            <span>{item}</span>
           </div>
         ))}
       </div>
@@ -141,9 +143,7 @@ function BoxContent({ box }: { box: BoxWithAuthor }) {
             {p.title ?? p.url}
           </a>
           {p.description && (
-            <div style={{ fontSize: 12, color: 'var(--ink-dim)', marginTop: 4, lineHeight: 1.4 }}>
-              {p.description}
-            </div>
+            <div className="box-link-desc">{p.description}</div>
           )}
         </div>
       </div>
@@ -153,7 +153,7 @@ function BoxContent({ box }: { box: BoxWithAuthor }) {
   return null
 }
 
-// ─── Main component ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface BoxCardProps {
   box: BoxWithAuthor
   onDelete?: (id: string) => void
@@ -164,14 +164,14 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
   const toast = useToast()
   const confirm = useConfirm()
   const [reactPopOpen, setReactPopOpen]     = useState(false) // Like/Dislike tooltip
-  const [emojiPopOpen, setEmojiPopOpen]     = useState(false) // Reacción tooltip
+  const [emojiPopOpen, setEmojiPopOpen]     = useState(false) // Reaction tooltip
   const [menuOpen, setMenuOpen]             = useState(false)
   const [reactionDetailOpen, setReactionDetailOpen] = useState(false)
   const [commentsOpen, setCommentsOpen]     = useState(false)
   const [shareOpen, setShareOpen]           = useState(false)
   const { data: shareCount = 0 }            = useShareCount(box.id)
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined) // for Like/Dislike
-  const voteTimer  = useRef<ReturnType<typeof setTimeout> | undefined>(undefined) // for Reacción
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const voteTimer  = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const { data: myReaction } = useMyReaction(box.id, user?.id)
   const { data: myVote }     = useMyVote(box.id, user?.id)
@@ -182,7 +182,7 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
   const { data: reactionCounts } = useReactionCounts(box.id)
   const { data: voteCounts }     = useVoteCounts(box.id)
 
-  const AUTH_TOAST = '¡Inicia sesión para interactuar con este drop! 🔐'
+  const AUTH_TOAST = 'Sign in to interact with this drop.'
 
   function handleReact(type: ReactionType) {
     if (!user) { toast(AUTH_TOAST, 5000); setReactPopOpen(false); setEmojiPopOpen(false); return }
@@ -237,8 +237,10 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
   const dislikeCount = voteCounts?.dislike ?? 0
   const topCustom = reactionCounts
     ? CUSTOM_REACTIONS
-        .map(r => ({ ...r, n: reactionCounts[r.type] ?? 0 }))
-        .filter(r => r.n > 0)
+        .reduce<Array<(typeof CUSTOM_REACTIONS[number]) & { n: number }>>(
+          (acc, r) => { const n = reactionCounts[r.type] ?? 0; if (n > 0) acc.push({ ...r, n }); return acc },
+          []
+        )
         .sort((a, b) => b.n - a.n)
     : []
   const totalCustom = topCustom.reduce((s, r) => s + r.n, 0)
@@ -248,7 +250,7 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
       <div className="panel box-card">
         {/* Head */}
         <div className="box-head">
-          <Link to={`/profile/${box.author.username}`} style={{ textDecoration: 'none', color: 'inherit', display: 'flex' }}>
+          <Link to={`/profile/${box.author.username}`} className="box-avatar-link">
             <Avatar name={box.author.display_name} src={box.author.avatar_url} size="md" />
           </Link>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -256,12 +258,11 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
               {box.author.display_name}
               {box.author.role === 'admin' && <AdminBadge />}
             </div>
-            <div className="box-head-meta">@{box.author.username} · {timeAgo(box.published_at)}</div>
+            <div className="box-head-meta">@{box.author.username} Â· {timeAgo(box.published_at)}</div>
           </div>
           <div className="box-options-wrap">
-            <button
+            <button type="button"
               className="box-options-trigger"
-              type="button"
               aria-label="Post options"
               onClick={() => setMenuOpen(o => !o)}
             >
@@ -321,7 +322,7 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
           </div>
         </div>
 
-        {/* Text body — shown for all types except mood (mood shows text inside block) */}
+        {/* Text body â€” shown for all types except mood (mood shows text inside block) */}
         {box.type !== 'mood' && box.content && (
           <div className="box-body">
             <Link to={`/box/${box.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
@@ -337,7 +338,7 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
         {(box.tags ?? []).length > 0 && (
           <div className="box-tags-row">
             {(box.tags ?? []).map((t: { id: string; name: string; slug: string }) => (
-              <Link key={t.id} to={`/tag/${t.slug}`} className="chip" style={{ textDecoration: 'none' }}>
+              <Link key={t.id} to={`/tag/${t.slug}`} className="chip">
                 #{t.name}
               </Link>
             ))}
@@ -351,15 +352,14 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
             type="button"
             className="box-stats-btn"
             onClick={() => setReactionDetailOpen(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: 10 }}
-            title="Ver reacciones"
+            title="View reactions"
           >
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+            <span className="box-stats-emojis">
               {topCustom.slice(0, 3).map(r => (
-                <span key={r.type} style={{ fontSize: 15, lineHeight: 1 }}>{r.emoji}</span>
+                <span key={r.type} className="box-stats-emoji">{r.emoji}</span>
               ))}
-              {topCustom.length > 3 && <span style={{ fontSize: 12 }}>...</span>}
-              <span style={{ marginLeft: 2 }}>{totalCustom}</span>
+              {topCustom.length > 3 && <span className="box-stats-more">â€¦</span>}
+              <span className="box-stats-count">{totalCustom}</span>
             </span>
             <span className="box-stat-vote">
               <ThumbsUp size={12} strokeWidth={2.5} style={{ color: 'var(--accent-4)', fill: 'none' }} />
@@ -371,24 +371,21 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
             </span>
           </button>
 
-          <button
+          <button type="button"
             className="box-stats-btn"
             onClick={() => setCommentsOpen(true)}
             style={{ marginLeft: 'auto' }}
           >
             <span className="box-comments-share">
-              <span>Comentarios {totalComments}</span>
-              <span>Compartidos {shareCount}</span>
+              <span>Comments {totalComments}</span>
+              <span>Shares {shareCount}</span>
             </span>
           </button>
         </div>
 
-        {/* Actions — 4 cols: Like/Dislike | Reacción | Comentar | Compartir */}
         <div className="box-actions">
-          {/* ① Like/Dislike unified with hover tooltip */}
           <div
             className={`box-action${hasLike ? ' active-like' : hasDislike ? ' active-dislike' : ''}`}
-            style={{ position: 'relative' }}
             onMouseEnter={() => { if (!user) return; clearTimeout(closeTimer.current); setReactPopOpen(true) }}
             onMouseLeave={() => { closeTimer.current = setTimeout(() => setReactPopOpen(false), 120) }}
           >
@@ -402,11 +399,10 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
             {reactPopOpen && (
               <div
                 className="reactions-pop"
-                style={{ display: 'flex', gap: 6 }}
                 onMouseEnter={() => clearTimeout(closeTimer.current)}
                 onMouseLeave={() => { closeTimer.current = setTimeout(() => setReactPopOpen(false), 120) }}
               >
-                <button
+                <button type="button"
                   className={`react-btn${hasLike ? ' active' : ''}`}
                   title="Like"
                   onClick={() => { if (user) handleVote('like'); setReactPopOpen(false) }}
@@ -414,7 +410,7 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
                 >
                   <ThumbsUp size={18} strokeWidth={2.5} style={{ color: hasLike ? 'var(--ink)' : 'var(--accent-4)' }} />
                 </button>
-                <button
+                <button type="button"
                   className={`react-btn${hasDislike ? ' active' : ''}`}
                   title="Dislike"
                   onClick={() => { if (user) handleVote('dislike'); setReactPopOpen(false) }}
@@ -426,17 +422,15 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
             )}
           </div>
 
-          {/* ② Reacción with emoji popover */}
           <div
             className={`box-action${hasCustom ? ' active-react' : ''}`}
-            style={{ position: 'relative' }}
             onMouseEnter={() => { clearTimeout(voteTimer.current); setEmojiPopOpen(true) }}
             onMouseLeave={() => { voteTimer.current = setTimeout(() => setEmojiPopOpen(false), 120) }}
           >
             <span style={{ fontSize: 15 }}>
-              {customReaction ? customReaction.emoji : '😀'}
+              {customReaction ? customReaction.emoji : 'ðŸ˜€'}
             </span>
-            <span>{customReaction ? customReaction.label : 'Reacción'}</span>
+            <span>{customReaction ? customReaction.label : 'Reaction'}</span>
 
             {emojiPopOpen && user && (
               <div
@@ -445,7 +439,7 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
                 onMouseLeave={() => { voteTimer.current = setTimeout(() => setEmojiPopOpen(false), 120) }}
               >
                 {CUSTOM_REACTIONS.map(r => (
-                  <button
+                  <button type="button"
                     key={r.type}
                     className={`react-btn${myReaction === r.type ? ' active' : ''}`}
                     title={r.label}
@@ -457,17 +451,16 @@ export default function BoxCard({ box, onDelete }: BoxCardProps) {
               </div>
             )}
           </div>
-
-          {/* ③ Comentar */}
-          <button className="box-action" onClick={openComments}>
+          {/* â‘¢ Comment */}
+          <button type="button" className="box-action" onClick={openComments}>
             <MessageCircle size={15} strokeWidth={2.5} />
-            <span>Comentar</span>
+            <span>Comment</span>
           </button>
 
-          {/* ④ Compartir — last */}
-          <button className="box-action" onClick={openShare}>
+          {/* â‘£ Share â€” last */}
+          <button type="button" className="box-action" onClick={openShare}>
             <Share2 size={15} strokeWidth={2.5} />
-            <span>Compartir</span>
+            <span>Share</span>
           </button>
         </div>
       </div>

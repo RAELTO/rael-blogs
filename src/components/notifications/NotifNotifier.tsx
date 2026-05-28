@@ -5,7 +5,7 @@ import { useAuth } from '../../features/auth/AuthContext'
 
 /**
  * Propietario único del canal Realtime de notificaciones.
- * Montado una sola vez en App.tsx para evitar conflictos de canal duplicado.
+ * Mounted once in App.tsx to avoid duplicate channel conflicts.
  */
 export default function NotifNotifier() {
   const { user } = useAuth()

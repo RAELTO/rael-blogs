@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react'
+import { createContext, use } from 'react'
 
 export interface RealtimePresenceSnapshot {
   online: boolean
@@ -19,5 +19,5 @@ export const RealtimePresenceContext = createContext<RealtimePresenceContextValu
 })
 
 export function useRealtimePresenceState() {
-  return useContext(RealtimePresenceContext)
+  return use(RealtimePresenceContext)
 }

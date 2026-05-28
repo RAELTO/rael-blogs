@@ -13,7 +13,7 @@ export default function ImageUpload({ kind, currentUrl, onFile, uploading }: Ima
   const [preview, setPreview] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -57,7 +57,7 @@ export default function ImageUpload({ kind, currentUrl, onFile, uploading }: Ima
         type="file"
         accept="image/jpeg,image/png,image/webp,image/gif"
         style={{ display: 'none' }}
-        onChange={handleChange}
+        onChange={handleFileSelect}
       />
 
       <button
@@ -67,16 +67,16 @@ export default function ImageUpload({ kind, currentUrl, onFile, uploading }: Ima
         disabled={uploading}
         style={{ width: '100%', justifyContent: 'center' }}
       >
-        {uploading ? '▒ subiendo...' : displayUrl ? '↺ Cambiar imagen' : '↑ Subir imagen'}
+        {uploading ? 'uploading...' : displayUrl ? 'Change image' : 'Upload image'}
       </button>
 
       <div className="text-xs text-mute mt-3">
-        JPG, PNG, WebP o GIF · máx. {limit.label}
+        JPG, PNG, WebP, or GIF - max {limit.label}
       </div>
 
       {error && (
         <div style={{ color: 'var(--accent-1)', fontSize: 12, marginTop: 6, fontWeight: 700 }}>
-          ⚠ {error}
+          ! {error}
         </div>
       )}
     </div>

@@ -7,7 +7,6 @@ export function useGetOrCreateConversation(userId: string) {
     mutationFn: async (otherId: string): Promise<string> => {
       const [a, b] = [userId, otherId].sort()
 
-      // Buscar conversación existente
       const { data: existing } = await supabase
         .from('conversations')
         .select('id')
@@ -17,7 +16,6 @@ export function useGetOrCreateConversation(userId: string) {
 
       if (existing) return existing.id
 
-      // Crear nueva conversación
       const { data: created, error } = await supabase
         .from('conversations')
         .insert({ user_a: a, user_b: b })
@@ -25,7 +23,6 @@ export function useGetOrCreateConversation(userId: string) {
         .single()
       if (error) throw error
 
-      // Crear participation rows para ambos usuarios
       await supabase
         .from('conversation_participants')
         .insert([

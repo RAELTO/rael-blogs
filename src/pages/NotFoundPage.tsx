@@ -18,7 +18,7 @@ export default function NotFoundPage() {
           Esta página no existe o fue eliminada.
         </div>
         <Link to="/" className="btn btn-primary">
-          ⌂ Volver al feed
+          ⌂ Back to feed
         </Link>
       </div>
     </AppShell>

@@ -19,7 +19,6 @@ const SELECT = `
   addressee:profiles!contact_requests_addressee_id_fkey(id, username, display_name, avatar_url)
 `
 
-// Solicitudes recibidas — el usuario es el destinatario
 export function useIncomingRequests(userId: string | undefined) {
   return useQuery({
     queryKey: ['contact-requests', 'incoming', userId],
@@ -39,7 +38,6 @@ export function useIncomingRequests(userId: string | undefined) {
   })
 }
 
-// Solicitudes enviadas — el usuario es el remitente
 export function useOutgoingRequests(userId: string | undefined) {
   return useQuery({
     queryKey: ['contact-requests', 'outgoing', userId],
@@ -59,13 +57,13 @@ export function useOutgoingRequests(userId: string | undefined) {
   })
 }
 
-// Estado entre dos usuarios: none | pending_sent | pending_received | contacts
 export function useContactStatus(userId: string | undefined, otherId: string | undefined) {
   return useQuery({
     queryKey: ['contact-status', userId, otherId],
     queryFn: async () => {
       if (!userId || !otherId) return 'none' as const
 
+      const [userA, userB] = [userId, otherId].sort()
       const [reqRes, contactRes] = await Promise.all([
         supabase
           .from('contact_requests')
@@ -76,17 +74,17 @@ export function useContactStatus(userId: string | undefined, otherId: string | u
         supabase
           .from('contacts')
           .select('user_a')
-          .or(`and(user_a.eq.${[userId, otherId].sort()[0]},user_b.eq.${[userId, otherId].sort()[1]})`)
+          .or(`and(user_a.eq.${userA},user_b.eq.${userB})`)
           .maybeSingle(),
       ])
 
       if (contactRes.data) return 'contacts' as const
-      if (!reqRes.data)    return 'none' as const
+      if (!reqRes.data) return 'none' as const
 
       const req = reqRes.data
-      if (req.status === 'accepted')          return 'contacts' as const
-      if (req.status === 'declined')          return 'none' as const
-      if (req.requester_id === userId)        return 'pending_sent' as const
+      if (req.status === 'accepted') return 'contacts' as const
+      if (req.status === 'declined') return 'none' as const
+      if (req.requester_id === userId) return 'pending_sent' as const
       return 'pending_received' as const
     },
     enabled: !!userId && !!otherId,

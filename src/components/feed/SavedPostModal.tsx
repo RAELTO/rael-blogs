@@ -108,7 +108,7 @@ function CompactSavedBox({ box }: { box: BoxWithAuthor }) {
         <div className="saved-modal-media">
           {(payload as MediaPayload).kind === 'image'
             ? <img src={(payload as MediaPayload).url} alt={(payload as MediaPayload).caption ?? ''} />
-            : <iframe src={(payload as MediaPayload).url} title="Saved media" allowFullScreen />
+            : <iframe src={(payload as MediaPayload).url} title="Saved media" allowFullScreen sandbox="allow-scripts allow-same-origin allow-presentation" />
           }
         </div>
       )}
@@ -125,8 +125,8 @@ function CompactSavedBox({ box }: { box: BoxWithAuthor }) {
 
       {box.type === 'poll' && (payload as PollPayload)?.options && (
         <div className="saved-modal-list">
-          {(payload as PollPayload).options.slice(0, 4).map((option, index) => (
-            <span key={`${option.text}-${index}`}>{option.text}</span>
+          {(payload as PollPayload).options.slice(0, 4).map((option) => (
+            <span key={option.text}>{option.text}</span>
           ))}
         </div>
       )}
@@ -134,7 +134,7 @@ function CompactSavedBox({ box }: { box: BoxWithAuthor }) {
       {box.type === 'thread' && (payload as ThreadPayload)?.items && (
         <div className="saved-modal-list">
           {(payload as ThreadPayload).items.slice(0, 4).map((item, index) => (
-            <span key={`${item}-${index}`}>{index + 1}. {item}</span>
+            <span key={item || String(index)}>{index + 1}. {item}</span>
           ))}
         </div>
       )}
@@ -226,7 +226,8 @@ export default function SavedPostModal({ box, onClose }: Props) {
                     type="button"
                     title="Like"
                     onClick={() => handleVote('like')}
-                    style={{ display: 'flex', alignItems: 'center', gap: 3, background: myVote === 'like' ? 'var(--accent-4)' : 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--ink)' }}
+                    className="saved-vote-btn"
+                    style={{ background: myVote === 'like' ? 'var(--accent-4)' : 'none' }}
                   >
                     <ThumbsUp size={12} strokeWidth={2.5} style={{ color: myVote === 'like' ? 'var(--ink)' : 'var(--accent-4)' }} />
                     {likeCount > 0 && likeCount}
@@ -235,7 +236,11 @@ export default function SavedPostModal({ box, onClose }: Props) {
                     type="button"
                     title="Dislike"
                     onClick={() => handleVote('dislike')}
-                    style={{ display: 'flex', alignItems: 'center', gap: 3, background: myVote === 'dislike' ? 'var(--accent-1)' : 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)', color: myVote === 'dislike' ? 'var(--bg-panel)' : 'var(--ink)' }}
+                    className="saved-vote-btn"
+                    style={{
+                      background: myVote === 'dislike' ? 'var(--accent-1)' : 'none',
+                      color: myVote === 'dislike' ? 'var(--bg-panel)' : 'var(--ink)',
+                    }}
                   >
                     <ThumbsDown size={12} strokeWidth={2.5} style={{ color: myVote === 'dislike' ? 'var(--bg-panel)' : 'var(--accent-1)' }} />
                     {dislikeCount > 0 && dislikeCount}
@@ -245,15 +250,21 @@ export default function SavedPostModal({ box, onClose }: Props) {
                       ref={reactBtnRef}
                       type="button"
                       onClick={() => setReactOpen(o => !o)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: activeReaction ? 16 : 11, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--ink)', padding: '2px 4px' }}
+                      className="saved-react-trigger-btn"
+                      style={{ fontSize: activeReaction ? 16 : 11 }}
                     >
                       {activeReaction ? activeReaction.emoji : 'React'}
                     </button>
                     {reactOpen && (
-                      <div style={{ position: 'absolute', bottom: 'calc(100% + 4px)', left: 0, zIndex: 10300, display: 'flex', gap: 4, padding: '6px 8px', background: 'var(--bg-panel)', border: '2px solid var(--ink)', boxShadow: '4px 4px 0 var(--ink)' }}>
+                      <div className="saved-react-popover">
                         {REACTIONS.map(r => (
-                          <button key={r.type} type="button" title={r.label} onClick={() => handleReact(r.type)}
-                            style={{ width: 34, height: 34, border: '2px solid var(--ink)', background: myReaction === r.type ? 'var(--accent-2)' : 'var(--bg-panel)', cursor: 'pointer', fontSize: 17, boxShadow: '2px 2px 0 var(--ink)' }}>
+                          <button
+                            key={r.type}
+                            type="button"
+                            title={r.label}
+                            onClick={() => handleReact(r.type)}
+                            className={`saved-react-option${myReaction === r.type ? ' active' : ''}`}
+                          >
                             {r.emoji}
                           </button>
                         ))}
@@ -267,14 +278,14 @@ export default function SavedPostModal({ box, onClose }: Props) {
               <button
                 type="button"
                 onClick={() => setBoxActivityOpen(true)}
-                style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--ink)', padding: '2px 6px' }}
+                className="saved-activity-btn"
               >
                 Activity · {totalActivity}
               </button>
             </div>
 
             <div ref={listRef} className="saved-post-comments">
-              {isLoading && <div className="saved-post-empty">Loading comments...</div>}
+              {isLoading && <div className="saved-post-empty">Loading comments…</div>}
               {!isLoading && comments.length === 0 && <div className="saved-post-empty">No comments yet.</div>}
               {comments.map(comment => (
                 <CommentItem

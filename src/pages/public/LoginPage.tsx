@@ -39,19 +39,19 @@ export default function LoginPage() {
     setValidationError('')
 
     if (!email.trim() || !password) {
-      setValidationError('Introduce correo y contraseña para entrar.')
+      setValidationError('Enter your email and password to sign in.')
       return
     }
     if (mode === 'register' && !displayName.trim()) {
-      setValidationError('El nombre es obligatorio.')
+      setValidationError('Name is required.')
       return
     }
     if (mode === 'register' && !username.trim()) {
-      setValidationError('El nombre de usuario es obligatorio.')
+      setValidationError('Username is required.')
       return
     }
     if (mode === 'register' && !pwValid) {
-      setValidationError('La contraseña no cumple los requisitos de seguridad.')
+      setValidationError("Password doesn't meet the security requirements.")
       return
     }
 
@@ -59,7 +59,7 @@ export default function LoginPage() {
 
     if (mode === 'login') {
       const ok = await signIn(email, password)
-      if (ok) { toast('Bienvenido de vuelta'); navigate(next, { replace: true }) }
+      if (ok) { toast('Welcome back'); navigate(next, { replace: true }) }
     } else {
       const ok = await signUp(email, password, displayName, username)
       if (ok) { navigate(`/check-email?email=${encodeURIComponent(email)}`) }
@@ -80,7 +80,7 @@ export default function LoginPage() {
 
   const handleForgot = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email.trim()) { setValidationError('Introduce tu correo.'); return }
+    if (!email.trim()) { setValidationError('Enter your email.'); return }
     setValidationError('')
     await sendRecovery(email)
   }
@@ -101,9 +101,8 @@ export default function LoginPage() {
             <span>NBOX</span>
           </NavLink>
         </div>
-        <div className="auth-subtitle">▸ Neo Brutal Box · Post bold. Drop loud.</div>
+        <div className="auth-subtitle">&gt; Neo Brutal Box - Post bold. Drop loud.</div>
 
-        {/* Tabs — ocultas en modo forgot */}
         {mode !== 'forgot' && (
           <div className="auth-tabs">
             <button
@@ -111,28 +110,26 @@ export default function LoginPage() {
               className={`auth-tab ${mode === 'login' ? 'active' : ''}`}
               onClick={() => handleModeChange('login')}
             >
-              Iniciar sesión
+              Sign in
             </button>
             <button
               type="button"
               className={`auth-tab ${mode === 'register' ? 'active' : ''}`}
               onClick={() => handleModeChange('register')}
             >
-              Crear cuenta
+              Create account
             </button>
           </div>
         )}
 
-        {/* ── Modo forgot ── */}
         {mode === 'forgot' && (
           recoverySent ? (
             <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-              <div style={{ fontSize: 40, marginBottom: 12 }}>✉</div>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, marginBottom: 10 }}>
-                Revisa tu correo
+                Check your email
               </div>
               <p style={{ fontSize: 13, color: 'var(--ink-dim)', lineHeight: 1.6, marginBottom: 20 }}>
-                Si existe una cuenta con ese correo, te enviaremos un enlace para restablecer tu contraseña.
+                If an account exists with that email, we will send you a password reset link.
               </p>
               <button
                 type="button"
@@ -140,27 +137,27 @@ export default function LoginPage() {
                 style={{ width: '100%', justifyContent: 'center' }}
                 onClick={() => handleModeChange('login')}
               >
-                <ArrowLeft size={14} strokeWidth={2.5} /> Volver al inicio de sesión
+                <ArrowLeft size={14} strokeWidth={2.5} /> Back to sign in
               </button>
             </div>
           ) : (
             <form onSubmit={handleForgot}>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: 20, marginBottom: 16, letterSpacing: '-0.01em' }}>
-                Recuperar contraseña
+                Reset password
               </div>
               <div className="field-group">
-                <label className="field-label">Correo</label>
+                <label className="field-label">Email</label>
                 <input
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  placeholder="tu@correo.com"
+                  placeholder="you@email.com"
                   autoFocus
                 />
               </div>
               {validationError && (
                 <div style={{ color: 'var(--accent-1)', fontSize: 12, marginBottom: 14, fontWeight: 700 }}>
-                  ⚠ {validationError}
+                  ! {validationError}
                 </div>
               )}
               <button
@@ -169,7 +166,7 @@ export default function LoginPage() {
                 style={{ width: '100%', justifyContent: 'center', marginBottom: 12 }}
                 disabled={loading}
               >
-                {loading ? '...' : <><Mail size={15} strokeWidth={2.5} /> Enviar enlace</>}
+                {loading ? '...' : <><Mail size={15} strokeWidth={2.5} /> Send link</>}
               </button>
               <button
                 type="button"
@@ -177,18 +174,17 @@ export default function LoginPage() {
                 style={{ width: '100%', justifyContent: 'center', fontSize: 13 }}
                 onClick={() => handleModeChange('login')}
               >
-                <ArrowLeft size={14} strokeWidth={2.5} /> Volver al inicio de sesión
+                <ArrowLeft size={14} strokeWidth={2.5} /> Back to sign in
               </button>
             </form>
           )
         )}
 
-        {/* ── Modo login / register ── */}
         <form onSubmit={handleSubmit} style={{ display: mode === 'forgot' ? 'none' : undefined }}>
           {mode === 'register' && (
             <>
               <div className="field-group">
-                <label className="field-label">Nombre</label>
+                <label className="field-label">Name</label>
                 <input
                   value={displayName}
                   onChange={e => setDisplayName(e.target.value)}
@@ -196,7 +192,7 @@ export default function LoginPage() {
                 />
               </div>
               <div className="field-group">
-                <label className="field-label">Usuario</label>
+                <label className="field-label">Username</label>
                 <input
                   value={username}
                   onChange={e => setUsername(e.target.value.toLowerCase().replace(/\s+/g, '_'))}
@@ -207,7 +203,7 @@ export default function LoginPage() {
           )}
 
           <div className="field-group">
-            <label className="field-label">Correo</label>
+            <label className="field-label">Email</label>
             <input
               type="email"
               value={email}
@@ -218,14 +214,14 @@ export default function LoginPage() {
 
           <div className="field-group">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
-              <label className="field-label" style={{ margin: 0 }}>Contraseña</label>
+              <label className="field-label" style={{ margin: 0 }}>Password</label>
               {mode === 'login' && (
                 <button
                   type="button"
                   onClick={() => handleModeChange('forgot')}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', textDecoration: 'underline', padding: 0 }}
                 >
-                  ¿Olvidaste tu contraseña?
+                  Forgot your password?
                 </button>
               )}
             </div>
@@ -233,14 +229,14 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="********"
             />
             {mode === 'register' && password.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
                 {([
-                  [pwRules.length,  '8 caracteres mínimo'],
-                  [pwRules.upper,   'Una mayúscula'],
-                  [pwRules.special, 'Un carácter especial (!@#$…)'],
+                  [pwRules.length,  '8 characters minimum'],
+                  [pwRules.upper,   'One uppercase letter'],
+                  [pwRules.special, 'One special character (!@#$...)'],
                 ] as [boolean, string][]).map(([ok, label]) => (
                   <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{
@@ -252,7 +248,7 @@ export default function LoginPage() {
                       fontSize: 10, fontWeight: 900, color: 'var(--ink)',
                       lineHeight: 1,
                     }}>
-                      {ok ? '✓' : '✕'}
+                      {ok ? 'OK' : 'X'}
                     </span>
                     <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: ok ? 'var(--ink)' : 'var(--ink-mute)' }}>
                       {label}
@@ -265,7 +261,7 @@ export default function LoginPage() {
 
           {error && (
             <div style={{ color: 'var(--accent-1)', fontSize: 12, marginBottom: 14, fontWeight: 700 }}>
-              ⚠ {error}
+              ! {error}
             </div>
           )}
 
@@ -276,19 +272,20 @@ export default function LoginPage() {
             disabled={loading}
           >
             {loading ? '...' : mode === 'login'
-              ? <><LogIn size={16} strokeWidth={2.5} /> Entrar al feed</>
-              : <><UserPlus size={16} strokeWidth={2.5} /> Crear cuenta</>}
+              ? <><LogIn size={16} strokeWidth={2.5} /> Go to feed</>
+              : <><UserPlus size={16} strokeWidth={2.5} /> Create account</>}
           </button>
 
           <div style={{ textAlign: 'center', marginTop: 18, fontSize: 11, color: 'var(--ink-mute)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-            {mode === 'login' ? '¿Nuevo por aquí?' : '¿Ya tienes cuenta?'}
+            {mode === 'login' ? 'New here?' : 'Already have an account?'}
             {' '}
-            <a
-              style={{ cursor: 'pointer' }}
+            <button
+              type="button"
+              className="link-btn"
               onClick={() => handleModeChange(mode === 'login' ? 'register' : 'login')}
             >
-              {mode === 'login' ? 'Regístrate' : 'Inicia sesión'}
-            </a>
+              {mode === 'login' ? 'Sign up' : 'Sign in'}
+            </button>
           </div>
         </form>
       </div>

@@ -7,19 +7,18 @@ import { useFloatingChat } from '../../features/chat/FloatingChatContext'
 import { useToast } from '../ui/Toast'
 
 /**
- * Escucha cambios en las conversaciones via Realtime.
- * Cuando llega un mensaje nuevo de otro usuario, abre el chat flotante.
+ * Listens for conversation changes through Realtime.
+ * When a new message arrives from another user, it opens the floating chat.
  */
 export default function MessageNotifier() {
-  const { user }              = useAuth()
-  const qc                    = useQueryClient()
-  const { data: convs = [] }  = useConversations(user?.id)
-  const { chats, openChat }   = useFloatingChat()
-  const toast                 = useToast()
-  const prevRef               = useRef<ConversationRow[]>([])
-  const initializedRef        = useRef(false)
+  const { user } = useAuth()
+  const qc = useQueryClient()
+  const { data: convs = [] } = useConversations(user?.id)
+  const { chats, openChat } = useFloatingChat()
+  const toast = useToast()
+  const prevRef = useRef<ConversationRow[]>([])
+  const initializedRef = useRef(false)
 
-  // Realtime único — solo en MessageNotifier, evita conflicto de canales
   useEffect(() => {
     if (!user?.id) return
     const channel = supabase
@@ -38,7 +37,6 @@ export default function MessageNotifier() {
   useEffect(() => {
     if (!user || convs.length === 0) return
 
-    // Primera carga — solo guardar snapshot, no abrir nada
     if (!initializedRef.current) {
       prevRef.current = convs
       initializedRef.current = true
@@ -46,26 +44,26 @@ export default function MessageNotifier() {
     }
 
     const prev = prevRef.current
+    const prevMap = new Map(prev.map(c => [c.id, c]))
 
     for (const conv of convs) {
-      const prevConv = prev.find(c => c.id === conv.id)
+      const prevConv = prevMap.get(conv.id)
 
       const isNewMessage = !prevConv
         ? conv.has_unread
         : conv.last_message_at !== prevConv.last_message_at && conv.has_unread
 
-      if (isNewMessage) {
-        toast(`💬 Nuevo mensaje de ${conv.other.display_name}`, 4000)
-        // En móvil solo mostramos el toast — el panel flotante no está disponible
+      if (isNewMessage && conv.last_message_sender_id !== user.id) {
+        toast(`New message from ${conv.other.display_name}`, 4000)
         if (window.innerWidth > 760) {
           const alreadyOpen = chats.some(c => c.conversationId === conv.id)
           if (!alreadyOpen) {
             openChat({
               conversationId: conv.id,
-              otherId:        conv.other.id,
-              otherName:      conv.other.display_name,
-              otherUsername:  conv.other.username,
-              otherAvatar:    conv.other.avatar_url,
+              otherId: conv.other.id,
+              otherName: conv.other.display_name,
+              otherUsername: conv.other.username,
+              otherAvatar: conv.other.avatar_url,
             })
           }
         }

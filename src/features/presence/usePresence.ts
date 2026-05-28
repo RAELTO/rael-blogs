@@ -17,7 +17,7 @@ const OFFLINE_DOT = '#ff5a5f'
 function active(): PresenceInfo {
   return {
     status: 'active',
-    label: '● ACTIVO',
+    label: 'ACTIVE',
     color: 'var(--accent-4)',
     dotColor: ACTIVE_DOT,
   }
@@ -53,12 +53,11 @@ function compute(
   const diff = Date.now() - new Date(lastSeen).getTime()
   const min = Math.floor(diff / 60_000)
 
-  // While Realtime is connecting, keep the old DB heartbeat behavior as fallback.
   if (!realtimeReady && min < 3) return active()
-  if (min < 60) return away(`● hace ${Math.max(1, min)}m`)
+  if (min < 60) return away(`${Math.max(1, min)}m ago`)
 
   const h = Math.floor(min / 60)
-  if (h < 24) return away(`● hace ${h}h`)
+  if (h < 24) return away(`${h}h ago`)
 
   return offline()
 }
@@ -87,7 +86,7 @@ export function usePresence(userId: string | undefined): PresenceInfo {
 
 export function usePresenceMap(userIds: string[]): Record<string, PresenceInfo> {
   const realtime = useRealtimePresenceState()
-  const key = [...userIds].sort().join(',')
+  const key = userIds.toSorted().join(',')
   const { data } = useQuery({
     queryKey: ['presence-map', key],
     queryFn: async () => {

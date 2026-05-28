@@ -24,8 +24,8 @@ export default function UserProfilePage() {
 
   function handleDelete(id: string) {
     deleteBox.mutate(id, {
-      onSuccess: () => toast('Box eliminada.'),
-      onError:   () => toast('Error al eliminar.'),
+      onSuccess: () => toast('Box deleted.'),
+      onError: () => toast('Failed to delete.'),
     })
   }
 
@@ -34,7 +34,7 @@ export default function UserProfilePage() {
       {loadingProfile ? (
         <div className="spinner">
           <div className="spinner-ring" />
-          <span className="spinner-label">▒ cargando perfil...</span>
+          <span className="spinner-label">loading profile...</span>
         </div>
       ) : !profile ? (
         <div className="panel" style={{ padding: 40, textAlign: 'center' }}>
@@ -42,7 +42,7 @@ export default function UserProfilePage() {
             User not found
           </div>
           <div className="text-mute text-sm" style={{ fontFamily: 'var(--font-mono)' }}>
-            @{username} doesn’t exist on NBOX.
+            @{username} does not exist on NBOX.
           </div>
         </div>
       ) : profile.is_banned ? (
@@ -88,12 +88,12 @@ export default function UserProfilePage() {
             </div>
           )}
 
-          <h2 className="section-title" style={{ marginBottom: 16 }}>▸ Drops</h2>
+          <h2 className="section-title" style={{ marginBottom: 16 }}>Drops</h2>
 
           {loadingBoxes && (
             <div className="spinner">
               <div className="spinner-ring" />
-              <span className="spinner-label">▒ loading drops...</span>
+              <span className="spinner-label">loading drops...</span>
             </div>
           )}
 
@@ -103,7 +103,7 @@ export default function UserProfilePage() {
                 No drops yet
               </div>
               <div className="text-mute text-sm" style={{ fontFamily: 'var(--font-mono)' }}>
-                {isOwn ? 'Drop your first box from the feed.' : 'This user hasn’t dropped anything yet.'}
+                {isOwn ? 'Drop your first box from the feed.' : 'This user has not dropped anything yet.'}
               </div>
             </div>
           )}

@@ -29,15 +29,15 @@ function useBoxesByTag(slug: string) {
           )
         `)
         .eq('tag_id', tagRow.id)
-      return (data ?? [])
-        .map(row => row.box)
-        .filter(Boolean)
-        .filter((b: Record<string, unknown>) => b.status === 'published')
-        .map((b: Record<string, unknown>) => ({
+      return (data ?? []).flatMap(row => {
+        const b = row.box as Record<string, unknown> | null
+        if (!b || b.status !== 'published') return []
+        return [{
           ...b,
           reaction_count: ((b.reaction_count as { count: number }[] | null)?.[0]?.count) ?? 0,
-          comment_count:  ((b.comment_count  as { count: number }[] | null)?.[0]?.count) ?? 0,
-        })) as BoxWithAuthor[]
+          comment_count: ((b.comment_count as { count: number }[] | null)?.[0]?.count) ?? 0,
+        }]
+      }) as BoxWithAuthor[]
     },
     enabled: !!slug,
   })
@@ -51,7 +51,7 @@ export default function TagPage() {
     <AppShell left={<LeftSidebar />} right={<RightSidebar />}>
       <div style={{ marginBottom: 20 }}>
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink-mute)', marginBottom: 8 }}>
-          ▓ tag
+          tag
         </div>
         <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 40, margin: 0, letterSpacing: '-0.02em', lineHeight: 1 }}>
           <span style={{ background: 'var(--accent-3)', border: 'var(--border)', padding: '0 12px', boxShadow: 'var(--shadow)', display: 'inline-block' }}>
@@ -63,14 +63,14 @@ export default function TagPage() {
       {isLoading && (
         <div className="spinner">
           <div className="spinner-ring" />
-          <span className="spinner-label">▒ cargando...</span>
+          <span className="spinner-label">loading...</span>
         </div>
       )}
 
       {!isLoading && boxes.length === 0 && (
         <div className="panel" style={{ padding: 40, textAlign: 'center' }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: 22 }}>Sin boxes con este tag</div>
-          <div className="text-mute text-sm mt-2">Nadie ha dropeado nada con #{slug} todavía.</div>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: 22 }}>No boxes with this tag</div>
+          <div className="text-mute text-sm mt-2">No one has dropped anything with #{slug} yet.</div>
         </div>
       )}
 

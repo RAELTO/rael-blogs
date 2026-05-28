@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
@@ -22,14 +22,14 @@ export default function BoxPage() {
   function handleDelete(boxId: string) {
     deleteBox.mutate(boxId, {
       onSuccess: () => toast('Box eliminada.'),
-      onError:   () => toast('Error al eliminar.'),
+      onError:   () => toast('Failed to delete.'),
     })
   }
 
   return (
     <>
       <AppShell left={<LeftSidebar />} right={<RightSidebar />}>
-        {/* Back nav — solo para usuarios logueados */}
+        {/* Back nav only for signed-in users */}
         {user && (
           <div style={{ padding: '12px 0 4px' }}>
             <Link
@@ -41,7 +41,7 @@ export default function BoxPage() {
                 textDecoration: 'none',
               }}
             >
-              <ArrowLeft size={14} strokeWidth={2.5} /> Volver al feed
+              <ArrowLeft size={14} strokeWidth={2.5} /> Back to feed
             </Link>
           </div>
         )}
@@ -49,13 +49,13 @@ export default function BoxPage() {
         {isLoading && (
           <div className="spinner">
             <div className="spinner-ring" />
-            <span className="spinner-label">▒ cargando drop...</span>
+            <span className="spinner-label">â–’ loading drop...</span>
           </div>
         )}
 
         {isError && (
           <div className="panel" style={{ padding: 40, textAlign: 'center', color: 'var(--accent-1)', fontWeight: 700 }}>
-            ⚠ Drop no encontrado.
+            âš  Drop no encontrado.
           </div>
         )}
 
@@ -68,7 +68,7 @@ export default function BoxPage() {
 
         {/* Open comments button if user closed the modal */}
         {box && !commentsOpen && (
-          <button
+          <button type="button"
             onClick={() => setCommentsOpen(true)}
             style={{
               width: '100%', padding: '12px', border: '2px solid var(--ink)',
