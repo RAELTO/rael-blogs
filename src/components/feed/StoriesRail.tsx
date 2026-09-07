@@ -18,10 +18,10 @@ export default function StoriesRail({ onCreateStory }: StoriesRailProps) {
   return (
     <div className="stories">
       {/* Create story slot — uses gif-shake animation */}
-      <div className="story story-create" onClick={onCreateStory} title="Create story">
+      <button type="button" className="story story-create" onClick={onCreateStory} title="Create story">
         <div className="story-create-plus">+</div>
         <div className="story-name">New</div>
-      </div>
+      </button>
 
       {STUB_NAMES.map((name, i) => (
         <div

@@ -68,7 +68,7 @@ export default function ProfilePage() {
       {isLoading ? (
         <div className="spinner">
           <div className="spinner-ring" />
-          <span className="spinner-label">▒ loading profile...</span>
+          <span className="spinner-label">▒ Loading profile…</span>
         </div>
       ) : (
         <>
@@ -111,7 +111,7 @@ export default function ProfilePage() {
 
                   <div className="field-group">
                     <label className="field-label" htmlFor="profile-bio">Bio</label>
-                    <textarea id="profile-bio" rows={3} {...register('bio')} placeholder="Tell the world who you are...…" />
+                    <textarea id="profile-bio" rows={3} {...register('bio')} placeholder="Tell the world who you are…" />
                     {errors.bio && <p style={{ color: 'var(--accent-1)', fontSize: 12, marginTop: 4 }}>{errors.bio.message}</p>}
                   </div>
 
@@ -121,7 +121,7 @@ export default function ProfilePage() {
                       className="btn btn-primary"
                       disabled={uploading || updateProfile.isPending}
                     >
-                      {uploading || updateProfile.isPending ? '▒ saving...' : '✓ Save'}
+                      {uploading || updateProfile.isPending ? '▒ Saving…' : '✓ Save'}
                     </button>
                   </div>
                 </div>

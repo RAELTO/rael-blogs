@@ -34,7 +34,7 @@ export default function UserProfilePage() {
       {loadingProfile ? (
         <div className="spinner">
           <div className="spinner-ring" />
-          <span className="spinner-label">loading profile...</span>
+          <span className="spinner-label">Loading profile…</span>
         </div>
       ) : !profile ? (
         <div className="panel" style={{ padding: 40, textAlign: 'center' }}>
@@ -81,7 +81,7 @@ export default function UserProfilePage() {
 
           {profile.bio && (
             <div className="panel" style={{ padding: 20, marginBottom: 16 }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--ink-mute)', marginBottom: 6 }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--ink-mute)', marginBottom: 6 }}>
                 Bio
               </div>
               <p style={{ margin: 0, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{profile.bio}</p>
@@ -93,7 +93,7 @@ export default function UserProfilePage() {
           {loadingBoxes && (
             <div className="spinner">
               <div className="spinner-ring" />
-              <span className="spinner-label">loading drops...</span>
+              <span className="spinner-label">Loading drops…</span>
             </div>
           )}
 

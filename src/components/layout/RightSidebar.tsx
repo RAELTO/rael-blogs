@@ -76,13 +76,13 @@ export default function RightSidebar() {
     <>
       {/* Trending tags */}
       <div className="panel mb-4" style={{ padding: 14 }}>
-        <div className="uppercase mb-3" style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+        <div className="uppercase mb-3" style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
           🔥 Loud This Week
         </div>
         {(tags ?? []).map(t => (
           <NavLink key={t.id} to={`/tag/${t.slug}`} className="trending-tag-item">
             <span style={{ fontFamily: 'var(--font-display)', fontSize: 14 }}>#{t.name}</span>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color: 'var(--ink-mute)' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700, color: 'var(--ink-mute)' }}>
               {NumFmt(t.count)}
             </span>
           </NavLink>
@@ -95,7 +95,7 @@ export default function RightSidebar() {
       {/* Suggestions and Contacts only for signed-in users */}
       {user && visibleSuggestions.length > 0 && (
         <div className="panel mb-4" style={{ padding: 14 }}>
-          <div className="uppercase mb-3" style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+          <div className="uppercase mb-3" style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
             Suggestions
           </div>
           <div style={{ maxHeight: 180, overflowY: 'auto', marginRight: -6, paddingRight: 6 }}>
@@ -160,36 +160,17 @@ export default function RightSidebar() {
       {/* Contacts — datos reales, solo logueados */}
       {user && realContacts.length > 0 && (
         <div className="panel" style={{ padding: 14 }}>
-          <div className="uppercase mb-3" style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+          <div className="uppercase mb-3" style={{ fontFamily: 'var(--font-mono)', fontSize: 12 }}>
             Contacts
           </div>
           <div style={{ maxHeight: 168, overflowY: 'auto', marginRight: -6, paddingRight: 6 }}>
             {realContacts.map((c, i) => (
               <div
                 key={c.user_a + c.user_b}
-                className="row gap-3 mb-3"
-                style={{ cursor: 'pointer', padding: '4px 6px', borderRadius: 0, transition: 'background .1s, transform .1s, box-shadow .1s' }}
-                onClick={() => handleOpenChat(c.other.id, c.other.display_name, c.other.username, c.other.avatar_url)}
-                onMouseEnter={e => {
-                  const el = e.currentTarget as HTMLDivElement
-                  Object.assign(el.style, {
-                    background: 'var(--accent-2)',
-                    transform: 'translate(-1px, -1px)',
-                    boxShadow: '3px 3px 0 var(--ink)',
-                  })
-                }}
-                onMouseLeave={e => {
-                  const el = e.currentTarget as HTMLDivElement
-                  Object.assign(el.style, {
-                    background: '',
-                    transform: '',
-                    boxShadow: '',
-                  })
-                }}
+                className="row gap-3 mb-3 sidebar-contact-row"
               >
                 <Link
                   to={`/profile/${c.other.username}`}
-                  onClick={e => e.stopPropagation()}
                   title={`View profile for ${c.other.display_name}`}
                   style={{ position: 'relative', flexShrink: 0, display: 'block', textDecoration: 'none' }}
                 >
@@ -206,16 +187,21 @@ export default function RightSidebar() {
                     }} />
                   )}
                 </Link>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <button
+                  type="button"
+                  className="sidebar-contact-open"
+                  onClick={() => handleOpenChat(c.other.id, c.other.display_name, c.other.username, c.other.avatar_url)}
+                  aria-label={`Open chat with ${c.other.display_name}`}
+                >
+                  <span className="sidebar-contact-name">
                     {c.other.display_name}
-                  </div>
+                  </span>
                   {presenceMap[c.other.id]?.label && (
-                    <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: presenceMap[c.other.id].color, letterSpacing: '.03em' }}>
+                    <span className="sidebar-contact-presence" style={{ color: presenceMap[c.other.id].color }}>
                       {presenceMap[c.other.id].label}
-                    </div>
+                    </span>
                   )}
-                </div>
+                </button>
               </div>
             ))}
           </div>

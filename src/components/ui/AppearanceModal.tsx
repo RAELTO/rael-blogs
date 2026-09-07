@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { PALETTES, loadTweaks, saveTweaks, type Tweaks } from './tweaks'
+import { useDialogAccessibility } from './useDialogAccessibility'
 
 interface AppearanceModalProps {
   onClose: () => void
@@ -12,6 +13,7 @@ export default function AppearanceModal({ onClose, anchorRef }: AppearanceModalP
   const [tweaks, setTweaks] = useState<Tweaks>(loadTweaks)
   const [position, setPosition] = useState({ top: 0, left: 0 })
   const modalRef = useRef<HTMLDivElement>(null)
+  useDialogAccessibility({ dialogRef: modalRef, onClose, restoreFocusRef: anchorRef })
 
   useLayoutEffect(() => {
     const rect = anchorRef?.current?.getBoundingClientRect()
@@ -58,6 +60,10 @@ export default function AppearanceModal({ onClose, anchorRef }: AppearanceModalP
   return createPortal(
     <div
       ref={modalRef}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="appearance-dialog-title"
+      tabIndex={-1}
       style={{
         position: 'fixed',
         top: position.top,
@@ -72,11 +78,12 @@ export default function AppearanceModal({ onClose, anchorRef }: AppearanceModalP
     >
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <span style={{ fontFamily: 'var(--font-display)', fontSize: 18, letterSpacing: '-0.01em' }}>
+        <span id="appearance-dialog-title" style={{ fontFamily: 'var(--font-display)', fontSize: 18, letterSpacing: '-0.01em' }}>
           Appearance
         </span>
         <button type="button"
           onClick={onClose}
+          aria-label="Close appearance dialog"
           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', color: 'var(--ink)' }}
         >
           <X size={18} strokeWidth={2.5} />
@@ -88,14 +95,16 @@ export default function AppearanceModal({ onClose, anchorRef }: AppearanceModalP
         <div className="field-label">Palette</div>
         <div className="swatch-row">
           {PALETTES.map(p => (
-            <div
+            <button
+              type="button"
               key={p.id}
               className={`swatch${tweaks.palette === p.id ? ' active' : ''}`}
-              title={p.label}
+              aria-label={`Use ${p.label} palette`}
+              aria-pressed={tweaks.palette === p.id}
               onClick={() => set({ palette: p.id })}
             >
               {p.colors.map(c => <span key={`${p.id}-${c}`} style={{ background: c }} />)}
-            </div>
+            </button>
           ))}
         </div>
         <div className="text-xs text-mute mt-2" style={{ textAlign: 'center' }}>

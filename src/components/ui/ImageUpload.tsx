@@ -67,7 +67,7 @@ export default function ImageUpload({ kind, currentUrl, onFile, uploading }: Ima
         disabled={uploading}
         style={{ width: '100%', justifyContent: 'center' }}
       >
-        {uploading ? 'uploading...' : displayUrl ? 'Change image' : 'Upload image'}
+        {uploading ? 'Uploading…' : displayUrl ? 'Change image' : 'Upload image'}
       </button>
 
       <div className="text-xs text-mute mt-3">

@@ -7,7 +7,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     tailwindcss(),
-    // Only generate bundle report when running: npm run analyze
+    // Only generate bundle report when running: pnpm run analyze
     mode === 'analyze' && visualizer({
       open: true,
       filename: 'dist/bundle-report.html',
@@ -16,4 +16,23 @@ export default defineConfig(({ mode }) => ({
       template: 'treemap',
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined
+          if (id.includes('/react/') || id.includes('/react-dom/')) return 'react-core'
+          if (id.includes('/react-router')) return 'react-router'
+          if (id.includes('/@tanstack/react-query/')) return 'react-query'
+          if (id.includes('/@supabase/')) return 'supabase'
+          if (
+            id.includes('/react-hook-form/')
+            || id.includes('/@hookform/resolvers/')
+            || id.includes('/zod/')
+          ) return 'forms'
+          return undefined
+        },
+      },
+    },
+  },
 }))

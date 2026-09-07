@@ -73,8 +73,8 @@ export function useUpdateProfile() {
         .eq('id', userId)
 
       if (error) {
-        if (error.code === '23505') throw new Error('Ese nombre de usuario ya está en uso.')
-        throw new Error('No se pudo actualizar el perfil.')
+        if (error.code === '23505') throw new Error('That username is already in use.')
+        throw new Error('Could not update your profile. Please try again.')
       }
     },
     onSuccess: (_data, { userId }) => {

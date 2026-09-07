@@ -1,0 +1,45 @@
+packages: []
+
+# Hold new releases for one week to reduce supply-chain risk.
+minimumReleaseAge: 10080
+minimumReleaseAgeStrict: true
+minimumReleaseAgeExclude:
+  # Corepack must bootstrap the exact package manager before pnpm can enforce
+  # this policy. Keep the exception version-pinned and include only pnpm's
+  # platform executables.
+  - "pnpm@12.3.4"
+  - "@pnpm/exe.darwin-arm64@12.3.4"
+  - "@pnpm/exe.darwin-x64@12.3.4"
+  - "@pnpm/exe.linux-arm64@12.3.4"
+  - "@pnpm/exe.linux-arm64-musl@12.3.4"
+  - "@pnpm/exe.linux-x64@12.3.4"
+  - "@pnpm/exe.linux-x64-musl@12.3.4"
+  - "@pnpm/exe.win32-arm64@12.3.4"
+  - "@pnpm/exe.win32-x64@12.3.4"
+  # Already reviewed and exercised by the project's browser test matrix.
+  - "@playwright/test@1.63.0"
+  - "playwright@1.63.0"
+  - "playwright-core@1.63.0"
+  - "@supabase/auth-js@2.115.0"
+  - "@supabase/functions-js@2.115.0"
+  - "@supabase/postgrest-js@2.115.0"
+  - "@supabase/realtime-js@2.115.0"
+  - "@supabase/storage-js@2.115.0"
+  - "@supabase/supabase-js@2.115.0"
+
+# Reject exotic transitive sources and unreviewed lifecycle scripts.
+blockExoticSubdeps: true
+strictDepBuilds: true
+allowBuilds:
+  esbuild: false
+
+# Refuse to run with stale dependencies or reduced provenance.
+verifyDepsBeforeRun: error
+trustPolicy: no-downgrade
+trustPolicyExclude:
+  # Known cross-major false positive: semver 6 predates provenance adoption in 7.x.
+  - semver@6.3.1
+
+# Keep dependency changes explicit and reproducible.
+saveExact: true
+engineStrict: true

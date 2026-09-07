@@ -69,7 +69,7 @@ export default function LeftSidebar() {
                 {profile?.display_name ?? user.email}
                 {isAdmin && <AdminBadge />}
               </div>
-              <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', letterSpacing: '.06em', textTransform: 'uppercase' }}>
+              <div style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', letterSpacing: '.06em', textTransform: 'uppercase' }}>
                 My Profile
               </div>
             </div>
@@ -142,32 +142,13 @@ export default function LeftSidebar() {
       {/* Panel Contacts — solo visible en tablet (821-1100px) via CSS */}
       {user && realContacts.length > 0 && (
         <div className="sidebar-tablet-contacts panel" style={{ padding: 14, marginTop: 16 }}>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 10 }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 10 }}>
             Contacts
           </div>
           {realContacts.map((c, i) => (
             <div
               key={c.user_a + c.user_b}
-              className="row gap-3 mb-3"
-              style={{ cursor: 'pointer', padding: '3px 4px', transition: 'background .1s, transform .1s, box-shadow .1s' }}
-              title={c.other.display_name}
-              onClick={() => handleContactChat(c.other.id, c.other.display_name, c.other.username, c.other.avatar_url)}
-              onMouseEnter={e => {
-                const el = e.currentTarget as HTMLDivElement
-                Object.assign(el.style, {
-                  background: 'var(--accent-2)',
-                  transform: 'translate(-1px, -1px)',
-                  boxShadow: '3px 3px 0 var(--ink)',
-                })
-              }}
-              onMouseLeave={e => {
-                const el = e.currentTarget as HTMLDivElement
-                Object.assign(el.style, {
-                  background: '',
-                  transform: '',
-                  boxShadow: '',
-                })
-              }}
+              className="tablet-contact-row row gap-3 mb-3"
             >
               <Link
                 to={`/profile/${c.other.username}`}
@@ -187,9 +168,14 @@ export default function LeftSidebar() {
                   }} />
                 )}
               </Link>
-              <div style={{ fontWeight: 700, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <button
+                type="button"
+                className="tablet-contact-chat"
+                title={`Chat with ${c.other.display_name}`}
+                onClick={() => handleContactChat(c.other.id, c.other.display_name, c.other.username, c.other.avatar_url)}
+              >
                 {c.other.display_name}
-              </div>
+              </button>
             </div>
           ))}
         </div>

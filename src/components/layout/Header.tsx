@@ -50,7 +50,7 @@ export default function Header({ onDropClick }: HeaderProps) {
     <header className="app-header">
       <div className="app-header-inner">
         {/* Brand */}
-        <NavLink to="/" className="brand-logo">
+        <NavLink to="/" className="brand-logo" aria-label="NBOX home">
           <span className="brand-mark">
             <NboxLogo style={{ width: 34, height: 34, display: 'block' }} />
           </span>
@@ -67,11 +67,14 @@ export default function Header({ onDropClick }: HeaderProps) {
             onChange={e => setSearch(e.target.value)}
             placeholder="Search NBOX"
             aria-label="Search"
+            name="search"
+            autoComplete="off"
+            spellCheck={false}
           />
         </form>
 
         {/* Center nav tabs — Inbox y Bell solo visibles si está logueado */}
-        <nav className="header-tabs" aria-label="Navegación">
+        <nav className="header-tabs" aria-label="Primary navigation">
           {NAV_TABS.flatMap(({ to, Icon, label, end, badge }) => {
             if (!user && Icon !== Home) return []
             if (Icon === Bell) {
@@ -81,6 +84,8 @@ export default function Header({ onDropClick }: HeaderProps) {
                   ref={bellRef}
                   className={`header-tab${notifOpen ? ' active' : ''}`}
                   title={label}
+                  aria-label={label}
+                  aria-expanded={notifOpen}
                   onClick={() => setNotifOpen(o => !o)}
                   style={{ position: 'relative' }}
                 >
@@ -96,6 +101,7 @@ export default function Header({ onDropClick }: HeaderProps) {
                 end={end}
                 className={({ isActive }) => `header-tab${isActive ? ' active' : ''}`}
                 title={label}
+                aria-label={label}
               >
                 <Icon size={22} strokeWidth={2.5} />
                 {!!badge && badge > 0 && <span className="badge">{badge}</span>}
@@ -107,6 +113,7 @@ export default function Header({ onDropClick }: HeaderProps) {
             <button type="button"
               className="header-tab header-mobile-btn"
               title="Search"
+              aria-label="Search"
               onClick={() => setSearchOpen(true)}
             >
               <Search size={22} strokeWidth={2.5} />
@@ -130,14 +137,16 @@ export default function Header({ onDropClick }: HeaderProps) {
                 ref={paletteRef}
                 className="btn btn-icon header-palette-btn"
                 title="Appearance"
+                aria-label="Appearance"
+                aria-expanded={paletteOpen}
                 onClick={() => setPaletteOpen(o => !o)}
               >
                 <Palette size={18} strokeWidth={2.5} />
               </button>
-              <button type="button" className="btn btn-icon btn-primary" title="Drop" onClick={onDropClick}>
+              <button type="button" className="btn btn-icon btn-primary" title="Create drop" aria-label="Create drop" onClick={onDropClick}>
                 <Plus size={20} strokeWidth={2.5} />
               </button>
-              <NavLink to="/my-box" className="header-avatar" title="My Profile">
+              <NavLink to="/my-box" className="header-avatar" title="My Profile" aria-label="My Profile">
                 <Avatar
                   name={profile?.display_name ?? user.email ?? 'U'}
                   size="sm"

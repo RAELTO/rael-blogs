@@ -20,4 +20,12 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    files: ['tests/e2e/**/*.ts'],
+    rules: {
+      // Playwright 1.63 requires object destructuring in hook fixture arguments,
+      // even when a hook only consumes testInfo.
+      'no-empty-pattern': 'off',
+    },
+  },
 ])

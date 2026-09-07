@@ -167,7 +167,7 @@ export default function LoginPage() {
                 style={{ width: '100%', justifyContent: 'center', marginBottom: 12 }}
                 disabled={loading}
               >
-                {loading ? '...' : <><Mail size={15} strokeWidth={2.5} /> Send link</>}
+                {loading ? '…' : <><Mail size={15} strokeWidth={2.5} /> Send link</>}
               </button>
               <button
                 type="button"
@@ -223,7 +223,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => handleModeChange('forgot')}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', textDecoration: 'underline', padding: 0 }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', textDecoration: 'underline', padding: 0 }}
                 >
                   Forgot your password?
                 </button>
@@ -241,7 +241,7 @@ export default function LoginPage() {
                 {([
                   [pwRules.length,  '8 characters minimum'],
                   [pwRules.upper,   'One uppercase letter'],
-                  [pwRules.special, 'One special character (!@#$...)'],
+                  [pwRules.special, 'One special character (!@#$…)'],
                 ] as [boolean, string][]).map(([ok, label]) => (
                   <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{
@@ -250,12 +250,12 @@ export default function LoginPage() {
                       border: '2px solid var(--ink)',
                       boxShadow: '2px 2px 0 var(--ink)',
                       background: ok ? 'var(--accent-4)' : 'var(--accent-1)',
-                      fontSize: 10, fontWeight: 900, color: 'var(--ink)',
+                      fontSize: 12, fontWeight: 900, color: 'var(--ink)',
                       lineHeight: 1,
                     }}>
                       {ok ? 'OK' : 'X'}
                     </span>
-                    <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: ok ? 'var(--ink)' : 'var(--ink-mute)' }}>
+                    <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: ok ? 'var(--ink)' : 'var(--ink-mute)' }}>
                       {label}
                     </span>
                   </div>
@@ -276,12 +276,12 @@ export default function LoginPage() {
             style={{ width: '100%', justifyContent: 'center', marginTop: 6 }}
             disabled={loading}
           >
-            {loading ? '...' : mode === 'login'
+            {loading ? '…' : mode === 'login'
               ? <><LogIn size={16} strokeWidth={2.5} /> Go to feed</>
               : <><UserPlus size={16} strokeWidth={2.5} /> Create account</>}
           </button>
 
-          <div style={{ textAlign: 'center', marginTop: 18, fontSize: 11, color: 'var(--ink-mute)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+          <div style={{ textAlign: 'center', marginTop: 18, fontSize: 12, color: 'var(--ink-mute)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
             {mode === 'login' ? 'New here?' : 'Already have an account?'}
             {' '}
             <button

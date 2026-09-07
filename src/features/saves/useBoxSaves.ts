@@ -27,7 +27,7 @@ export interface SavedBoxItem {
   box: BoxWithAuthor
 }
 
-export function useIsBoxSaved(boxId: string, userId?: string) {
+export function useIsBoxSaved(boxId: string, userId?: string, enabled = true) {
   return useQuery({
     queryKey: ['box-save', boxId, userId],
     queryFn: async () => {
@@ -41,7 +41,7 @@ export function useIsBoxSaved(boxId: string, userId?: string) {
       if (error) throw error
       return !!data
     },
-    enabled: !!userId,
+    enabled: enabled && !!userId,
     staleTime: 30_000,
   })
 }
@@ -99,6 +99,7 @@ export function useToggleBoxSave(boxId: string, userId?: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['box-save', boxId, userId] })
       qc.invalidateQueries({ queryKey: ['box-saves', userId] })
+      qc.invalidateQueries({ queryKey: ['box-engagement'] })
     },
   })
 }

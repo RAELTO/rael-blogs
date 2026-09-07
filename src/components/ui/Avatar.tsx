@@ -11,14 +11,12 @@ interface AvatarProps {
   name: string
   size?: 'sm' | 'md' | 'lg'
   src?: string | null
-  onClick?: () => void
 }
 
-export default function Avatar({ name, size = 'md', src, onClick }: AvatarProps) {
+export default function Avatar({ name, size = 'md', src }: AvatarProps) {
   return (
     <div
       className={`avatar ${size}`}
-      onClick={onClick}
       style={{ background: src ? undefined : colorFor(name) }}
     >
       {src

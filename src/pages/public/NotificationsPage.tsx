@@ -70,7 +70,7 @@ function NotifItem({ n, onAccept, onDecline }: {
           {n.actor && ' '}
           {getNotifText(n)}
         </div>
-        <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', marginTop: 4, fontWeight: 700 }}>
+        <div style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', marginTop: 4, fontWeight: 700 }}>
           {timeAgo(n.created_at)}
         </div>
       </div>
@@ -89,7 +89,7 @@ function NotifItem({ n, onAccept, onDecline }: {
       {isContactAcc && (
         <div style={{
           padding: '2px 8px', border: '2px solid var(--ink)', flexShrink: 0, alignSelf: 'center',
-          background: 'var(--accent-4)', fontSize: 10, fontFamily: 'var(--font-mono)',
+          background: 'var(--accent-4)', fontSize: 12, fontFamily: 'var(--font-mono)',
           fontWeight: 900, letterSpacing: '.08em', textTransform: 'uppercase',
           boxShadow: '2px 2px 0 var(--ink)',
         }}>
@@ -173,7 +173,7 @@ export default function NotificationsPage() {
                 padding: '4px 12px', border: '2px solid var(--ink)',
                 background: isActive ? 'var(--accent-3)' : 'var(--bg-panel)',
                 color: 'var(--ink)',
-                fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 800,
+                fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 800,
                 textTransform: 'uppercase', letterSpacing: '.06em', cursor: 'pointer',
                 boxShadow: isActive ? 'none' : '2px 2px 0 var(--ink)',
                 transform: isActive ? 'translate(2px, 2px)' : 'none',

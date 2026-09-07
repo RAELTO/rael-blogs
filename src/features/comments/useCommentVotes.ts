@@ -7,12 +7,13 @@ export function useMyCommentVote(commentId: string, userId?: string) {
     queryKey: ['c-vote', commentId, userId],
     queryFn: async () => {
       if (!userId) return null
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('comment_votes')
         .select('vote')
         .eq('comment_id', commentId)
         .eq('user_id', userId)
         .maybeSingle()
+      if (error) throw error
       return (data?.vote ?? null) as VoteType | null
     },
     enabled: !!userId,
@@ -24,10 +25,11 @@ export function useCommentVoteCounts(commentId: string) {
   return useQuery({
     queryKey: ['c-vote-counts', commentId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('comment_votes')
         .select('vote')
         .eq('comment_id', commentId)
+      if (error) throw error
       const counts = { like: 0, dislike: 0 }
       for (const r of data ?? []) counts[r.vote as VoteType]++
       return counts
@@ -46,10 +48,11 @@ export function useCommentVoteDetails(commentId: string, enabled = false) {
   return useQuery({
     queryKey: ['c-vote-details', commentId],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('comment_votes')
         .select('vote, user_id, profiles(id, username, display_name, avatar_url, role)')
         .eq('comment_id', commentId)
+      if (error) throw error
       return (data ?? []) as unknown as CommentVoteDetailRow[]
     },
     enabled,
@@ -62,11 +65,14 @@ export function useToggleCommentVote(commentId: string) {
   return useMutation({
     mutationFn: async ({ userId, vote, current }: { userId: string; vote: VoteType; current: VoteType | null }) => {
       if (current === vote) {
-        await supabase.from('comment_votes').delete().eq('comment_id', commentId).eq('user_id', userId)
+        const { error } = await supabase.from('comment_votes').delete().eq('comment_id', commentId).eq('user_id', userId)
+        if (error) throw error
       } else if (current) {
-        await supabase.from('comment_votes').update({ vote }).eq('comment_id', commentId).eq('user_id', userId)
+        const { error } = await supabase.from('comment_votes').update({ vote }).eq('comment_id', commentId).eq('user_id', userId)
+        if (error) throw error
       } else {
-        await supabase.from('comment_votes').insert({ comment_id: commentId, user_id: userId, vote })
+        const { error } = await supabase.from('comment_votes').insert({ comment_id: commentId, user_id: userId, vote })
+        if (error) throw error
       }
     },
     onSuccess: (_d, { userId }) => {

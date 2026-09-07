@@ -50,7 +50,7 @@ export default function TagPage() {
   return (
     <AppShell left={<LeftSidebar />} right={<RightSidebar />}>
       <div style={{ marginBottom: 20 }}>
-        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink-mute)', marginBottom: 8 }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink-mute)', marginBottom: 8 }}>
           tag
         </div>
         <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 40, margin: 0, letterSpacing: '-0.02em', lineHeight: 1 }}>
@@ -63,7 +63,7 @@ export default function TagPage() {
       {isLoading && (
         <div className="spinner">
           <div className="spinner-ring" />
-          <span className="spinner-label">loading...</span>
+          <span className="spinner-label">Loading…</span>
         </div>
       )}
 

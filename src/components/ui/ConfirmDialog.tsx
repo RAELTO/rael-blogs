@@ -1,4 +1,6 @@
+import { useId, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { useDialogAccessibility } from './useDialogAccessibility'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -17,14 +19,28 @@ export default function ConfirmDialog({
   danger = false,
   onConfirm, onCancel,
 }: ConfirmDialogProps) {
+  const panelRef = useRef<HTMLDivElement>(null)
+  const titleId = useId()
+  const descriptionId = useId()
+  useDialogAccessibility({ dialogRef: panelRef, onClose: onCancel, active: open })
+
   if (!open) return null
 
   return createPortal(
     <div className="confirm-overlay" onClick={onCancel}>
-      <div className="confirm-panel" onClick={e => e.stopPropagation()}>
+      <div
+        ref={panelRef}
+        className="confirm-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
+        tabIndex={-1}
+        onClick={e => e.stopPropagation()}
+      >
         <div className="confirm-eyebrow">▓ confirmation required</div>
-        <h2 className="confirm-title">{title}</h2>
-        <p className="confirm-message">{message}</p>
+        <h2 id={titleId} className="confirm-title">{title}</h2>
+        <p id={descriptionId} className="confirm-message">{message}</p>
         <div className="confirm-actions">
           <button type="button" className="btn" onClick={onCancel}>{cancelLabel}</button>
           <button type="button"

@@ -30,8 +30,8 @@ Neo-brutalist social app for short-form drops, contacts, notifications, and dire
 
 ## Requirements
 
-- Node.js 22+
-- npm 10+
+- Node.js 22.13+
+- pnpm 12.3.4
 - A Supabase project
 - Optional: Supabase CLI for local database work
 
@@ -39,29 +39,35 @@ Node 22 is required because the project includes `react-doctor` as a recurring d
 
 ## Safe Install
 
-This repository ships a versioned `.npmrc` with:
+This repository pins pnpm 12 and ships supply-chain policy in `pnpm-workspace.yaml`:
 
-```ini
-ignore-scripts=true
-package-lock=true
-save-exact=true
-audit=true
-fund=false
+```yaml
+minimumReleaseAge: 10080
+minimumReleaseAgeStrict: true
+blockExoticSubdeps: true
+strictDepBuilds: true
+trustPolicy: no-downgrade
+allowBuilds:
+  esbuild: false
 ```
 
-That blocks dependency lifecycle hooks such as `preinstall`, `postinstall`, and `prepare`, which are common supply-chain attack vectors.
+This delays newly published versions for seven days, rejects exotic transitive sources and blocks dependency lifecycle scripts unless they are explicitly reviewed and allowed.
 
 Use the locked install path for normal setup:
 
 ```bash
 git clone <repo-url>
-cd rael-blogs
-npm ci
+cd nbox
+npm install --global pnpm@12.3.4
+pnpm --version
+pnpm install --frozen-lockfile
 cp .env.example .env
-npm run dev
+pnpm run dev
 ```
 
-Use `npm install <package>` only when intentionally adding or updating dependencies. Review the `package.json` and `package-lock.json` diff before committing. If a package truly requires install scripts, review the package source first and run that install in a disposable environment instead of disabling scripts globally.
+The one-time npm command only bootstraps the exact pnpm version pinned by the repository. Current Corepack releases can also honor the `packageManager` field, but an outdated Corepack may not recognize pnpm 12's native executable layout.
+
+Use `pnpm add <package>` only when intentionally adding or updating dependencies. Review the `package.json` and `pnpm-lock.yaml` diff before committing. If a package truly requires an install script, review it first and add only that package to `allowBuilds`.
 
 ## Environment
 
@@ -100,15 +106,19 @@ Storage uses the public `post-images` bucket:
 
 | Command | Purpose |
 | --- | --- |
-| `npm run dev` | Start Vite on `http://localhost:5173` |
-| `npm run build` | Type-check and build for production |
-| `npm run preview` | Preview the production build |
-| `npm run lint` | Run ESLint |
-| `npm run analyze` | Build with a bundle treemap report |
-| `npm run perf` | Build and run Lighthouse CI |
-| `npm run doctor` | Run a verbose React Doctor scan |
-| `npm run doctor:score` | Print the React Doctor project score |
-| `npm run doctor:diff` | Scan changes against `main` |
+| `pnpm run dev` | Start Vite on `http://localhost:5173` |
+| `pnpm run build` | Type-check and build for production |
+| `pnpm run preview` | Preview the production build |
+| `pnpm run lint` | Run ESLint |
+| `pnpm run analyze` | Build with a bundle treemap report |
+| `pnpm run perf` | Build and enforce the local Playwright navigation budget |
+| `pnpm run test:e2e` | Run the complete Playwright browser and viewport matrix |
+| `pnpm run test:e2e:smoke` | Run the navigation and interaction smoke tests |
+| `pnpm run test:e2e:a11y` | Run Axe accessibility checks |
+| `pnpm run test:e2e:report` | Open the latest local HTML test report |
+| `pnpm run doctor` | Run a verbose React Doctor scan |
+| `pnpm run doctor:score` | Print the React Doctor project score |
+| `pnpm run doctor:diff` | Scan changes against `main` |
 
 ## Quality And Performance
 
@@ -116,12 +126,28 @@ React Doctor is installed as a recurring diagnostic tool. The latest baseline re
 
 Current baseline:
 
-- React Doctor score: 71/100
-- Issues: 336 across 73 of 86 scanned files
-- `npm run lint`: passing
-- `npm run build`: passing
+- React Doctor score: 90/100
+- Issues: 90 across 39 of 51 scanned product files
+- Playwright: 49 checks passing (48 browser/viewport checks plus the isolated performance gate); 5 database mutation checks are opt-in
+- Dependency audit: 0 known vulnerabilities
+- `pnpm run lint`: passing
+- `pnpm run build`: passing
 
-Use React Doctor for trend tracking, not as the only quality gate. Keep `npm run lint` and `npm run build` as the required checks before pushing.
+Use React Doctor for trend tracking, not as the only quality gate. Keep `pnpm run lint` and `pnpm run build` as the required checks before pushing.
+
+## Local Browser Testing
+
+Install the browser binaries once, copy the environment template, and provide only local test credentials:
+
+```bash
+pnpm exec playwright install chromium firefox webkit
+cp e2e.env.example .env.e2e.local
+pnpm run test:e2e
+```
+
+`.env.e2e.local`, authenticated browser state, reports, traces, and screenshots are ignored by Git. Visual captures wait for settled feed content and mask account identity blocks before writing PNG files under `.tmp/playwright/`.
+
+The authenticated matrix covers 1440×900 desktop, 1024×768 landscape tablet, 768×1024 portrait tablet, 390×844 mobile, and 360×800 small mobile. It checks protected routes, responsive navigation, touch/keyboard reaction menus, horizontal overflow, and serious/critical Axe violations.
 
 ## Project Structure
 
@@ -182,13 +208,13 @@ src/
 - `sanitizeUrl()` rejects non-HTTP protocols to block `javascript:` and similar payloads.
 - Upload helpers validate image type and size before writing to Storage.
 - The Supabase anon key is public by design; RLS is the real authorization boundary.
-- Dependency install scripts are disabled by default through `.npmrc`.
+- Dependency install scripts are denied by default through `allowBuilds` in `pnpm-workspace.yaml`.
 
 ## Conventions
 
 - New commits, PR titles, and PR descriptions must be written in English.
 - New user-facing UI text should be written in English. Remaining Spanish UI strings are tracked in [TODO.md](TODO.md).
-- Prefer `npm ci` for routine setup and CI. Use `npm install <package>` only for deliberate dependency changes.
+- Prefer `pnpm install --frozen-lockfile` for routine setup and CI. Use `pnpm add <package>` only for deliberate dependency changes.
 
 ## Near-Term Roadmap
 

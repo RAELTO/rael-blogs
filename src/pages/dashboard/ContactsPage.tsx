@@ -62,7 +62,7 @@ function IncomingCard({ req, onAccept, onDecline }: {
         style={{ flex: 1, minWidth: 0, textDecoration: 'none', color: 'inherit' }}
       >
         <div style={{ fontWeight: 800, fontSize: 14 }}>{req.requester.display_name}</div>
-        <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-dim)' }}>
+        <div style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--ink-dim)' }}>
           @{req.requester.username} · {timeAgo(req.created_at)}
         </div>
         <div style={{ fontSize: 12, marginTop: 2, color: 'var(--ink-dim)' }}>
@@ -112,13 +112,13 @@ function OutgoingCard({ req, onCancel }: {
         style={{ flex: 1, minWidth: 0, textDecoration: 'none', color: 'inherit' }}
       >
         <div style={{ fontWeight: 800, fontSize: 14 }}>{req.addressee.display_name}</div>
-        <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-dim)' }}>
+        <div style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--ink-dim)' }}>
           @{req.addressee.username} · {timeAgo(req.created_at)}
         </div>
       </Link>
       <div style={{
         padding: '3px 10px', border: '2px solid var(--ink)',
-        background: bg, fontSize: 11, fontFamily: 'var(--font-mono)',
+        background: bg, fontSize: 12, fontFamily: 'var(--font-mono)',
         fontWeight: 800, whiteSpace: 'nowrap',
       }}>
         {label}
@@ -164,7 +164,7 @@ function SuggestionCard({ profile, index, onAdd }: {
           <div style={{ fontWeight: 800, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {profile.display_name}
           </div>
-          <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', marginTop: 2 }}>
+          <div style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', marginTop: 2 }}>
             @{profile.username}
           </div>
         </Link>
@@ -258,12 +258,12 @@ function ContactCard({ profile, index, userId, presence, onRemove }: {
           <div style={{ fontWeight: 800, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {profile.display_name}
           </div>
-          <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', marginTop: 2 }}>
+          <div style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: 'var(--ink-mute)', marginTop: 2 }}>
             @{profile.username}
           </div>
         </Link>
         {presence?.label && (
-          <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: presence.color, marginTop: 3, letterSpacing: '.04em' }}>
+          <div style={{ fontSize: 12, fontFamily: 'var(--font-mono)', fontWeight: 700, color: presence.color, marginTop: 3, letterSpacing: '.04em' }}>
             {presence.label}
           </div>
         )}

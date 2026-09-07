@@ -51,9 +51,9 @@ export default function ComposerCard({ onOpenModal }: ComposerCardProps) {
           src={profile?.avatar_url}
           size="md"
         />
-        <div className="composer-input" onClick={() => openModal('quick')}>
+        <button type="button" className="composer-input" onClick={() => openModal('quick')}>
           What are you dropping, {profile?.display_name ?? 'you'}?
-        </div>
+        </button>
       </div>
 
       {expanded && (
@@ -67,7 +67,7 @@ export default function ComposerCard({ onOpenModal }: ComposerCardProps) {
             disabled={!text.trim() || createBox.isPending}
             style={{ marginLeft: 8 }}
           >
-            {createBox.isPending ? '...' : 'Drop'}
+            {createBox.isPending ? '…' : 'Drop'}
           </button>
         </div>
       )}

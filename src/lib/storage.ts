@@ -22,11 +22,11 @@ function ext(file: File): string {
 
 export function validateImage(file: File, kind: ImageKind): UploadError | null {
   if (!ALLOWED_TYPES.includes(file.type)) {
-    return { type: 'format', message: `Formato no permitido. Usa JPG, PNG, WebP o GIF.` }
+    return { type: 'format', message: 'Unsupported format. Use JPG, PNG, WebP, or GIF.' }
   }
   const limit = IMAGE_LIMITS[kind]
   if (file.size > limit.maxBytes) {
-    return { type: 'size', message: `La imagen supera el límite de ${limit.label}.` }
+    return { type: 'size', message: `The image exceeds the ${limit.label} limit.` }
   }
   return null
 }
