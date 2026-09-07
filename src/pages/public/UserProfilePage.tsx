@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
-import { Settings2 } from 'lucide-react'
+import { Settings2, UserMinus, UserPlus } from 'lucide-react'
 import AppShell from '../../components/layout/AppShell'
 import LeftSidebar from '../../components/layout/LeftSidebar'
 import RightSidebar from '../../components/layout/RightSidebar'
@@ -7,8 +7,9 @@ import Avatar from '../../components/ui/Avatar'
 import AdminBadge from '../../components/ui/AdminBadge'
 import BoxCard from '../../components/feed/BoxCard'
 import { useAuth } from '../../features/auth/AuthContext'
-import { useProfileByUsername } from '../../features/profile/useProfile'
+import { useProfileByUsername, usePublishedBoxCount } from '../../features/profile/useProfile'
 import { useBoxesByAuthor, useDeleteBox } from '../../features/boxes/useBoxes'
+import { useFollowCounts, useFollowingIds, useToggleFollow } from '../../features/follows/useFollows'
 import { useToast } from '../../components/ui/Toast'
 
 export default function UserProfilePage() {
@@ -18,15 +19,30 @@ export default function UserProfilePage() {
 
   const { data: profile, isLoading: loadingProfile } = useProfileByUsername(username)
   const { data: boxes, isLoading: loadingBoxes } = useBoxesByAuthor(profile?.id)
+  const { data: boxCount, isLoading: loadingBoxCount } = usePublishedBoxCount(profile?.id)
+  const { data: followCounts, isLoading: loadingFollowCounts } = useFollowCounts(profile?.id)
+  const { data: followingIds = [], isLoading: loadingFollowing } = useFollowingIds(user?.id)
   const deleteBox = useDeleteBox()
+  const toggleFollow = useToggleFollow(user?.id)
 
   const isOwn = !!user && !!profile && user.id === profile.id
+  const isFollowing = !!profile && followingIds.includes(profile.id)
 
   function handleDelete(id: string) {
     deleteBox.mutate(id, {
       onSuccess: () => toast('Box deleted.'),
       onError: () => toast('Failed to delete.'),
     })
+  }
+
+  async function handleFollow() {
+    if (!profile) return
+    try {
+      const nextFollowing = await toggleFollow.mutateAsync({ profileId: profile.id, isFollowing })
+      toast(nextFollowing ? `Following ${profile.display_name}.` : `Unfollowed ${profile.display_name}.`)
+    } catch {
+      toast('Could not update this follow.')
+    }
   }
 
   return (
@@ -72,11 +88,43 @@ export default function UserProfilePage() {
                 @{profile.username}
               </div>
             </div>
-            {isOwn && (
-              <Link to="/my-box" className="btn" style={{ gap: 6, textDecoration: 'none' }}>
-                <Settings2 size={15} strokeWidth={2.5} /> Edit profile
-              </Link>
-            )}
+            <div className="profile-primary-action">
+              {isOwn ? (
+                <Link to="/my-box" className="btn" style={{ gap: 6, textDecoration: 'none' }}>
+                  <Settings2 size={15} strokeWidth={2.5} /> Edit profile
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  className={`profile-follow-btn${isFollowing ? ' is-following' : ''}`}
+                  aria-pressed={isFollowing}
+                  data-testid="profile-follow-button"
+                  disabled={loadingFollowing || toggleFollow.isPending}
+                  onClick={handleFollow}
+                >
+                  {isFollowing
+                    ? <UserMinus size={17} strokeWidth={3} />
+                    : <UserPlus size={17} strokeWidth={3} />
+                  }
+                  {toggleFollow.isPending ? 'Updating…' : isFollowing ? 'Following' : 'Follow'}
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="profile-social-stats" aria-label="Profile statistics">
+            <div className="profile-social-stat">
+              <strong>{loadingBoxCount ? '—' : boxCount ?? 0}</strong>
+              <span>Drops</span>
+            </div>
+            <div className="profile-social-stat">
+              <strong>{loadingFollowCounts ? '—' : followCounts?.followers ?? 0}</strong>
+              <span>Followers</span>
+            </div>
+            <div className="profile-social-stat">
+              <strong>{loadingFollowCounts ? '—' : followCounts?.following ?? 0}</strong>
+              <span>Following</span>
+            </div>
           </div>
 
           {profile.bio && (

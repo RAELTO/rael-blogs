@@ -9,6 +9,7 @@ import { usePresenceMap } from '../../features/presence/usePresence'
 import { useIncomingRequests, useOutgoingRequests } from '../../features/contacts/useContactRequests'
 import { useContacts } from '../../features/contacts/useContacts'
 import { useSuggestedContacts } from '../../features/contacts/useSuggestedContacts'
+import { useFollowingIds, useToggleFollow } from '../../features/follows/useFollows'
 import {
   useSendContactRequest,
   useCancelContactRequest,
@@ -223,11 +224,14 @@ function MobileSuggestionRow({ profile, index, sent, onAdd, onDismiss }: {
 }
 
 // ─── Contact card ─────────────────────────────────────────────────────────────
-function ContactCard({ profile, index, userId, presence, onRemove }: {
+function ContactCard({ profile, index, userId, presence, isFollowing, followPending, onFollow, onRemove }: {
   profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>
   index: number
   userId: string
   presence: { label: string; color: string } | undefined
+  isFollowing: boolean
+  followPending: boolean
+  onFollow: (profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>, isFollowing: boolean) => void
   onRemove: (id: string, name?: string) => void
 }) {
   const getOrCreate = useGetOrCreateConversation(userId)
@@ -276,6 +280,21 @@ function ContactCard({ profile, index, userId, presence, onRemove }: {
           >
             <MessageCircle size={13} strokeWidth={2.5} /> Message
           </button>
+          <button
+            type="button"
+            className={`btn btn-small${isFollowing ? ' contact-following' : ''}`}
+            style={{ padding: '4px 8px' }}
+            title={isFollowing ? `Unfollow ${profile.display_name}` : `Follow ${profile.display_name}`}
+            aria-pressed={isFollowing}
+            data-testid="contact-follow-button"
+            disabled={followPending}
+            onClick={() => onFollow(profile, isFollowing)}
+          >
+            {isFollowing
+              ? <UserMinus size={13} strokeWidth={2.5} />
+              : <UserPlus size={13} strokeWidth={2.5} />
+            }
+          </button>
           <button type="button"
             className="btn btn-small"
             style={{ padding: '4px 8px', color: 'var(--accent-1)' }}
@@ -313,8 +332,10 @@ function MobileContactRow({ profile, presence, onOpenMenu }: {
   )
 }
 
-function ContactActionSheet({ profile, onClose, onMessage, onFollow, onBlock, onRemove }: {
+function ContactActionSheet({ profile, isFollowing, followPending, onClose, onMessage, onFollow, onBlock, onRemove }: {
   profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>
+  isFollowing: boolean
+  followPending: boolean
   onClose: () => void
   onMessage: () => void
   onFollow: () => void
@@ -340,10 +361,20 @@ function ContactActionSheet({ profile, onClose, onMessage, onFollow, onBlock, on
           <MessageCircle size={21} strokeWidth={2.5} />
           <span>Send message to {profile.display_name}</span>
         </button>
-        <button type="button" className="contacts-action-item" onClick={onFollow}>
-          <UserPlus size={21} strokeWidth={2.5} />
-          <span>Follow {profile.display_name}</span>
-          <small>See their posts.</small>
+        <button
+          type="button"
+          className="contacts-action-item"
+          onClick={onFollow}
+          disabled={followPending}
+          aria-pressed={isFollowing}
+          data-testid="contact-sheet-follow-button"
+        >
+          {isFollowing
+            ? <UserMinus size={21} strokeWidth={2.5} />
+            : <UserPlus size={21} strokeWidth={2.5} />
+          }
+          <span>{isFollowing ? 'Unfollow' : 'Follow'} {profile.display_name}</span>
+          <small>{isFollowing ? 'Remove their drops from your Following feed.' : 'See their drops in your Following feed.'}</small>
         </button>
         <button type="button" className="contacts-action-item" onClick={onBlock}>
           <Ban size={21} strokeWidth={2.5} />
@@ -375,11 +406,13 @@ export default function ContactsPage() {
   const { data: outgoing = [] }    = useOutgoingRequests(user?.id)
   const { data: contacts = [] }    = useContacts(user?.id)
   const { data: suggestions = [] } = useSuggestedContacts(user?.id)
+  const { data: followingIds = [] } = useFollowingIds(user?.id)
 
   const sendRequest   = useSendContactRequest(user?.id ?? '')
   const cancelRequest = useCancelContactRequest(user?.id ?? '')
   const respond       = useRespondContactRequest(user?.id ?? '')
   const removeContact = useRemoveContact(user?.id ?? '')
+  const toggleFollow  = useToggleFollow(user?.id)
   const presenceMap   = usePresenceMap(contacts.map(c => c.other.id))
   const mobileGetOrCreate = useGetOrCreateConversation(user?.id ?? '')
   const openChat = useOpenChat()
@@ -436,6 +469,20 @@ export default function ContactsPage() {
   async function handleMobileRemove(profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>) {
     await handleRemove(profile.id, profile.display_name)
     setSelectedContact(null)
+  }
+
+  async function handleFollow(
+    profile: Pick<Profile, 'id' | 'username' | 'display_name' | 'avatar_url'>,
+    isFollowing: boolean,
+    closeSheet = false,
+  ) {
+    try {
+      const nextFollowing = await toggleFollow.mutateAsync({ profileId: profile.id, isFollowing })
+      toast(nextFollowing ? `Following ${profile.display_name}.` : `Unfollowed ${profile.display_name}.`)
+      if (closeSheet) setSelectedContact(null)
+    } catch {
+      toast('Could not update this follow.')
+    }
   }
 
   return (
@@ -495,7 +542,7 @@ export default function ContactsPage() {
                     <UserPlus size={58} strokeWidth={1.8} />
                     <div style={{ fontFamily: 'var(--font-display)', fontSize: 20 }}>NO REQUESTS</div>
                     <div className="text-sm text-mute mt-2" style={{ fontFamily: 'var(--font-mono)' }}>
-                      Cuando alguien te pida ser contacto, aparecerá aquí.
+                      When someone sends you a contact request, it will appear here.
                     </div>
                     <button type="button" className="btn btn-small btn-primary" onClick={() => setTab('suggest')}>
                       View suggestions
@@ -562,7 +609,7 @@ export default function ContactsPage() {
           {/* TODOS */}
           {tab === 'all' && (
             <>
-              <h2 className="section-title" style={{ marginBottom: 16 }}>▸ All tus contacts</h2>
+              <h2 className="section-title" style={{ marginBottom: 16 }}>▸ All your contacts</h2>
               {contacts.length === 0 ? (
                 <div className="panel contacts-empty-panel">
                   <div style={{ fontFamily: 'var(--font-display)', fontSize: 20 }}>NO CONTACTS YET</div>
@@ -574,7 +621,17 @@ export default function ContactsPage() {
                 <>
                 <div className="contacts-desktop-card-grid">
                   {contacts.map((c, i) => (
-                    <ContactCard key={c.user_a + c.user_b} profile={c.other} index={i} userId={user!.id} presence={presenceMap[c.other.id]} onRemove={handleRemove} />
+                    <ContactCard
+                      key={c.user_a + c.user_b}
+                      profile={c.other}
+                      index={i}
+                      userId={user!.id}
+                      presence={presenceMap[c.other.id]}
+                      isFollowing={followingIds.includes(c.other.id)}
+                      followPending={toggleFollow.isPending}
+                      onFollow={handleFollow}
+                      onRemove={handleRemove}
+                    />
                   ))}
                 </div>
                 <div className="contacts-mobile-list">
@@ -597,10 +654,12 @@ export default function ContactsPage() {
       {selectedContact && (
         <ContactActionSheet
           profile={selectedContact}
+          isFollowing={followingIds.includes(selectedContact.id)}
+          followPending={toggleFollow.isPending}
           onClose={() => setSelectedContact(null)}
           onMessage={() => handleMobileMessage(selectedContact)}
-          onFollow={() => { toast('Seguir coming soon'); setSelectedContact(null) }}
-          onBlock={() => { toast('Bloquear perfil coming soon'); setSelectedContact(null) }}
+          onFollow={() => handleFollow(selectedContact, followingIds.includes(selectedContact.id), true)}
+          onBlock={() => { toast('Block profile coming soon'); setSelectedContact(null) }}
           onRemove={() => handleMobileRemove(selectedContact)}
         />
       )}

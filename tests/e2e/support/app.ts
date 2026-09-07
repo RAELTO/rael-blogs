@@ -22,3 +22,29 @@ export async function captureViewport(page: Page, testInfo: TestInfo, name: stri
 export function hasHorizontalOverflow(page: Page): Promise<boolean> {
   return page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1)
 }
+
+export async function openFollowableProfile(page: Page, onlyNotFollowing = false): Promise<boolean> {
+  const profilePaths = new Set<string>()
+
+  for (const sourcePath of ['/', '/contacts', '/notifications']) {
+    await openAuthenticatedPage(page, sourcePath)
+    await page.locator('.spinner').waitFor({ state: 'hidden', timeout: 15_000 }).catch(() => {})
+    const paths = await page.locator('a[href^="/profile/"]').evaluateAll(links =>
+      links
+        .map(link => link.getAttribute('href'))
+        .filter((href): href is string => Boolean(href)),
+    )
+    paths.forEach(path => profilePaths.add(path))
+  }
+
+  for (const profilePath of profilePaths) {
+    await openAuthenticatedPage(page, profilePath)
+    await page.locator('.spinner').waitFor({ state: 'hidden', timeout: 15_000 }).catch(() => {})
+    const followButton = page.getByTestId('profile-follow-button')
+    if (await followButton.isVisible().catch(() => false)) {
+      if (!onlyNotFollowing || await followButton.getAttribute('aria-pressed') === 'false') return true
+    }
+  }
+
+  return false
+}

@@ -10,7 +10,7 @@ NBOX (Neo Brutal Box) es una plataforma social con identidad neobrutalista fuert
 
 ---
 
-## Estado actual — Mayo 2026
+## Estado actual — Septiembre 2026
 
 > El roadmap original quedó desactualizado. Este documento refleja el estado real del proyecto.
 
@@ -48,6 +48,7 @@ NBOX (Neo Brutal Box) es una plataforma social con identidad neobrutalista fuert
 - [x] Save / unsave (toggle desde el menú del card)
 - [x] Delete propio drop (con confirm dialog)
 - [x] Delete admin de cualquier drop/comentario
+- [x] Poll voting interactivo y persistente por usuario (porcentajes + cambio/eliminación de voto)
 - [x] StoriesRail decorativo (sin backend)
 
 ### Interacciones unificadas
@@ -69,6 +70,8 @@ NBOX (Neo Brutal Box) es una plataforma social con identidad neobrutalista fuert
 
 ### Inbox / Chat
 - [x] InboxPage: lista de conversaciones + thread activo
+- [x] Búsqueda local de conversaciones por nombre
+- [x] Indicador de conversación leída/no leída mediante `conversation_participants.last_read_at`
 - [x] Mensajes realtime (Supabase Realtime)
 - [x] FloatingChatPanel: hasta 3 ventanas simultáneas ancladas a la derecha
 - [x] MessageNotifier: notif de nuevo mensaje en cualquier página
@@ -81,6 +84,9 @@ NBOX (Neo Brutal Box) es una plataforma social con identidad neobrutalista fuert
 
 ### Profiles
 - [x] UserProfilePage pública: avatar, display name, @username, bio, boxes del usuario
+- [x] Follow / Unfollow desde perfil ajeno y Contacts
+- [x] Estadísticas exactas de Drops, Followers y Following
+- [x] Feed Following conectado al grafo social real
 - [x] ProfilePage propia (`/my-box`): editar avatar, nombre, username, bio
 - [x] Admin badge visible en perfil y en feed
 
@@ -102,41 +108,37 @@ NBOX (Neo Brutal Box) es una plataforma social con identidad neobrutalista fuert
 
 ### Perfil de usuario
 - [x] Ver boxes propias en perfil público
-- [ ] Estadísticas (boxes count, followers, following) — columnas en DB planificadas, no expuestas en UI
-- [ ] Follow / Unfollow desde perfil ajeno — DB `follows` existe, falta botón en `UserProfilePage`
 - [ ] Tabs en perfil: Boxes | Media | Saves | About
 - [ ] Pinned box en perfil
 - [ ] Sección "About" con links y fecha de unión
 
 ### Inbox
-- [ ] Búsqueda de conversaciones (input existe, no está conectado)
-- [ ] Indicador de mensaje leído / no leído en lista de conversaciones
 - [ ] Adjuntos, emojis, llamadas — stubs "coming soon"
 
 ### Notificaciones
-- [ ] Marcar como leído (individual y "mark all read")
+- [x] Persistencia de lectura individual y masiva en `read_at`
+- [ ] Sustituir el auto-read al abrir por acciones explícitas "Mark read" y "Mark all read"
 - [ ] Menciones `@usuario` en boxes y comentarios
 
 ### Saved
 - [ ] Collections backend — tabla + UI completa (actualmente "coming soon")
 
-### Poll Box
-- [ ] Votación interactiva en poll (barra de % + acción de votar) — el tipo existe, la interacción es visual stub
+### Feed modes
+- [ ] Ranking real para `For You`
+- [ ] Ranking por engagement para `Loud` (actualmente equivale a `Fresh`)
 
 ---
 
 ## 🔲 PENDIENTE
 
 ### English migration (TODO.md)
-- [ ] ~15 archivos con strings en español — inventario completo en `TODO.md`
-- Prioridad alta: `LoginPage`, `ComposerCard`, `DropModal`, `BoxCard`, `LeftSidebar`
-- Prioridad media: `CommentsModal`, `ShareModal`, `NotificationsPage`, `ContactsPage`
-- Prioridad baja: `ProfilePage`, `CheckEmailPage`, `ResetPasswordPage`
+- [x] UI de producto migrada a inglés
+- [ ] Limpiar comentarios internos en español y actualizar/eliminar el inventario histórico de `TODO.md`
 
 ### Follows
-- [ ] Botón Follow / Unfollow en `UserProfilePage`
-- [ ] Feed "Following" (ya existe el modo en ModeSelector pero requiere datos reales)
-- [ ] Followers / Following count expuestos en perfil
+- [x] Botón Follow / Unfollow en `UserProfilePage` y Contacts
+- [x] Feed "Following" basado en datos reales
+- [x] Followers / Following count expuestos en perfil
 
 ### Admin panel
 - [ ] Página `/admin` protegida por rol
@@ -149,6 +151,8 @@ NBOX (Neo Brutal Box) es una plataforma social con identidad neobrutalista fuert
 - [ ] Bloquear / ocultar usuario
 
 ### Features sociales
+- [ ] Completar share-to-feed: renderizar la Box original referenciada por `shared_from_id`
+- [ ] Conectar Share desde Saved al `ShareModal`
 - [ ] Post notifications ("Turn on notifications" en menú box — actualmente "coming soon")
 - [ ] Nested comments (responder a un comentario) — actualmente flat
 - [ ] Pinned comment por el autor
@@ -171,13 +175,13 @@ NBOX (Neo Brutal Box) es una plataforma social con identidad neobrutalista fuert
 
 ## Próximos pasos sugeridos (orden de impacto)
 
-1. **English migration** — Bloquea lanzamiento público; inventario en `TODO.md`
-2. **Follow / Unfollow en UserProfilePage** — Core social feature ausente
-3. **Poll voting interactivo** — Los polls se crean pero no se puede votar
-4. **Mark notifications as read** — UX básica pendiente
-5. **Followers/Following count en perfil** — Dato ya en DB (`follows`), falta en UI
-6. **Saved Collections backend** — Arquitectura de tabla simple, impacto alto en Saved UX
-7. **Admin panel** — Necesario antes del lanzamiento real
+1. **Notification read UX** — No marcar todo automáticamente al abrir; añadir acciones explícitas
+2. **New chat** — Selector de contactos sobre el backend de conversaciones existente
+3. **Completar shares** — Box original compartida, Saved share y envío directo a contacto
+4. **Saved Collections backend** — Tabla, RLS y UI responsive
+5. **Ranking `For You` / `Loud`** — Diferenciar realmente los modos del feed
+6. **Admin panel + reportes/bloqueos** — Necesario antes del lanzamiento público
+7. **Adjuntos de chat** — Storage privado, mensajes `image` y UI
 
 ---
 

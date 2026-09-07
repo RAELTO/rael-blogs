@@ -12,10 +12,10 @@ export default function NotFoundPage() {
           404
         </div>
         <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, marginBottom: 16 }}>
-          Box no encontrada
+          Box not found
         </div>
         <div className="text-mute text-sm" style={{ marginBottom: 24 }}>
-          Esta página no existe o fue eliminada.
+          This page does not exist or was removed.
         </div>
         <Link to="/" className="btn btn-primary">
           ⌂ Back to feed

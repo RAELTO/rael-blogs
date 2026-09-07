@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { captureViewport, hasHorizontalOverflow, openAuthenticatedPage } from './support/app'
+import { captureViewport, hasHorizontalOverflow, openAuthenticatedPage, openFollowableProfile } from './support/app'
 import { credentialsFor, projectAuthRole } from './support/auth'
 
 test.beforeEach(({}, testInfo) => {
@@ -29,4 +29,15 @@ test('@visual poll controls remain usable at every supported viewport', async ({
   expect(await hasHorizontalOverflow(page), 'Poll controls should not cause horizontal overflow').toBe(false)
   await expect(poll.locator('.poll-option').first()).toBeVisible()
   await captureViewport(page, testInfo, 'authenticated-poll')
+})
+
+test('@visual profile social controls fit every supported viewport', async ({ page }, testInfo) => {
+  const foundProfile = await openFollowableProfile(page)
+  test.skip(!foundProfile, 'No other profile is currently visible to this test user')
+
+  await expect(page.getByTestId('profile-follow-button')).toBeVisible()
+  await expect(page.locator('.profile-social-stat')).toHaveCount(3)
+  await expect(page.locator('.profile-social-stat strong')).toHaveText([/\d+/, /\d+/, /\d+/])
+  expect(await hasHorizontalOverflow(page), 'Profile social controls should not cause horizontal overflow').toBe(false)
+  await captureViewport(page, testInfo, 'authenticated-profile-social')
 })

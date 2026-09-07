@@ -65,7 +65,7 @@ export default function CheckEmailPage() {
         </h2>
 
         <p style={{ fontSize: 14, color: 'var(--ink-dim)', lineHeight: 1.6, marginBottom: 6 }}>
-          Te enviamos un enlace de confirmación a:
+          We sent a confirmation link to:
         </p>
         {email && (
           <div style={{
@@ -85,7 +85,7 @@ export default function CheckEmailPage() {
 
         <p style={{ fontSize: 13, color: 'var(--ink-mute)', lineHeight: 1.6, marginBottom: 28 }}>
           Open the email and click <strong>"Confirm your mail"</strong>.<br />
-          Esta pestaña se actualizará automáticamente.
+          This tab will update automatically.
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
