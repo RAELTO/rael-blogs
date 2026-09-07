@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X, Share2, Link, MessageCircle, Users, Smartphone, Check } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useCreateBox } from '../../features/boxes/useBoxes'
 import { useRecordShare } from '../../features/shares/useShares'
 import { useToast } from '../ui/Toast'
+import { useDialogAccessibility } from '../ui/useDialogAccessibility'
 
 interface Props {
   boxId: string
@@ -22,6 +23,9 @@ export default function ShareModal({ boxId, boxContent, onClose }: Props) {
   const [feedText, setFeedText] = useState('')
   const [copied, setCopied] = useState(false)
   const [posting, setPosting] = useState(false)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const titleId = useId()
+  useDialogAccessibility({ dialogRef: panelRef, onClose })
 
   const shareUrl = `${window.location.origin}/box/${boxId}`
 
@@ -43,7 +47,7 @@ export default function ShareModal({ boxId, boxContent, onClose }: Props) {
   }
 
   async function handleWhatsApp() {
-    const text = encodeURIComponent(`${boxContent.slice(0, 100)}...\n\n${shareUrl}`)
+    const text = encodeURIComponent(`${boxContent.slice(0, 100)}…\n\n${shareUrl}`)
     window.open(`https://wa.me/?text=${text}`, '_blank')
     if (user) await recordShare.mutateAsync({ userId: user.id, shareType: 'whatsapp' }).catch(() => {})
     onClose()
@@ -106,12 +110,21 @@ export default function ShareModal({ boxId, boxContent, onClose }: Props) {
 
   return createPortal(
     <div
+      className="share-modal-overlay"
       style={{ position: 'fixed', inset: 0, zIndex: 'var(--z-modal)' as unknown as number, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
       onClick={onClose}
     >
-      <div className="share-panel" onClick={e => e.stopPropagation()}>
+      <div
+        ref={panelRef}
+        className="share-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        onClick={e => e.stopPropagation()}
+      >
         <div className="share-header">
-          <span className="share-title">SHARE</span>
+          <span id={titleId} className="share-title">SHARE</span>
           <button type="button" onClick={onClose} className="modal-close-btn" aria-label="Close share dialog">
             <X size={18} strokeWidth={2.5} />
           </button>
@@ -128,7 +141,7 @@ export default function ShareModal({ boxId, boxContent, onClose }: Props) {
                 {opt.icon}
               </div>
               <div className="share-option-body">
-                <div className="share-option-label">{opt.label}</div>
+                <div className="share-option-label" aria-live={opt.id === 'link' ? 'polite' : undefined}>{opt.label}</div>
                 <div className="share-option-desc">{opt.desc}</div>
               </div>
               {opt.id === 'feed' && (
@@ -143,13 +156,14 @@ export default function ShareModal({ boxId, boxContent, onClose }: Props) {
                 <textarea
                   value={feedText}
                   onChange={e => setFeedText(e.target.value)}
-                  placeholder="Add a comment... (optional)"
+                  placeholder="Add a comment… (optional)"
+                  aria-label="Comment for shared drop"
                   rows={3}
                   className="share-compose-textarea"
                 />
                 <div className="share-compose-footer">
                   <button type="button" onClick={handleFeedShare} disabled={posting} className="share-compose-submit">
-                    {posting ? '...' : 'Drop'}
+                    {posting ? 'Posting…' : 'Drop'}
                   </button>
                 </div>
               </div>

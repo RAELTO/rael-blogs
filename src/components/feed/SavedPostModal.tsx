@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 import { MessageCircle, Send, X, ThumbsUp, ThumbsDown } from 'lucide-react'
@@ -14,6 +14,7 @@ import CommentItem from './CommentItem'
 import ActivityModal, { type ActivityRow } from './ActivityModal'
 import ReactionsDetailModal from './ReactionsDetailModal'
 import type { BoxWithAuthor, LinkPayload, MediaPayload, MoodPayload, PollPayload, ThreadPayload, ReactionType, VoteType } from '../../types/database'
+import { useDialogAccessibility } from '../ui/useDialogAccessibility'
 
 const REACTIONS: { type: ReactionType; emoji: string; label: string }[] = [
   { type: 'loud',  emoji: '❤️', label: 'Love'  },
@@ -107,7 +108,7 @@ function CompactSavedBox({ box }: { box: BoxWithAuthor }) {
       {box.type === 'media' && (payload as MediaPayload)?.url && (
         <div className="saved-modal-media">
           {(payload as MediaPayload).kind === 'image'
-            ? <img src={(payload as MediaPayload).url} alt={(payload as MediaPayload).caption ?? ''} />
+            ? <img src={(payload as MediaPayload).url} alt={(payload as MediaPayload).caption ?? ''} width="720" height="480" loading="lazy" />
             : <iframe src={(payload as MediaPayload).url} title="Saved media" allowFullScreen sandbox="allow-scripts allow-same-origin allow-presentation" />
           }
         </div>
@@ -115,7 +116,7 @@ function CompactSavedBox({ box }: { box: BoxWithAuthor }) {
 
       {box.type === 'link' && (payload as LinkPayload)?.url && (
         <a className="saved-modal-link" href={safeHref((payload as LinkPayload).url)} target="_blank" rel="noreferrer">
-          {(payload as LinkPayload).thumbnail && <img src={(payload as LinkPayload).thumbnail} alt="" />}
+          {(payload as LinkPayload).thumbnail && <img src={(payload as LinkPayload).thumbnail} alt="" width="160" height="120" loading="lazy" />}
           <span>
             <strong>{(payload as LinkPayload).title ?? (payload as LinkPayload).url}</strong>
             {(payload as LinkPayload).host && <small>{(payload as LinkPayload).host}</small>}
@@ -158,7 +159,10 @@ export default function SavedPostModal({ box, onClose }: Props) {
   const [boxActivityOpen, setBoxActivityOpen] = useState(false)
   const [reactOpen, setReactOpen] = useState(false)
   const listRef = useRef<HTMLDivElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
   const reactBtnRef = useRef<HTMLButtonElement>(null)
+  const titleId = useId()
+  useDialogAccessibility({ dialogRef: panelRef, onClose })
 
   // Box vote + reaction hooks
   const { data: myVote }        = useMyVote(box.id, user?.id)
@@ -205,9 +209,17 @@ export default function SavedPostModal({ box, onClose }: Props) {
     <>
       {createPortal(
         <div className="saved-post-modal-overlay" onClick={onClose}>
-          <div className="saved-post-modal" onClick={(e) => e.stopPropagation()}>
+          <div
+            ref={panelRef}
+            className="saved-post-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            tabIndex={-1}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="saved-post-modal-head">
-              <h2>Saved Post</h2>
+              <h2 id={titleId}>Saved Post</h2>
               <button type="button" onClick={onClose} aria-label="Close">
                 <X size={20} strokeWidth={2.5} />
               </button>
@@ -225,6 +237,7 @@ export default function SavedPostModal({ box, onClose }: Props) {
                   <button
                     type="button"
                     title="Like"
+                    aria-pressed={myVote === 'like'}
                     onClick={() => handleVote('like')}
                     className="saved-vote-btn"
                     style={{ background: myVote === 'like' ? 'var(--accent-4)' : 'none' }}
@@ -235,6 +248,7 @@ export default function SavedPostModal({ box, onClose }: Props) {
                   <button
                     type="button"
                     title="Dislike"
+                    aria-pressed={myVote === 'dislike'}
                     onClick={() => handleVote('dislike')}
                     className="saved-vote-btn"
                     style={{
@@ -250,18 +264,22 @@ export default function SavedPostModal({ box, onClose }: Props) {
                       ref={reactBtnRef}
                       type="button"
                       onClick={() => setReactOpen(o => !o)}
+                      aria-expanded={reactOpen}
+                      aria-label={activeReaction ? `Reaction: ${activeReaction.label}` : 'Choose reaction'}
                       className="saved-react-trigger-btn"
                       style={{ fontSize: activeReaction ? 16 : 11 }}
                     >
                       {activeReaction ? activeReaction.emoji : 'React'}
                     </button>
                     {reactOpen && (
-                      <div className="saved-react-popover">
+                      <div className="saved-react-popover" role="group" aria-label="Reactions">
                         {REACTIONS.map(r => (
                           <button
                             key={r.type}
                             type="button"
                             title={r.label}
+                            aria-label={r.label}
+                            aria-pressed={myReaction === r.type}
                             onClick={() => handleReact(r.type)}
                             className={`saved-react-option${myReaction === r.type ? ' active' : ''}`}
                           >
@@ -305,9 +323,10 @@ export default function SavedPostModal({ box, onClose }: Props) {
                 onKeyDown={handleKeyDown}
                 disabled={!user}
                 rows={1}
-                placeholder={user ? 'Write a comment...' : 'Sign in to comment...'}
+                placeholder={user ? 'Write a comment…' : 'Sign in to comment…'}
+                aria-label="Comment"
               />
-              <button type="button" onClick={handleSend} disabled={!user || !text.trim() || createComment.isPending}>
+              <button type="button" onClick={handleSend} disabled={!user || !text.trim() || createComment.isPending} aria-label="Send comment">
                 <Send size={16} strokeWidth={2.5} />
               </button>
             </div>

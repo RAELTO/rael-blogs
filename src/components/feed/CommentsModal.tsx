@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useId } from 'react'
 import { createPortal } from 'react-dom'
+import { Link } from 'react-router-dom'
 import { X, MessageCircle, Send } from 'lucide-react'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useProfile } from '../../features/profile/useProfile'
@@ -10,6 +11,7 @@ import Avatar from '../ui/Avatar'
 import CommentItem from './CommentItem'
 import ActivityModal, { type ActivityRow } from './ActivityModal'
 import type { ReactionType, VoteType } from '../../types/database'
+import { useDialogAccessibility } from '../ui/useDialogAccessibility'
 
 function CommentActivityModal({ commentId, onClose }: { commentId: string; onClose: () => void }) {
   const { data: votes = [], isLoading: votesLoading } = useCommentVoteDetails(commentId, true)
@@ -78,6 +80,9 @@ export default function CommentsModal({ boxId, onClose }: Props) {
   const [activityCommentId, setActivityCommentId] = useState<string | null>(null)
   const [sort, setSort] = useState<'default' | 'recent' | 'relevant'>('default')
   const listRef = useRef<HTMLDivElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const titleId = useId()
+  useDialogAccessibility({ dialogRef: panelRef, onClose })
 
   const sortedComments = (() => {
     const arr = [...comments]
@@ -113,12 +118,17 @@ export default function CommentsModal({ boxId, onClose }: Props) {
         onClick={onClose}
       >
         <div
+          ref={panelRef}
           className="comments-modal-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          tabIndex={-1}
           style={{ background: 'var(--bg-panel)', border: '3px solid var(--ink)', boxShadow: '6px 6px 0 var(--ink)', width: '100%', maxWidth: 600, height: '82vh', display: 'flex', flexDirection: 'column' }}
           onClick={e => e.stopPropagation()}
         >
           <div className="comments-modal-header">
-            <span className="comments-modal-title">COMMENTS - {comments.length}</span>
+            <span id={titleId} className="comments-modal-title">COMMENTS - {comments.length}</span>
             <button type="button" onClick={onClose} className="modal-close-btn" aria-label="Close comments">
               <X size={18} strokeWidth={2.5} />
             </button>
@@ -149,7 +159,7 @@ export default function CommentsModal({ boxId, onClose }: Props) {
 
           <div ref={listRef} className="comments-list">
             {isLoading && (
-              <div className="comments-list-loading">loading comments...</div>
+              <div className="comments-list-loading" aria-live="polite">Loading comments…</div>
             )}
 
             {!isLoading && comments.length === 0 && (
@@ -191,7 +201,8 @@ export default function CommentsModal({ boxId, onClose }: Props) {
                 onFocus={() => setInputFocused(true)}
                 onBlur={() => setInputFocused(false)}
                 disabled={!user}
-                placeholder={user ? `Comment as ${profile?.display_name ?? 'you'}...` : 'Sign in to comment...'}
+                placeholder={user ? `Comment as ${profile?.display_name ?? 'you'}…` : 'Sign in to comment…'}
+                aria-label="Comment"
                 rows={1}
                 className="comments-composer-textarea"
                 style={{ cursor: user ? 'text' : 'not-allowed' }}
@@ -201,6 +212,7 @@ export default function CommentsModal({ boxId, onClose }: Props) {
               onClick={handleSend}
               disabled={!user || !text.trim() || createComment.isPending}
               className="comments-composer-send"
+              aria-label="Send comment"
               title={!user ? 'Sign in to comment' : undefined}
             >
               <Send size={16} strokeWidth={2.5} />
@@ -210,12 +222,12 @@ export default function CommentsModal({ boxId, onClose }: Props) {
           {!user && (
             <div style={{
               padding: '8px 16px', background: 'var(--bg-alt)', borderTop: '2px dashed var(--ink)',
-              textAlign: 'center', fontSize: 11, fontFamily: 'var(--font-mono)',
+              textAlign: 'center', fontSize: 12, fontFamily: 'var(--font-mono)',
               color: 'var(--ink-mute)', letterSpacing: '.04em',
             }}>
-              <a href="/login" style={{ color: 'var(--accent-1)', fontWeight: 800, textDecoration: 'underline' }}>
+              <Link to="/login" style={{ color: 'var(--accent-1)', fontWeight: 800, textDecoration: 'underline' }}>
                 Sign in
-              </a>
+              </Link>
               {' '}to join the conversation
             </div>
           )}

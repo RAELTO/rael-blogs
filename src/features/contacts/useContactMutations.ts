@@ -1,14 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 
-function invalidateContacts(qc: ReturnType<typeof useQueryClient>, userId: string) {
-  qc.invalidateQueries({ queryKey: ['contacts', userId] })
-  qc.invalidateQueries({ queryKey: ['contact-requests'] })
-  qc.invalidateQueries({ queryKey: ['contact-status'] })
-  qc.invalidateQueries({ queryKey: ['suggested-contacts'] })
-  qc.invalidateQueries({ queryKey: ['search-people'] })
-}
-
 export function useSendContactRequest(userId: string) {
   const qc = useQueryClient()
   return useMutation({
@@ -18,7 +10,13 @@ export function useSendContactRequest(userId: string) {
         .insert({ requester_id: userId, addressee_id: addresseeId })
       if (error) throw error
     },
-    onSuccess: () => invalidateContacts(qc, userId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['contacts', userId] })
+      qc.invalidateQueries({ queryKey: ['contact-requests'] })
+      qc.invalidateQueries({ queryKey: ['contact-status'] })
+      qc.invalidateQueries({ queryKey: ['suggested-contacts'] })
+      qc.invalidateQueries({ queryKey: ['search-people'] })
+    },
   })
 }
 
@@ -33,7 +31,13 @@ export function useCancelContactRequest(userId: string) {
         .eq('requester_id', userId)
       if (error) throw error
     },
-    onSuccess: () => invalidateContacts(qc, userId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['contacts', userId] })
+      qc.invalidateQueries({ queryKey: ['contact-requests'] })
+      qc.invalidateQueries({ queryKey: ['contact-status'] })
+      qc.invalidateQueries({ queryKey: ['suggested-contacts'] })
+      qc.invalidateQueries({ queryKey: ['search-people'] })
+    },
   })
 }
 
@@ -60,7 +64,13 @@ export function useRespondContactRequest(userId: string) {
         if (error) throw error
       }
     },
-    onSuccess: () => invalidateContacts(qc, userId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['contacts', userId] })
+      qc.invalidateQueries({ queryKey: ['contact-requests'] })
+      qc.invalidateQueries({ queryKey: ['contact-status'] })
+      qc.invalidateQueries({ queryKey: ['suggested-contacts'] })
+      qc.invalidateQueries({ queryKey: ['search-people'] })
+    },
   })
 }
 
@@ -68,7 +78,7 @@ export function useRemoveContact(userId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (otherId: string) => {
-      const [a, b] = [userId, otherId].sort()
+      const [a, b] = [userId, otherId].toSorted()
       const { error } = await supabase
         .from('contacts')
         .delete()
@@ -76,6 +86,12 @@ export function useRemoveContact(userId: string) {
         .eq('user_b', b)
       if (error) throw error
     },
-    onSuccess: () => invalidateContacts(qc, userId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['contacts', userId] })
+      qc.invalidateQueries({ queryKey: ['contact-requests'] })
+      qc.invalidateQueries({ queryKey: ['contact-status'] })
+      qc.invalidateQueries({ queryKey: ['suggested-contacts'] })
+      qc.invalidateQueries({ queryKey: ['search-people'] })
+    },
   })
 }

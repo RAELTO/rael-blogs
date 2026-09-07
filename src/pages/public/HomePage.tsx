@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../features/auth/AuthContext'
 import { useBoxFeed, useDeleteBox, useSearchBoxes, type FeedMode } from '../../features/boxes/useBoxes'
+import { useBoxEngagement } from '../../features/boxes/useBoxEngagement'
 import AppShell from '../../components/layout/AppShell'
 import LeftSidebar from '../../components/layout/LeftSidebar'
 import RightSidebar from '../../components/layout/RightSidebar'
@@ -9,10 +10,11 @@ import StoriesRail from '../../components/feed/StoriesRail'
 import ComposerCard from '../../components/feed/ComposerCard'
 import ModeSelector from '../../components/feed/ModeSelector'
 import BoxCard from '../../components/feed/BoxCard'
-import DropModal from '../../components/feed/DropModal'
 import SearchPeopleResults from '../../components/search/SearchPeopleResults'
 import { useToast } from '../../components/ui/Toast'
 import type { BoxType } from '../../types/database'
+
+const DropModal = lazy(() => import('../../components/feed/DropModal'))
 
 function EmptyFeed({ mode }: { mode: FeedMode }) {
   return (
@@ -44,6 +46,7 @@ export default function HomePage() {
   const boxes = hasSearch ? searchBoxesQuery.data : feedQuery.data
   const isLoading = hasSearch ? searchBoxesQuery.isLoading : feedQuery.isLoading
   const isError = hasSearch ? searchBoxesQuery.isError : feedQuery.isError
+  const engagementQuery = useBoxEngagement((boxes ?? []).map((box) => box.id), user?.id)
   const deleteBox = useDeleteBox()
 
   function openDrop(type: BoxType = 'quick') {
@@ -89,7 +92,7 @@ export default function HomePage() {
         {isLoading && (
           <div className="spinner">
             <div className="spinner-ring" />
-            <span className="spinner-label">▒ loading boxes...</span>
+            <span className="spinner-label">▒ Loading boxes…</span>
           </div>
         )}
 
@@ -116,16 +119,19 @@ export default function HomePage() {
           <BoxCard
             key={box.id}
             box={box}
+            engagement={engagementQuery.data[box.id]}
             onDelete={user?.id === box.author_id ? handleDelete : undefined}
           />
         ))}
       </AppShell>
 
       {dropOpen && (
-        <DropModal
-          initialType={dropOpen}
-          onClose={() => setDropOpen(null)}
-        />
+        <Suspense fallback={null}>
+          <DropModal
+            initialType={dropOpen}
+            onClose={() => setDropOpen(null)}
+          />
+        </Suspense>
       )}
     </>
   )

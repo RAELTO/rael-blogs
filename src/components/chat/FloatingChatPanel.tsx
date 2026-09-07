@@ -43,19 +43,24 @@ function FloatingWindow({ entry, index }: { entry: FloatingChatEntry; index: num
 
   if (entry.minimized) {
     return (
-      <div className="float-chat-min" style={{ right }} onClick={() => toggleMinimize(entry.conversationId)}>
-        <div style={{ position: 'relative', flexShrink: 0 }}>
-          <Avatar name={entry.otherName} src={entry.otherAvatar} size="sm" />
-          <div style={{
-            position: 'absolute', bottom: -2, right: -2,
-            width: 9, height: 9,
-            background: presence.dotColor,
-            border: '2px solid #111111',
-          }} />
-        </div>
-        <div style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {entry.otherName}
-        </div>
+      <div className="float-chat-min" style={{ right }}>
+        <button
+          type="button"
+          className="float-chat-min-toggle"
+          onClick={() => toggleMinimize(entry.conversationId)}
+          aria-label={`Restore chat with ${entry.otherName}`}
+        >
+          <span style={{ position: 'relative', flexShrink: 0 }}>
+            <Avatar name={entry.otherName} src={entry.otherAvatar} size="sm" />
+            <span style={{
+              position: 'absolute', bottom: -2, right: -2,
+              width: 9, height: 9,
+              background: presence.dotColor,
+              border: '2px solid #111111',
+            }} />
+          </span>
+          <span className="float-chat-min-name">{entry.otherName}</span>
+        </button>
         <button
           type="button"
           aria-label="Close chat"
@@ -96,7 +101,7 @@ function FloatingWindow({ entry, index }: { entry: FloatingChatEntry; index: num
           <div style={{ fontWeight: 800, fontSize: 13, lineHeight: 1.1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {entry.otherName}
           </div>
-          <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: presence.color, letterSpacing: '.04em' }}>
+          <div style={{ fontSize: 12, fontFamily: 'var(--font-mono)', fontWeight: 700, color: presence.color, letterSpacing: '.04em' }}>
             {presence.label || (presence.status === 'offline' ? 'OFFLINE' : 'ACTIVE')}
           </div>
         </Link>
@@ -116,7 +121,7 @@ function FloatingWindow({ entry, index }: { entry: FloatingChatEntry; index: num
 
       <div className="fc-msgs">
         {messages.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '20px 10px', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-mute)' }}>
+          <div style={{ textAlign: 'center', padding: '20px 10px', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink-mute)' }}>
             Be the first to write
           </div>
         )}
@@ -140,7 +145,7 @@ function FloatingWindow({ entry, index }: { entry: FloatingChatEntry; index: num
           value={draft}
           onChange={e => setDraft(e.target.value)}
           onKeyDown={handleKey}
-          placeholder="Message..."
+          placeholder="Message…"
           aria-label="Message"
         />
         <button

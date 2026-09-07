@@ -4,6 +4,7 @@ import { ArrowLeft, Search } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
+import { useDialogAccessibility } from '../ui/useDialogAccessibility'
 
 function useTrendingTags() {
   return useQuery({
@@ -34,7 +35,9 @@ export default function MobileSearchOverlay({ onClose }: Props) {
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
   const inputRef = useRef<HTMLInputElement>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
   const { data: tags = [] } = useTrendingTags()
+  useDialogAccessibility({ dialogRef, onClose, initialFocusRef: inputRef })
 
   useEffect(() => {
     inputRef.current?.focus()
@@ -54,10 +57,17 @@ export default function MobileSearchOverlay({ onClose }: Props) {
   }
 
   return createPortal(
-    <div className="mob-search-overlay">
+    <div
+      ref={dialogRef}
+      className="mob-search-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Search NBOX"
+      tabIndex={-1}
+    >
       {/* Input row */}
       <div className="mob-search-header">
-        <button className="mob-search-back" onClick={onClose} type="button">
+        <button className="mob-search-back" onClick={onClose} type="button" aria-label="Close search">
           <ArrowLeft size={22} strokeWidth={2.5} />
         </button>
         <form onSubmit={handleSubmit} style={{ flex: 1, position: 'relative', display: 'flex' }}>
@@ -72,6 +82,7 @@ export default function MobileSearchOverlay({ onClose }: Props) {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search NBOX"
+            aria-label="Search NBOX"
             style={{ paddingLeft: 36, height: 44, width: '100%' }}
           />
         </form>
@@ -80,11 +91,11 @@ export default function MobileSearchOverlay({ onClose }: Props) {
       {/* Trending tags */}
       <div className="mob-search-body">
         <div style={{
-          fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 800,
+          fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 800,
           textTransform: 'uppercase', letterSpacing: '.06em',
           color: 'var(--ink-mute)', marginBottom: 12,
         }}>
-          🔥 Tendencias
+          🔥 Trending
         </div>
 
         {tags.map(t => (
@@ -95,7 +106,7 @@ export default function MobileSearchOverlay({ onClose }: Props) {
             onClick={() => handleTag(t.slug)}
           >
             <span style={{ fontFamily: 'var(--font-display)', fontSize: 15 }}>#{t.name}</span>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--ink-mute)', fontWeight: 700 }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--ink-mute)', fontWeight: 700 }}>
               {t.count}
             </span>
           </button>

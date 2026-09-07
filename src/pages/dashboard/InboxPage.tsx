@@ -118,7 +118,7 @@ function ThreadPanel({ conversationId, userId, otherId, otherName, otherUsername
           style={{ flex: 1, minWidth: 0, textDecoration: 'none', color: 'inherit' }}
         >
           <div style={{ fontWeight: 800, fontSize: 15, lineHeight: 1.1 }}>{otherName}</div>
-          <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', fontWeight: 700, color: presence.color, letterSpacing: '.04em', marginTop: 1 }}>
+          <div style={{ fontSize: 12, fontFamily: 'var(--font-mono)', fontWeight: 700, color: presence.color, letterSpacing: '.04em', marginTop: 1 }}>
             {presence.label || (presence.status === 'offline' ? '● OFFLINE' : '● ACTIVE')}
           </div>
         </Link>
@@ -164,7 +164,7 @@ function ThreadPanel({ conversationId, userId, otherId, otherName, otherUsername
           value={draft}
           onChange={e => setDraft(e.target.value)}
           onKeyDown={handleKey}
-          placeholder="Message..."
+          placeholder="Message…"
           className="chat-input-field"
         />
         <ActionBtn title="Emoji" onClick={() => toast('Emojis coming soon')}>
@@ -229,13 +229,13 @@ export default function InboxPage() {
 
           {/* Search */}
           <div className="chat-list-search">
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..." />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…" />
           </div>
 
           {/* Conversations */}
           <div className="chat-list-body">
             {isLoading && (
-              <div className="chat-list-loading">Loading...</div>
+              <div className="chat-list-loading">Loading…</div>
             )}
             {!isLoading && filtered.length === 0 && (
               <div className="chat-list-empty">
@@ -248,11 +248,9 @@ export default function InboxPage() {
                 <div
                   key={c.id}
                   className={`chat-item${c.id === activeId ? ' active' : ''}`}
-                  onClick={() => setParams({ c: c.id })}
                 >
                   <Link
                     to={`/profile/${c.other.username}`}
-                    onClick={e => e.stopPropagation()}
                     title={`View profile for ${c.other.display_name}`}
                     style={{ position: 'relative', flexShrink: 0, display: 'block', textDecoration: 'none' }}
                   >
@@ -261,7 +259,7 @@ export default function InboxPage() {
                       <div className="presence-dot" style={{ background: p.dotColor }} />
                     )}
                   </Link>
-                  <div className="ci-body">
+                  <button type="button" className="ci-body chat-item-open" onClick={() => setParams({ c: c.id })}>
                     <div className="ci-name">
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                         {c.other.display_name}
@@ -276,7 +274,7 @@ export default function InboxPage() {
                       </div>
                       {c.has_unread && <div className="ci-unread">!</div>}
                     </div>
-                  </div>
+                  </button>
                 </div>
               )
             })}

@@ -1,0 +1,32 @@
+import { expect, test } from '@playwright/test'
+import { captureViewport, hasHorizontalOverflow, openAuthenticatedPage } from './support/app'
+import { credentialsFor, projectAuthRole } from './support/auth'
+
+test.beforeEach(({}, testInfo) => {
+  const role = projectAuthRole(testInfo.project.metadata)
+  test.skip(!credentialsFor(role), `Local credentials are not configured for the ${role} role`)
+})
+
+test('@visual authenticated feed fits every supported viewport', async ({ page }, testInfo) => {
+  await openAuthenticatedPage(page)
+  expect(await hasHorizontalOverflow(page), 'The feed should not scroll horizontally').toBe(false)
+
+  const isCompact = (testInfo.project.use.viewport?.width ?? 0) <= 820
+  await expect(page.locator('.mobile-bar')).toBeVisible({ visible: isCompact })
+  await expect(page.locator('.side-nav')).toBeVisible({ visible: !isCompact })
+  await expect(page.locator('.spinner')).toBeHidden({ timeout: 15_000 })
+  await captureViewport(page, testInfo, 'authenticated-feed')
+})
+
+test('@visual poll controls remain usable at every supported viewport', async ({ page }, testInfo) => {
+  await openAuthenticatedPage(page)
+  await expect(page.locator('.spinner')).toBeHidden({ timeout: 15_000 })
+
+  const poll = page.locator('.poll-wrap').first()
+  await expect(poll).toBeVisible()
+  await poll.scrollIntoViewIfNeeded()
+
+  expect(await hasHorizontalOverflow(page), 'Poll controls should not cause horizontal overflow').toBe(false)
+  await expect(poll.locator('.poll-option').first()).toBeVisible()
+  await captureViewport(page, testInfo, 'authenticated-poll')
+})

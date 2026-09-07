@@ -229,6 +229,43 @@ export type Database = {
           }
         ]
       }
+      box_poll_votes: {
+        Row: {
+          box_id: string
+          user_id: string
+          option_index: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          box_id: string
+          user_id: string
+          option_index: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          box_id?: string
+          user_id?: string
+          option_index?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'box_poll_votes_box_id_fkey'
+            columns: ['box_id']
+            referencedRelation: 'boxes'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'box_poll_votes_user_id_fkey'
+            columns: ['user_id']
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          }
+        ]
+      }
       notifications: {
         Row: {
           id: string
@@ -445,6 +482,7 @@ export type Tag          = Database['public']['Tables']['tags']['Row']
 export type Box          = Database['public']['Tables']['boxes']['Row']
 export type BoxTag       = Database['public']['Tables']['box_tags']['Row']
 export type BoxReaction  = Database['public']['Tables']['box_reactions']['Row']
+export type BoxPollVote  = Database['public']['Tables']['box_poll_votes']['Row']
 export type BoxSave      = Database['public']['Tables']['box_saves']['Row']
 export type BoxComment   = Database['public']['Tables']['box_comments']['Row']
 export type Follow       = Database['public']['Tables']['follows']['Row']
@@ -472,7 +510,7 @@ export type BoxType      = Box['type']
 
 // Box payload shapes
 export interface MediaPayload  { url: string; kind: 'image' | 'video' | 'gif'; caption?: string }
-export interface PollOption    { text: string; votes: number }
+export interface PollOption    { text: string; votes?: number }
 export interface PollPayload   { question: string; options: PollOption[] }
 export interface MoodPayload   { color: 'm1' | 'm2' | 'm3' | 'm4' | 'm5' }
 export interface LinkPayload   { url: string; title?: string; description?: string; host?: string; thumbnail?: string }

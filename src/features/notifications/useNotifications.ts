@@ -33,20 +33,20 @@ export function getNotifText(n: NotificationRow): string {
   switch (n.kind) {
     case 'reaction': {
       const emoji = REACTION_EMOJIS[n.metadata.reaction_type as string] ?? '😀'
-      return `reaccionó ${emoji} to your Box`
+      return `reacted ${emoji} to your Box`
     }
     case 'vote':
       return n.metadata.vote === 'like' ? 'liked 👍 to your Box' : 'disliked 👎 to your Box'
     case 'comment':
-      return 'comentó en tu Box'
+      return 'commented on your Box'
     case 'follow':
-      return 'empezó a seguirte'
+      return 'started following you'
     case 'contact_request':
       return 'wants to add you as a contact'
     case 'contact_accepted':
-      return 'aceptó tu solicitud de contacto ✓'
+      return 'accepted your contact request ✓'
     case 'share':
-      return 'compartió tu Box'
+      return 'shared your Box'
     default:
       return ''
   }

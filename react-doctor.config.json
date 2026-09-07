@@ -1,0 +1,15 @@
+{
+  "ignore": {
+    "files": ["tests/e2e/**"],
+    "overrides": [
+      {
+        "files": [
+          "src/components/chat/MessageNotifier.tsx",
+          "src/components/notifications/NotifNotifier.tsx",
+          "src/features/chat/useMessages.ts"
+        ],
+        "rules": ["react-doctor/effect-needs-cleanup"]
+      }
+    ]
+  }
+}

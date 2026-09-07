@@ -21,7 +21,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={ctxValue}>
       {children}
-      {msg && <div className="toast">▒ {msg}</div>}
+      {msg && <div className="toast" role="status" aria-live="polite">▒ {msg}</div>}
     </ToastContext.Provider>
   )
 }

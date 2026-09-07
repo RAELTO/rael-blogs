@@ -72,7 +72,7 @@ function SavedCard({ item, onOpen, onUnsave }: {
       <button className="saved-card-main" type="button" onClick={() => { setMenuOpen(false); onOpen(item.box) }}>
         <div className="saved-card-thumb" style={{ background: item.box.type === 'mood' ? moodColor(item.box) : 'var(--bg-alt)' }}>
           {thumb
-            ? <img src={thumb} alt="" />
+            ? <img src={thumb} alt="" width="180" height="120" loading="lazy" />
             : <span>{item.box.type.toUpperCase()}</span>
           }
         </div>
@@ -88,9 +88,9 @@ function SavedCard({ item, onOpen, onUnsave }: {
           <BadgePlus size={16} strokeWidth={2.5} />
           <span>To collection</span>
         </button>
-        <button type="button" title="Share" onClick={() => toast('Share coming soon.')}><Share2 size={16} strokeWidth={2.5} /></button>
+        <button type="button" aria-label="Share" onClick={() => toast('Share coming soon.')}><Share2 size={16} strokeWidth={2.5} /></button>
         <div className="saved-card-more">
-          <button type="button" title="More options" onClick={() => setMenuOpen(o => !o)}>
+          <button type="button" aria-label="More options" aria-expanded={menuOpen} onClick={() => setMenuOpen(o => !o)}>
             <MoreHorizontal size={18} strokeWidth={2.5} />
           </button>
           {menuOpen && (
@@ -169,7 +169,7 @@ export default function SavedPage() {
 
         <section className="saved-content">
           <div className="saved-mobile-head">
-            <Link to="/menu" aria-label="Back">
+            <Link to="/yo" aria-label="Back to menu">
               <ArrowLeft size={24} strokeWidth={2.5} />
             </Link>
             <h1>Saved</h1>
@@ -181,6 +181,8 @@ export default function SavedPage() {
                 key={tab.id}
                 type="button"
                 className={filter === tab.id ? 'active' : ''}
+                role="tab"
+                aria-selected={filter === tab.id}
                 onClick={() => setFilter(tab.id)}
               >
                 {tab.label}

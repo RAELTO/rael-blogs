@@ -1,0 +1,33 @@
+packages: []
+
+# Hold new releases for one week to reduce supply-chain risk.
+minimumReleaseAge: 10080
+minimumReleaseAgeStrict: true
+minimumReleaseAgeExclude:
+  # Already reviewed and exercised by the project's browser test matrix.
+  - "@playwright/test@1.63.0"
+  - "playwright@1.63.0"
+  - "playwright-core@1.63.0"
+  - "@supabase/auth-js@2.115.0"
+  - "@supabase/functions-js@2.115.0"
+  - "@supabase/postgrest-js@2.115.0"
+  - "@supabase/realtime-js@2.115.0"
+  - "@supabase/storage-js@2.115.0"
+  - "@supabase/supabase-js@2.115.0"
+
+# Reject exotic transitive sources and unreviewed lifecycle scripts.
+blockExoticSubdeps: true
+strictDepBuilds: true
+allowBuilds:
+  esbuild: false
+
+# Refuse to run with stale dependencies or reduced provenance.
+verifyDepsBeforeRun: error
+trustPolicy: no-downgrade
+trustPolicyExclude:
+  # Known cross-major false positive: semver 6 predates provenance adoption in 7.x.
+  - semver@6.3.1
+
+# Keep dependency changes explicit and reproducible.
+saveExact: true
+engineStrict: true

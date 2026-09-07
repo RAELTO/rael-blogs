@@ -36,7 +36,7 @@ export default function BoxPage() {
               to="/"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
-                fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700,
+                fontFamily: 'var(--font-mono)', fontSize: 12, fontWeight: 700,
                 letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink-dim)',
                 textDecoration: 'none',
               }}
@@ -49,7 +49,7 @@ export default function BoxPage() {
         {isLoading && (
           <div className="spinner">
             <div className="spinner-ring" />
-            <span className="spinner-label">▒ loading drop...</span>
+            <span className="spinner-label">▒ Loading drop…</span>
           </div>
         )}
 

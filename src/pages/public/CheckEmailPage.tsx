@@ -15,7 +15,7 @@ export default function CheckEmailPage() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
-        toast('Bienvenido — cuenta confirmada')
+        toast('Welcome — your account is confirmed.')
         navigate('/')
       }
     })
@@ -100,7 +100,7 @@ export default function CheckEmailPage() {
               disabled={resending || !email}
               style={{ width: '100%', justifyContent: 'center' }}
             >
-              {resending ? '▒ sending...' : <><RefreshCw size={14} strokeWidth={2.5} /> Resend email</>}
+              {resending ? '▒ Sending…' : <><RefreshCw size={14} strokeWidth={2.5} /> Resend email</>}
             </button>
           )}
 
