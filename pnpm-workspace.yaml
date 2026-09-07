@@ -4,6 +4,18 @@ packages: []
 minimumReleaseAge: 10080
 minimumReleaseAgeStrict: true
 minimumReleaseAgeExclude:
+  # Corepack must bootstrap the exact package manager before pnpm can enforce
+  # this policy. Keep the exception version-pinned and include only pnpm's
+  # platform executables.
+  - "pnpm@12.3.4"
+  - "@pnpm/exe.darwin-arm64@12.3.4"
+  - "@pnpm/exe.darwin-x64@12.3.4"
+  - "@pnpm/exe.linux-arm64@12.3.4"
+  - "@pnpm/exe.linux-arm64-musl@12.3.4"
+  - "@pnpm/exe.linux-x64@12.3.4"
+  - "@pnpm/exe.linux-x64-musl@12.3.4"
+  - "@pnpm/exe.win32-arm64@12.3.4"
+  - "@pnpm/exe.win32-x64@12.3.4"
   # Already reviewed and exercised by the project's browser test matrix.
   - "@playwright/test@1.63.0"
   - "playwright@1.63.0"
