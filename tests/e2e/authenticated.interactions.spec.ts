@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { openAuthenticatedPage } from './support/app'
+import { openAuthenticatedPage, openFollowableProfile } from './support/app'
 import { credentialsFor, projectAuthRole } from './support/auth'
 
 test.beforeEach(({}, testInfo) => {
@@ -22,6 +22,27 @@ test('@smoke reaction menus work without hover', async ({ page }) => {
   const reactionTrigger = card.locator('.box-action-trigger').nth(1)
   await reactionTrigger.click()
   await expect(card.getByRole('menu', { name: 'React to this post' })).toBeVisible()
+})
+
+test('@smoke contacts expose follow controls at every viewport', async ({ page }, testInfo) => {
+  await openAuthenticatedPage(page, '/contacts')
+  const isMobile = (testInfo.project.use.viewport?.width ?? 0) <= 600
+
+  if (isMobile) {
+    await page.getByRole('button', { name: 'Your contacts' }).click()
+    const contactRows = page.locator('.contacts-mobile-friend-row')
+    await expect.poll(() => contactRows.count(), { timeout: 5_000 }).toBeGreaterThan(0).catch(() => {})
+    test.skip(await contactRows.count() === 0, 'This test user has no contacts')
+    await contactRows.first().getByRole('button', { name: 'Options' }).click()
+    await expect(page.getByTestId('contact-sheet-follow-button')).toBeVisible()
+    return
+  }
+
+  await page.locator('.contacts-side-panel').getByRole('button', { name: /^All/ }).click()
+  const followButtons = page.getByTestId('contact-follow-button')
+  await expect.poll(() => followButtons.count(), { timeout: 5_000 }).toBeGreaterThan(0).catch(() => {})
+  test.skip(await followButtons.count() === 0, 'This test user has no contacts')
+  await expect(followButtons.first()).toBeVisible()
 })
 
 test('@mutation poll selection persists after reload and can be restored', async ({ page }, testInfo) => {
@@ -60,4 +81,30 @@ test('@mutation poll selection persists after reload and can be restored', async
     await expect(restoredPoll.locator('.poll-option').nth(targetIndex))
       .toHaveAttribute('aria-pressed', 'false')
   }
+})
+
+test('@mutation follow state persists after reload and is restored', async ({ page }, testInfo) => {
+  test.skip(process.env.E2E_ALLOW_MUTATIONS !== 'true', 'Remote mutations require an explicit local opt-in')
+  test.skip(testInfo.project.name !== 'desktop-1440', 'Run the remote mutation once, not for every viewport')
+
+  const foundProfile = await openFollowableProfile(page, true)
+  test.skip(!foundProfile, 'No visible unfollowed profile is currently available to this test user')
+
+  const followButton = page.getByTestId('profile-follow-button')
+  await expect(followButton).toBeEnabled()
+  await expect(followButton).toHaveAttribute('aria-pressed', 'false')
+
+  await followButton.click()
+  await expect(followButton).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.locator('.toast')).toContainText('Following')
+  await expect(followButton).toBeEnabled()
+  await expect(followButton).toHaveAttribute('aria-pressed', 'true')
+
+  await page.reload({ waitUntil: 'domcontentloaded' })
+  await expect(page.getByTestId('profile-follow-button')).toHaveAttribute('aria-pressed', 'true')
+
+  await page.getByTestId('profile-follow-button').click()
+  await expect(page.locator('.toast')).toContainText('Unfollowed')
+  await expect(page.getByTestId('profile-follow-button')).toBeEnabled()
+  await expect(page.getByTestId('profile-follow-button')).toHaveAttribute('aria-pressed', 'false')
 })

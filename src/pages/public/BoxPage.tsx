@@ -21,7 +21,7 @@ export default function BoxPage() {
 
   function handleDelete(boxId: string) {
     deleteBox.mutate(boxId, {
-      onSuccess: () => toast('Box eliminada.'),
+      onSuccess: () => toast('Box deleted.'),
       onError:   () => toast('Failed to delete.'),
     })
   }

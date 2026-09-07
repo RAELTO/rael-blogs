@@ -51,6 +51,24 @@ export function useProfileByUsername(username?: string) {
   })
 }
 
+export function usePublishedBoxCount(userId?: string) {
+  return useQuery({
+    queryKey: ['boxes', 'author-count', userId],
+    queryFn: async () => {
+      if (!userId) return 0
+      const { count, error } = await supabase
+        .from('boxes')
+        .select('id', { count: 'exact', head: true })
+        .eq('author_id', userId)
+        .eq('status', 'published')
+      if (error) throw error
+      return count ?? 0
+    },
+    enabled: !!userId,
+    staleTime: 30_000,
+  })
+}
+
 export function useUpdateProfile() {
   const qc = useQueryClient()
   return useMutation({

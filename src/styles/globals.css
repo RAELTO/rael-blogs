@@ -987,6 +987,10 @@ button.box-action { background: none; border: none; font: inherit; }
 }
 .contact-btn-accept  { background: var(--accent-4); color: var(--ink); }
 .contact-btn-decline { background: var(--bg-panel); color: var(--accent-1); }
+.contact-following {
+  background: var(--ink) !important;
+  color: var(--bg-panel) !important;
+}
 
 .box-stat-vote {
   display: inline-flex; align-items: center; gap: 3px;
@@ -1920,13 +1924,100 @@ button.box-action { background: none; border: none; font: inherit; }
   position: relative;
   z-index: 1;
 }
+.profile-primary-action {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.profile-follow-btn {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border: 3px solid var(--ink);
+  background: var(--accent-2);
+  color: var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform .1s ease, box-shadow .1s ease, background .1s ease;
+}
+.profile-follow-btn:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+.profile-follow-btn:active:not(:disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+.profile-follow-btn.is-following {
+  background: var(--ink);
+  color: var(--bg-panel);
+  box-shadow: 4px 4px 0 var(--accent-3);
+}
+.profile-follow-btn:disabled {
+  cursor: wait;
+  opacity: .68;
+}
+.profile-social-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 18px;
+}
+.profile-social-stat {
+  min-width: 0;
+  padding: 13px 16px 11px;
+  border: 3px solid var(--ink);
+  background: var(--bg-panel);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.profile-social-stat:nth-child(2) { background: var(--accent-2); }
+.profile-social-stat:nth-child(3) { background: var(--accent-4); }
+.profile-social-stat strong,
+.profile-social-stat span {
+  display: block;
+}
+.profile-social-stat strong {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1;
+  letter-spacing: -.03em;
+}
+.profile-social-stat span {
+  margin-top: 5px;
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+}
 @media (max-width: 600px) {
   .profile-header-row {
     flex-direction: column;
     align-items: flex-start;
     margin-top: 12px;
     gap: 8px;
+    padding: 0 4px;
   }
+  .profile-primary-action,
+  .profile-primary-action > .btn,
+  .profile-follow-btn { width: 100%; }
+  .profile-social-stats { gap: 6px; }
+  .profile-social-stat {
+    padding: 10px 8px 9px;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .profile-social-stat strong { font-size: 22px; }
+  .profile-social-stat span { font-size: 9px; letter-spacing: .04em; }
 }
 
 /* BoxCard action bar — compact on narrow screens */
@@ -2464,6 +2555,10 @@ button.box-action { background: none; border: none; font: inherit; }
   }
   .contacts-action-item:hover {
     background: var(--accent-2);
+  }
+  .contacts-action-item:disabled {
+    cursor: wait;
+    opacity: .62;
   }
   .contacts-action-item span {
     font-weight: 900;

@@ -163,6 +163,7 @@ export function useCreateBox() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['boxes', 'feed'] })
+      qc.invalidateQueries({ queryKey: ['boxes', 'author-count'] })
     },
   })
 }
@@ -176,6 +177,7 @@ export function useDeleteBox() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['boxes'] })
+      qc.invalidateQueries({ queryKey: ['boxes', 'author-count'] })
     },
   })
 }
