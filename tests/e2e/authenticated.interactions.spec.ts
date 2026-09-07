@@ -31,6 +31,7 @@ test('@smoke contacts expose follow controls at every viewport', async ({ page }
   if (isMobile) {
     await page.getByRole('button', { name: 'Your contacts' }).click()
     const contactRows = page.locator('.contacts-mobile-friend-row')
+    await expect.poll(() => contactRows.count(), { timeout: 5_000 }).toBeGreaterThan(0).catch(() => {})
     test.skip(await contactRows.count() === 0, 'This test user has no contacts')
     await contactRows.first().getByRole('button', { name: 'Options' }).click()
     await expect(page.getByTestId('contact-sheet-follow-button')).toBeVisible()
@@ -39,6 +40,7 @@ test('@smoke contacts expose follow controls at every viewport', async ({ page }
 
   await page.locator('.contacts-side-panel').getByRole('button', { name: /^All/ }).click()
   const followButtons = page.getByTestId('contact-follow-button')
+  await expect.poll(() => followButtons.count(), { timeout: 5_000 }).toBeGreaterThan(0).catch(() => {})
   test.skip(await followButtons.count() === 0, 'This test user has no contacts')
   await expect(followButtons.first()).toBeVisible()
 })
